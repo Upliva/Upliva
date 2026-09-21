@@ -1,0 +1,127 @@
+@model BookingViewModel
+@{
+    ViewData["Title"] = "Book Your Stay";
+}
+
+<section class="page-hero booking-hero">
+    <div class="container">
+        <span class="eyebrow">RESERVATIONS</span>
+        <h1>Book your stay</h1>
+        <p>Choose your dates, room and guest details. We'll take care of the rest.</p>
+    </div>
+</section>
+
+<section class="section booking-section">
+    <div class="container booking-layout">
+        <div class="booking-form-card">
+            <div class="form-title">
+                <span class="eyebrow dark">STEP 1</span>
+                <h2>Find your room</h2>
+            </div>
+
+            <form method="post">
+                @Html.AntiForgeryToken()
+                <div asp-validation-summary="ModelOnly" class="validation"></div>
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label asp-for="CheckIn"></label>
+                        <input asp-for="CheckIn" type="date" />
+                        <span asp-validation-for="CheckIn"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="CheckOut"></label>
+                        <input asp-for="CheckOut" type="date" />
+                        <span asp-validation-for="CheckOut"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="Guests"></label>
+                        <input asp-for="Guests" min="1" max="20" />
+                        <span asp-validation-for="Guests"></span>
+                    </div>
+                </div>
+
+                <button class="btn btn-outline" type="button" onclick="window.location.href='@Url.Action("Index", "Booking")?checkIn=' + document.getElementById('CheckIn').value + '&checkOut=' + document.getElementById('CheckOut').value + '&guests=' + document.getElementById('Guests').value">Refresh available rooms</button>
+
+                <div class="form-title room-title">
+                    <span class="eyebrow dark">STEP 2</span>
+                    <h2>Select a room</h2>
+                </div>
+
+                <div class="room-options">
+                    @if (!Model.AvailableRooms.Any())
+                    {
+                        <div class="empty-state">No rooms are available for these dates and guest count. Try different dates.</div>
+                    }
+                    else
+                    {
+                        @foreach (var room in Model.AvailableRooms)
+                        {
+                            <label class="room-option">
+                                <input type="radio" asp-for="RoomId" value="@room.Id" />
+                                <span class="room-option-content">
+                                    <span class="room-option-image" style="background-image:url('@room.ImageUrl')"></span>
+                                    <span class="room-option-copy">
+                                        <strong>@room.Name</strong>
+                                        <small>@room.Description</small>
+                                        <b>₹@room.PricePerNight.ToString("N0") / night</b>
+                                    </span>
+                                </span>
+                            </label>
+                        }
+                    }
+                </div>
+
+                <div class="form-title room-title">
+                    <span class="eyebrow dark">STEP 3</span>
+                    <h2>Your details</h2>
+                </div>
+
+                <div class="form-grid">
+                    <div class="field full">
+                        <label asp-for="GuestName"></label>
+                        <input asp-for="GuestName" placeholder="Your full name" />
+                        <span asp-validation-for="GuestName"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="PhoneNumber"></label>
+                        <input asp-for="PhoneNumber" placeholder="+91 98765 43210" />
+                        <span asp-validation-for="PhoneNumber"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="Email"></label>
+                        <input asp-for="Email" placeholder="you@example.com" />
+                        <span asp-validation-for="Email"></span>
+                    </div>
+                    <div class="field full">
+                        <label asp-for="Notes"></label>
+                        <textarea asp-for="Notes" rows="3" placeholder="Any special request?"></textarea>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary btn-wide" type="submit">Confirm booking request →</button>
+            </form>
+        </div>
+
+        <aside class="booking-side">
+            <div class="trust-card">
+                <span class="trust-icon">✓</span>
+                <div><strong>Secure booking</strong><p>Your details are stored securely in the resort database.</p></div>
+            </div>
+            <div class="trust-card">
+                <span class="trust-icon">◷</span>
+                <div><strong>Quick confirmation</strong><p>We'll contact you on WhatsApp or phone to confirm your request.</p></div>
+            </div>
+            <div class="whatsapp-card">
+                <span class="wa-label">WHATSAPP BOOKING</span>
+                <h3>Prefer WhatsApp?</h3>
+                <p>This same booking system can be connected to Meta WhatsApp Cloud API for chat-based reservations.</p>
+                <a href="https://wa.me/919876543210" target="_blank" class="btn btn-light btn-wide">Chat with resort</a>
+            </div>
+        </aside>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

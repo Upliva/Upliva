@@ -1,0 +1,29 @@
+@model List<Room>
+@{
+    ViewData["Title"] = "Rooms & Suites";
+}
+
+<section class="page-hero">
+    <div class="container">
+        <span class="eyebrow">STAY YOUR WAY</span>
+        <h1>Rooms & suites</h1>
+        <p>Comfortable spaces for couples, families and weekend escapes.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container cards-3">
+        @foreach (var room in Model)
+        {
+            <article class="room-card">
+                <div class="card-image tall" style="background-image:url('@room.ImageUrl')"></div>
+                <div class="card-body">
+                    <div class="card-meta"><span>Up to @room.MaxGuests guests</span><strong>₹@room.PricePerNight.ToString("N0") / night</strong></div>
+                    <h3>@room.Name</h3>
+                    <p>@room.Description</p>
+                    <a class="btn btn-primary btn-small" asp-controller="Booking" asp-action="Index">Book this room</a>
+                </div>
+            </article>
+        }
+    </div>
+</section>

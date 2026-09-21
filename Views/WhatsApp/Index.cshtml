@@ -1,0 +1,52 @@
+@model WhatsAppTestViewModel
+@{
+    ViewData["Title"] = "WhatsApp Test";
+}
+
+<section class="page-hero">
+    <div class="container">
+        <span class="eyebrow">UPLIVAAI</span>
+        <h1>WhatsApp test center</h1>
+        <p>Test the resort welcome menu and promotional message before connecting the public webhook.</p>
+    </div>
+</section>
+
+<section class="section booking-section">
+    <div class="container" style="max-width:760px">
+        <div class="booking-form-card">
+            @if (!string.IsNullOrWhiteSpace(Model.Result))
+            {
+                <div class="validation" style="background:#edf6ef;color:#2f6847">@Model.Result</div>
+            }
+
+            <form asp-action="SendMenu" method="post">
+                @Html.AntiForgeryToken()
+                <div class="field">
+                    <label asp-for="PhoneNumber"></label>
+                    <input asp-for="PhoneNumber" placeholder="919XXXXXXXXX" />
+                    <span asp-validation-for="PhoneNumber"></span>
+                </div>
+                <br />
+                <button class="btn btn-primary btn-wide" type="submit">🏝️ Send Resort WhatsApp Menu</button>
+            </form>
+
+            <br />
+
+            <form asp-action="SendImage" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="PhoneNumber" />
+                <button class="btn btn-outline btn-wide" type="submit">🖼️ Send Resort Promotional Image</button>
+            </form>
+
+            <div style="margin-top:28px;padding:20px;background:#f7f5ef">
+                <strong>Webhook URL</strong>
+                <p style="margin:6px 0 0;color:#687872">
+                    <code>/webhooks/whatsapp</code>
+                </p>
+                <p style="margin:6px 0 0;color:#687872;font-size:13px">
+                    For local testing, expose your HTTPS endpoint through a public tunnel such as ngrok before configuring Meta.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
