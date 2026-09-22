@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<defs><linearGradient id="bg" x1="0" x2="1"><stop stop-color="#052b22"/><stop offset="1" stop-color="#0b5b44"/></linearGradient></defs>
+<rect width="1280" height="720" fill="url(#bg)"/>
+<circle cx="1080" cy="155" r="180" fill="#22d994" opacity=".08"/>
+<text x="70" y="85" fill="#b8f4db" font-family="Arial" font-size="20" font-weight="700" letter-spacing="3">UPLIVAAI • BUILT FOR GROWING BUSINESSES</text>
+<text x="70" y="205" fill="#fff" font-family="Arial" font-size="60" font-weight="800">Don't just answer</text>
+<text x="70" y="270" fill="#62e6b4" font-family="Arial" font-size="60" font-weight="800">messages.</text>
+<text x="70" y="335" fill="#fff" font-family="Arial" font-size="60" font-weight="800">Grow from them.</text>
+<text x="70" y="390" fill="#d0e1db" font-family="Arial" font-size="25">WhatsApp • Website • AI-ready productivity</text>
+<rect x="70" y="450" rx="27" width="370" height="64" fill="#28dc9a"/>
+<text x="112" y="491" fill="#052b22" font-family="Arial" font-size="25" font-weight="800">Start your business journey →</text>
+<g transform="translate(790 135)">
+ <ellipse cx="170" cy="470" rx="165" ry="22" fill="#021b15" opacity=".45"/>
+ <path d="M55 470 Q70 280 170 265 Q270 280 300 470Z" fill="#174e43"/>
+ <circle cx="170" cy="225" r="78" fill="#f1b27f"/>
+ <path d="M93 225 Q100 130 173 125 Q247 135 247 225 Q215 185 170 182 Q125 185 93 225Z" fill="#17231f"/>
+ <circle cx="145" cy="228" r="6" fill="#18201e"/><circle cx="197" cy="228" r="6" fill="#18201e"/>
+ <path d="M148 260 Q170 279 194 260" fill="none" stroke="#9b4f3b" stroke-width="5" stroke-linecap="round"/>
+ <path d="M240 330 Q295 300 330 245" fill="none" stroke="#f1b27f" stroke-width="22" stroke-linecap="round"/>
+ <circle cx="335" cy="238" r="30" fill="#20d996"/>
+ <text x="321" y="247" fill="#052b22" font-family="Arial" font-size="22" font-weight="800">✓</text>
+</g>
+<text x="70" y="610" fill="#d0e1db" font-family="Arial" font-size="18">A professional website • WhatsApp-first enquiries • AI-assisted productivity</text>
+</svg>

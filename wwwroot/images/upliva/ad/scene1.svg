@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<defs>
+ <linearGradient id="bg" x1="0" x2="1"><stop stop-color="#061f19"/><stop offset="1" stop-color="#0b4a39"/></linearGradient>
+ <linearGradient id="g" x1="0" x2="1"><stop stop-color="#25d995"/><stop offset="1" stop-color="#8cf0c7"/></linearGradient>
+ <linearGradient id="shirt" x1="0" x2="1"><stop stop-color="#174e43"/><stop offset="1" stop-color="#0b3029"/></linearGradient>
+ <filter id="shadow"><feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#001a14" flood-opacity=".35"/></filter>
+</defs>
+<rect width="1280" height="720" fill="url(#bg)"/>
+<circle cx="1090" cy="160" r="210" fill="#18d391" opacity=".10"/><circle cx="180" cy="650" r="250" fill="#18d391" opacity=".07"/>
+<text x="70" y="78" fill="#fff" font-family="Arial,sans-serif" font-size="28" font-weight="800">UPLIVAAI</text>
+<text x="70" y="106" fill="#9fe6cf" font-family="Arial,sans-serif" font-size="15">Business growth on WhatsApp</text>
+
+<text x="70" y="225" fill="#fff" font-family="Arial,sans-serif" font-size="60" font-weight="800">Your customer</text>
+<text x="70" y="292" fill="url(#g)" font-family="Arial,sans-serif" font-size="60" font-weight="800">is already messaging.</text>
+<text x="70" y="359" fill="#fff" font-family="Arial,sans-serif" font-size="60" font-weight="800">Don't miss the lead.</text>
+
+<rect x="72" y="414" rx="22" width="420" height="62" fill="#20d996"/>
+<text x="100" y="454" fill="#06251e" font-family="Arial,sans-serif" font-size="23" font-weight="800">One chat can start a sale.</text>
+
+<!-- friendly business owner -->
+<g filter="url(#shadow)">
+ <ellipse cx="680" cy="633" rx="165" ry="35" fill="#021b15" opacity=".55"/>
+ <path d="M560 620 Q570 480 670 450 Q770 480 800 620Z" fill="url(#shirt)"/>
+ <path d="M635 472 Q655 445 690 445 Q725 447 748 474 L720 525 Q675 548 632 520Z" fill="#f1b27f"/>
+ <path d="M631 472 Q638 415 692 405 Q750 415 754 474 Q735 444 714 438 Q677 430 648 462Z" fill="#17231f"/>
+ <path d="M646 455 Q668 432 704 436 Q731 440 748 461 Q738 414 695 405 Q645 407 631 466Z" fill="#17231f"/>
+ <ellipse cx="669" cy="481" rx="5" ry="7" fill="#18201e"/><ellipse cx="717" cy="481" rx="5" ry="7" fill="#18201e"/>
+ <path d="M675 505 Q693 518 711 505" fill="none" stroke="#9b4f3b" stroke-width="4" stroke-linecap="round"/>
+ <path d="M637 527 Q686 551 738 526" fill="none" stroke="#0b3029" stroke-width="9"/>
+ <path d="M598 530 Q620 520 639 531" fill="none" stroke="#f1b27f" stroke-width="20" stroke-linecap="round"/>
+ <rect x="570" y="510" width="105" height="55" rx="14" fill="#222" transform="rotate(-12 570 510)"/>
+ <rect x="580" y="518" width="85" height="35" rx="8" fill="#dff7ee" transform="rotate(-12 580 518)"/>
+ <circle cx="622" cy="546" r="5" fill="#25d995"/>
+</g>
+
+<!-- WhatsApp phone -->
+<g filter="url(#shadow)">
+ <rect x="860" y="105" width="315" height="520" rx="42" fill="#f9fbf9"/>
+ <rect x="882" y="165" width="271" height="365" rx="24" fill="#eef7f2"/>
+ <rect x="882" y="105" width="315" height="60" rx="42" fill="#0b5c45"/>
+ <circle cx="915" cy="135" r="17" fill="#bfeedd"/><text x="943" y="140" fill="#fff" font-family="Arial" font-size="17" font-weight="700">Your Business</text>
+ <rect x="906" y="195" width="190" height="52" rx="17" fill="#fff"/><text x="923" y="227" fill="#24332e" font-family="Arial" font-size="16">Hi, is this available?</text>
+ <rect x="930" y="265" width="190" height="82" rx="17" fill="#c9f7e4"/><text x="948" y="294" fill="#17352c" font-family="Arial" font-size="15">Yes! Here's the offer</text><text x="948" y="318" fill="#17352c" font-family="Arial" font-size="15">and details →</text>
+ <rect x="906" y="370" width="220" height="50" rx="15" fill="#fff"/><text x="930" y="402" fill="#078d62" font-family="Arial" font-size="16" font-weight="700">View Website</text>
+ <rect x="906" y="440" width="205" height="50" rx="15" fill="#0b5c45"/><text x="930" y="472" fill="#fff" font-family="Arial" font-size="16" font-weight="700">New Lead Captured ✓</text>
+</g>
+<rect x="835" y="565" width="390" height="52" rx="20" fill="#ffffff" opacity=".10"/>
+<text x="860" y="598" fill="#c8f5e4" font-family="Arial" font-size="18">WhatsApp → Website → Enquiry → Growth</text>
+</svg>

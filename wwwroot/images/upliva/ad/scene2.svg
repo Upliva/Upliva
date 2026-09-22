@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+<defs><linearGradient id="bg" x1="0" x2="1"><stop stop-color="#fbfbf7"/><stop offset="1" stop-color="#e8f7f0"/></linearGradient><filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#17352c" flood-opacity=".16"/></filter></defs>
+<rect width="1280" height="720" fill="url(#bg)"/>
+<text x="70" y="78" fill="#0a3d31" font-family="Arial" font-size="28" font-weight="800">UPLIVAAI</text>
+<text x="70" y="225" fill="#12211d" font-family="Arial" font-size="58" font-weight="800">From missed messages</text>
+<text x="70" y="290" fill="#0aab74" font-family="Arial" font-size="58" font-weight="800">to smarter follow-up.</text>
+<text x="70" y="348" fill="#66736e" font-family="Arial" font-size="25">WhatsApp + Website + AI-assisted productivity</text>
+<!-- owner -->
+<g transform="translate(75 400)">
+ <ellipse cx="95" cy="205" rx="95" ry="18" fill="#c8d8d1"/>
+ <path d="M15 205 Q25 80 100 70 Q175 80 185 205Z" fill="#174e43"/>
+ <circle cx="100" cy="55" r="48" fill="#f1b27f"/>
+ <path d="M53 55 Q55 5 102 0 Q150 6 149 56 Q128 28 100 29 Q72 28 53 55Z" fill="#17231f"/>
+ <circle cx="82" cy="60" r="4" fill="#18201e"/><circle cx="119" cy="60" r="4" fill="#18201e"/>
+ <path d="M88 83 Q101 94 115 83" fill="none" stroke="#9b4f3b" stroke-width="4" stroke-linecap="round"/>
+ <rect x="110" y="105" width="82" height="135" rx="16" fill="#222" transform="rotate(9 110 105)"/>
+ <rect x="119" y="117" width="64" height="102" rx="9" fill="#e9fff6" transform="rotate(9 119 117)"/>
+ <circle cx="151" cy="207" r="5" fill="#25d995"/>
+</g>
+<!-- flow -->
+<g transform="translate(500 120)" filter="url(#shadow)">
+ <rect width="690" height="470" rx="32" fill="#fff" stroke="#d7e6df" stroke-width="2"/>
+ <text x="38" y="55" fill="#0a3d31" font-family="Arial" font-size="22" font-weight="800">A simple customer journey</text>
+ <g><circle cx="70" cy="120" r="28" fill="#dff8ed"/><text x="60" y="129" fill="#078d62" font-size="21" font-weight="700">1</text><text x="120" y="116" fill="#172a23" font-family="Arial" font-size="20" font-weight="700">WhatsApp enquiry</text><text x="120" y="143" fill="#758079" font-family="Arial" font-size="15">Customer asks about price, product or service</text></g>
+ <path d="M70 153 V205" stroke="#a9d9c6" stroke-width="4"/>
+ <g><circle cx="70" cy="240" r="28" fill="#dff8ed"/><text x="60" y="249" fill="#078d62" font-size="21" font-weight="700">2</text><text x="120" y="236" fill="#172a23" font-family="Arial" font-size="20" font-weight="700">Website + offer</text><text x="120" y="263" fill="#758079" font-family="Arial" font-size="15">Give the customer clear information instantly</text></g>
+ <path d="M70 273 V325" stroke="#a9d9c6" stroke-width="4"/>
+ <g><circle cx="70" cy="360" r="28" fill="#dff8ed"/><text x="60" y="369" fill="#078d62" font-size="21" font-weight="700">3</text><text x="120" y="356" fill="#172a23" font-family="Arial" font-size="20" font-weight="700">Enquiry + follow-up</text><text x="120" y="383" fill="#758079" font-family="Arial" font-size="15">Keep the next step visible and actionable</text></g>
+ <rect x="420" y="100" width="220" height="210" rx="24" fill="#eef9f4"/>
+ <text x="447" y="140" fill="#0a3d31" font-family="Arial" font-size="18" font-weight="700">AI helps your team</text>
+ <text x="447" y="176" fill="#41534c" font-family="Arial" font-size="15">• Summarise enquiries</text>
+ <text x="447" y="207" fill="#41534c" font-family="Arial" font-size="15">• Suggest next steps</text>
+ <text x="447" y="238" fill="#41534c" font-family="Arial" font-size="15">• Keep follow-ups clear</text>
+ <text x="447" y="269" fill="#0aab74" font-family="Arial" font-size="15" font-weight="700">Less chasing. More selling.</text>
+</g>
+</svg>

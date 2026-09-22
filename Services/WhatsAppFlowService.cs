@@ -7,6 +7,7 @@ public class WhatsAppFlowService(
     IWhatsAppService whatsapp,
     IBookingService bookingService,
     ResortDbContext db,
+    IConfiguration configuration,
     ILogger<WhatsAppFlowService> logger) : IWhatsAppFlowService
 {
     public async Task HandleIncomingMessageAsync(
@@ -55,10 +56,9 @@ public class WhatsAppFlowService(
                 break;
 
             case "BOOKING_WEBSITE":
-                var resort = await db.ResortInfo.AsNoTracking().FirstAsync(cancellationToken);
                 var websiteMessage =
                     $"🌴 You can continue your booking here:\n\n" +
-                    $"https://localhost:7248/Booking\n\n" +
+                    $"{(configuration["Platform:PublicBaseUrl"] ?? "https://localhost:7248").TrimEnd('/')}/Booking\n\n" +
                     $"If you need help, reply *HELP*.";
                 await whatsapp.SendTextAsync(from, websiteMessage, cancellationToken);
                 break;

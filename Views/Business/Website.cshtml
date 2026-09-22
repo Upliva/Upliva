@@ -1,0 +1,38 @@
+@model BusinessWebsiteViewModel
+@{
+    ViewData["Title"] = Model.Business.Name;
+    Layout = "_MarketingLayout";
+    var config = Model.Configuration;
+}
+
+<style>
+    .business-site { --business-primary:@config.PrimaryColor; --business-accent:@config.AccentColor; }
+</style>
+
+<section class="business-hero" style="background-image:linear-gradient(90deg,rgba(5,20,17,.82),rgba(5,20,17,.25)),url('@Model.Business.HeroImageUrl')">
+    <div class="container business-hero-inner">
+        <span class="platform-kicker">@Model.Business.BusinessType</span>
+        <h1>@Model.Business.Name</h1>
+        <p>@Model.Business.Tagline</p>
+        <div class="platform-actions"><a class="platform-btn platform-btn-primary" href="#enquiry">Contact business →</a>@if (config.ShowWhatsApp && !string.IsNullOrWhiteSpace(Model.Business.WhatsAppNumber)) { <a class="platform-btn platform-btn-light" href="https://wa.me/@Model.Business.WhatsAppNumber" target="_blank">WhatsApp us</a> }</div>
+    </div>
+</section>
+
+<section class="platform-section business-about"><div class="container business-about-grid"><div><span class="platform-kicker dark">ABOUT THE BUSINESS</span><h2>@Model.Business.Name</h2></div><p>@Model.Business.Description</p></div></section>
+
+@if (config.ShowOffers && Model.Offers.Any())
+{
+<section class="platform-section platform-soft"><div class="container"><div class="platform-section-head"><div><span class="platform-kicker dark">HOT DEALS</span><h2>Offers for you</h2></div></div><div class="feature-grid">@foreach (var offer in Model.Offers) { <article class="offer-card">@if (!string.IsNullOrWhiteSpace(offer.ImageUrl)) { <img src="@offer.ImageUrl" alt="@offer.Title" /> }<span class="offer-pill">@offer.DiscountText</span><h3>@offer.Title</h3><p>@offer.Description</p></article> }</div></div></section>
+}
+
+@if (config.ShowCatalog && Model.Catalog.Any())
+{
+<section class="platform-section"><div class="container"><div class="platform-section-head"><div><span class="platform-kicker dark">CATALOG</span><h2>Products & services</h2></div></div><div class="catalog-grid">@foreach (var item in Model.Catalog) { <article class="catalog-card">@if (!string.IsNullOrWhiteSpace(item.ImageUrl)) { <img src="@item.ImageUrl" alt="@item.Name" /> }<div><small>@item.Category</small><h3>@item.Name</h3><p>@item.Description</p><strong>@item.PriceText</strong></div></article> }</div></div></section>
+}
+
+@if (config.ShowTestimonials && Model.Testimonials.Any())
+{
+<section class="platform-section platform-soft"><div class="container"><div class="platform-section-head"><div><span class="platform-kicker dark">CUSTOMER FEEDBACK</span><h2>What customers say</h2></div><p>Only approved, published customer feedback is shown here.</p></div><div class="testimonial-grid">@foreach (var item in Model.Testimonials) { <article><span class="quote">“</span><p>@item.Feedback</p><strong>@item.CustomerName</strong><small>@item.Location</small></article> }</div></div></section>
+}
+
+<section class="platform-section" id="enquiry"><div class="container business-enquiry-grid"><div><span class="platform-kicker dark">GET IN TOUCH</span><h2>Have a question?</h2><p>Send an enquiry and the business team can follow up with you.</p><p><strong>@Model.Business.PhoneNumber</strong><br />@Model.Business.Email<br />@Model.Business.Address, @Model.Business.City</p></div><div class="business-form"><form asp-controller="Business" asp-action="Enquiry" asp-route-slug="@Model.Business.Slug" method="post"><div asp-validation-summary="ModelOnly" class="validation"></div><div class="form-grid"><div class="field"><label>Name</label><input name="Name" required /></div><div class="field"><label>Phone</label><input name="PhoneNumber" required /></div><div class="field full"><label>Email</label><input name="Email" type="email" /></div><div class="field full"><label>Message</label><textarea name="Message" rows="5" required></textarea></div></div><button class="platform-btn platform-btn-primary" type="submit">Send enquiry →</button></form>@if (TempData["EnquirySuccess"] is not null) { <div class="success-banner">@TempData["EnquirySuccess"]</div> }</div></div></section>
