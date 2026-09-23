@@ -1,12 +1,12 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using UplivaResortBooking.Data;
-using UplivaResortBooking.Models;
+using UplivaAI.Data;
+using UplivaAI.Models;
 
-namespace UplivaResortBooking.Services;
+namespace UplivaAI.Services;
 
 public class PlatformAuthService(
-    ResortDbContext db,
+    UplivaDbContext db,
     IPasswordHasher<PlatformUser> passwordHasher) : IPlatformAuthService
 {
     public async Task<PlatformUser?> FindByEmailAsync(string email, CancellationToken cancellationToken = default)

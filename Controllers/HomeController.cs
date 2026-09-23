@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace UplivaResortBooking.Controllers;
+namespace UplivaAI.Controllers;
 
 public class HomeController : Controller
 {

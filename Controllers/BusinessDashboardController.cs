@@ -2,13 +2,13 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using UplivaResortBooking.Data;
-using UplivaResortBooking.Models;
+using UplivaAI.Data;
+using UplivaAI.Models;
 
-namespace UplivaResortBooking.Controllers;
+namespace UplivaAI.Controllers;
 
 [Authorize(Roles = PlatformRoles.BusinessOwner)]
-public class BusinessDashboardController(ResortDbContext db) : Controller
+public class BusinessDashboardController(UplivaDbContext db) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken cancellationToken)

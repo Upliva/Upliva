@@ -7,7 +7,7 @@
     <div class="container">
         <span class="eyebrow">UPLIVAAI</span>
         <h1>WhatsApp test center</h1>
-        <p>Test the resort welcome menu and promotional message before connecting the public webhook.</p>
+        <p>Test the business welcome menu and promotional message before connecting the public webhook.</p>
     </div>
 </section>
 
@@ -27,7 +27,7 @@
                     <span asp-validation-for="PhoneNumber"></span>
                 </div>
                 <br />
-                <button class="btn btn-primary btn-wide" type="submit">🏝️ Send Resort WhatsApp Menu</button>
+                <button class="btn btn-primary btn-wide" type="submit">📱 Send WhatsApp Business Menu</button>
             </form>
 
             <br />
@@ -35,7 +35,7 @@
             <form asp-action="SendImage" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="PhoneNumber" />
-                <button class="btn btn-outline btn-wide" type="submit">🖼️ Send Resort Promotional Image</button>
+                <button class="btn btn-outline btn-wide" type="submit">🖼️ Send Business Promotional Image</button>
             </form>
 
             <div style="margin-top:28px;padding:20px;background:#f7f5ef">

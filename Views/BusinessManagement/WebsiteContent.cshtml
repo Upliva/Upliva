@@ -1,0 +1,87 @@
+@model WebsiteContentViewModel
+@{
+    var business = (Business)ViewBag.Business;
+    ViewData["Title"] = "Website Content";
+    Layout = "_AdminLayout";
+}
+
+<section class="admin-page">
+    <div class="container admin-narrow">
+        <div class="admin-head">
+            <div>
+                <span class="platform-kicker dark">WEBSITE CONTENT</span>
+                <h1>@business.Name</h1>
+                <p>Manage the text that appears on the generated public website. Catalog products are managed separately.</p>
+            </div>
+            <a class="platform-btn platform-btn-ghost" asp-controller="Business" asp-action="Website" asp-route-slug="@business.Slug" target="_blank">Preview website →</a>
+        </div>
+
+        @if (TempData["WebsiteContentSuccess"] is not null)
+        {
+            <div class="success-banner" style="margin-bottom:20px">@TempData["WebsiteContentSuccess"]</div>
+        }
+
+        <div class="business-form">
+            <form method="post">
+                <input type="hidden" asp-for="BusinessId" />
+                <div asp-validation-summary="ModelOnly" class="validation"></div>
+
+                <h2>Website identity</h2>
+                <p style="color:#687284;font-size:13px">The website is hosted inside the UplivaAI application. Customers see the business name and content, while UplivaAI remains the platform provider in the footer.</p>
+                <div class="form-grid">
+                    <div class="field full"><label asp-for="WebsiteTitle"></label><input asp-for="WebsiteTitle" /><span asp-validation-for="WebsiteTitle" class="validation"></span></div>
+                    <div class="field full"><label asp-for="MetaDescription"></label><textarea asp-for="MetaDescription" rows="3" placeholder="Short description for search engines and link previews."></textarea><span asp-validation-for="MetaDescription" class="validation"></span></div>
+                </div>
+
+                <h2 style="margin-top:30px">Hero section</h2>
+                <div class="form-grid">
+                    <div class="field full"><label asp-for="HeroTitle"></label><input asp-for="HeroTitle" /><span asp-validation-for="HeroTitle" class="validation"></span></div>
+                    <div class="field full"><label asp-for="HeroSubtitle"></label><textarea asp-for="HeroSubtitle" rows="3"></textarea></div>
+                </div>
+
+                <h2 style="margin-top:30px">About</h2>
+                <div class="form-grid">
+                    <div class="field full"><label asp-for="AboutTitle"></label><input asp-for="AboutTitle" /></div>
+                    <div class="field full"><label asp-for="AboutContent"></label><textarea asp-for="AboutContent" rows="6" placeholder="Tell customers about the business, experience, products, service area and what you offer."></textarea></div>
+                </div>
+
+                <h2 style="margin-top:30px">Why choose us</h2>
+                <div class="form-grid">
+                    <div class="field full"><label asp-for="WhyChooseUsTitle"></label><input asp-for="WhyChooseUsTitle" /></div>
+                    <div class="field full"><label asp-for="WhyChooseUsContent"></label><textarea asp-for="WhyChooseUsContent" rows="6" placeholder="Use separate lines for key reasons, for example:
+Genuine products
+Helpful local support
+Warranty assistance
+Competitive pricing"></textarea></div>
+                    <div class="field full" style="display:flex;align-items:center;gap:10px"><input asp-for="ShowWhyChooseUs" style="width:auto" /><label asp-for="ShowWhyChooseUs" style="margin:0">Show this section</label></div>
+                </div>
+
+                <h2 style="margin-top:30px">Products &amp; services</h2>
+                <div class="form-grid">
+                    <div class="field full"><label asp-for="ServicesTitle"></label><input asp-for="ServicesTitle" /></div>
+                    <div class="field full"><label asp-for="ServicesContent"></label><textarea asp-for="ServicesContent" rows="6" placeholder="List services or useful customer information. One item per line works well."></textarea></div>
+                    <div class="field full" style="display:flex;align-items:center;gap:10px"><input asp-for="ShowServices" style="width:auto" /><label asp-for="ShowServices" style="margin:0">Show this section</label></div>
+                </div>
+
+                <h2 style="margin-top:30px">Call to action</h2>
+                <div class="form-grid">
+                    <div class="field full"><label asp-for="CallToActionTitle"></label><input asp-for="CallToActionTitle" /></div>
+                    <div class="field full"><label asp-for="CallToActionText"></label><textarea asp-for="CallToActionText" rows="4"></textarea></div>
+                    <div class="field full" style="display:flex;align-items:center;gap:10px"><input asp-for="ShowCallToAction" style="width:auto" /><label asp-for="ShowCallToAction" style="margin:0">Show this section</label></div>
+                </div>
+
+                <h2 style="margin-top:30px">Contact &amp; footer</h2>
+                <div class="form-grid">
+                    <div class="field full"><label asp-for="ContactIntro"></label><textarea asp-for="ContactIntro" rows="3"></textarea></div>
+                    <div class="field full"><label asp-for="FooterText"></label><input asp-for="FooterText" /></div>
+                </div>
+
+                <div style="background:#f7faf8;border:1px solid #e1ece5;border-radius:12px;padding:14px;margin:20px 0;color:#536074;font-size:12px">
+                    <strong>Important:</strong> Catalog products belong to the product/catalog section. Business storytelling belongs here. This separation lets the same website structure work for mobile shops, furniture stores, salons, restaurants, schools and other businesses.
+                </div>
+
+                <button class="platform-btn platform-btn-primary" type="submit">Save website content →</button>
+            </form>
+        </div>
+    </div>
+</section>

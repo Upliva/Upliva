@@ -1,10 +1,10 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using UplivaResortBooking.Models;
-using UplivaResortBooking.Services;
+using UplivaAI.Models;
+using UplivaAI.Services;
 
-namespace UplivaResortBooking.Controllers;
+namespace UplivaAI.Controllers;
 
 [ApiController]
 [Route("webhooks/whatsapp")]
@@ -75,6 +75,7 @@ public class WhatsAppWebhookController(
                     message.Type,
                     message.Text?.Body,
                     selectionId,
+                    value?.Metadata?.PhoneNumberId,
                     cancellationToken);
             }
 

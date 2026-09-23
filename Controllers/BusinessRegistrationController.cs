@@ -1,30 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using UplivaResortBooking.Data;
-using UplivaResortBooking.Models;
-using UplivaResortBooking.Services;
+using UplivaAI.Data;
+using UplivaAI.Models;
+using UplivaAI.Services;
 
-namespace UplivaResortBooking.Controllers;
+namespace UplivaAI.Controllers;
 
 public class BusinessRegistrationController(
     IBusinessService businessService,
     IPlatformAuthService authService,
-    ResortDbContext db) : Controller
+    UplivaDbContext db) : Controller
 {
-    private static readonly string[] BusinessTypes =
-    [
-        "Retail",
-        "Grocery",
-        "Hardware",
-        "Furniture",
-        "Salon",
-        "Restaurant",
-        "Resort / Hotel",
-        "Pathology / Diagnostic",
-        "School / Education",
-        "Transportation",
-        "Other"
-    ];
 
     [HttpGet]
     public IActionResult Register() => View(new BusinessRegistrationViewModel());

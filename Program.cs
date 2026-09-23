@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using UplivaResortBooking.Data;
-using UplivaResortBooking.Models;
-using UplivaResortBooking.Services;
+using UplivaAI.Data;
+using UplivaAI.Models;
+using UplivaAI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,8 +16,6 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        // Use a dedicated cookie name so stale cookies from older development builds
-        // cannot make the new UplivaAI login page think the user is already signed in.
         options.Cookie.Name = ".UplivaAI.Auth";
         options.LoginPath = "/login";
         options.AccessDeniedPath = "/login";
@@ -31,11 +28,10 @@ builder.Services.AddScoped<IPasswordHasher<PlatformUser>, PasswordHasher<Platfor
 builder.Services.AddScoped<IPlatformAuthService, PlatformAuthService>();
 builder.Services.AddScoped<IBusinessService, BusinessService>();
 
-builder.Services.AddDbContext<ResortDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), sql => sql.EnableRetryOnFailure())
-           .ConfigureWarnings(warnings => warnings.Ignore(RelationalEventId.PendingModelChangesWarning)));
-
-builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddDbContext<UplivaDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection"),
+        sql => sql.EnableRetryOnFailure()));
 
 builder.Services.Configure<WhatsAppSettings>(
     builder.Configuration.GetSection("WhatsApp"));
@@ -63,9 +59,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Login uses explicit attribute routes in AccountController.
-// This avoids duplicate conventional endpoints for GET /login and POST /login.
-
 app.MapControllerRoute(
     name: "register",
     pattern: "register",
@@ -75,14 +68,11 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<ResortDbContext>();
-    await db.Database.MigrateAsync();
-    await DbSeeder.SeedAsync(db);
-}
-
-await PlatformSchemaInitializer.InitializeAsync(app.Services);
+// Database schema is managed exclusively through Entity Framework Core migrations.
+// After cloning this project or recreating the database, run:
+//   dotnet ef migrations add InitialCreate
+//   dotnet ef database update
+// The admin account is seeded from Admin:* User Secrets after the database exists.
 await PlatformAdminSeeder.SeedAsync(app.Services, builder.Configuration);
 
 if (app.Environment.IsDevelopment() &&
@@ -104,9 +94,9 @@ app.MapGet("/privacy", () => Results.Content("""
     <h2>UplivaAI</h2>
     <p>UplivaAI provides business websites, customer enquiry tools and WhatsApp-based communication workflows.</p>
     <h2>Information We Collect</h2>
-    <p>Business registration may collect business name, owner name, email, phone number, WhatsApp number, address and business information. Customer enquiries and booking information may also be collected by a business using the platform.</p>
+    <p>Business registration may collect business name, owner name, email, phone number, WhatsApp number, address and business information. Customer enquiries may also be collected by a business using the platform.</p>
     <h2>How We Use Information</h2>
-    <p>Information is used to review business registrations, configure business websites, respond to enquiries, support bookings and provide requested customer communications.</p>
+    <p>Information is used to review business registrations, configure business websites, respond to enquiries and provide requested customer communications.</p>
     <h2>WhatsApp</h2>
     <p>Where enabled, communications may be processed through Meta's WhatsApp Business Platform.</p>
     <h2>Data Sharing</h2>

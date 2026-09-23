@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace UplivaResortBooking.Models;
+namespace UplivaAI.Models;
 
 public class BusinessEnquiry
 {
