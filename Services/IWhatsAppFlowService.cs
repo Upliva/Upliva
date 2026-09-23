@@ -1,4 +1,4 @@
-namespace UplivaResortBooking.Services;
+namespace UplivaAI.Services;
 
 public interface IWhatsAppFlowService
 {
@@ -8,5 +8,6 @@ public interface IWhatsAppFlowService
         string? messageType,
         string? text,
         string? selectionId,
+        string? phoneNumberId,
         CancellationToken cancellationToken = default);
 }

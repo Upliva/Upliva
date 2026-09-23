@@ -1,6 +1,6 @@
-using UplivaResortBooking.Models;
+using UplivaAI.Models;
 
-namespace UplivaResortBooking.Services;
+namespace UplivaAI.Services;
 
 public interface IBusinessService
 {

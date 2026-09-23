@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 96" role="img" aria-labelledby="title desc">
+  <title id="title">UplivaAI logo</title>
+  <desc id="desc">UplivaAI wordmark with a WhatsApp-inspired conversation mark</desc>
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#08b879"/>
+      <stop offset="1" stop-color="#063b2f"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="88" height="88" rx="26" fill="url(#g)"/>
+  <path d="M30 28v22c0 12 8 19 18 19s18-7 18-19V28h-9v21c0 7-3 11-9 11s-9-4-9-11V28z" fill="#fff"/>
+  <circle cx="67" cy="25" r="7" fill="#8df0ca"/>
+  <path d="M112 28h34c20 0 31 10 31 26s-11 26-31 26h-21v-9h21c13 0 21-6 21-17s-8-17-21-17h-25z" fill="#10201b"/>
+  <path d="M192 28h11v52h-11z" fill="#10201b"/>
+  <path d="M218 28h12v43h29v9h-41z" fill="#10201b"/>
+  <path d="M269 28h11v52h-11z" fill="#10201b"/>
+  <path d="M294 28h12l13 34 13-34h12l-20 52h-10z" fill="#10201b"/>
+  <text x="355" y="40" font-family="Arial, sans-serif" font-size="12" font-weight="700" fill="#078d64">AI</text>
+  <text x="355" y="57" font-family="Arial, sans-serif" font-size="8" font-weight="700" letter-spacing="1.2" fill="#68766f">BUSINESS GROWTH</text>
+</svg>

@@ -1,0 +1,72 @@
+@model BusinessWebsiteViewModel
+@{
+    var browserTitle = ViewData["BrowserTitle"]?.ToString() ?? Model.Business.Name;
+    var logoUrl = string.IsNullOrWhiteSpace(Model.Business.LogoUrl) ? "~/images/upliva/business-hero-placeholder.svg" : Model.Business.LogoUrl;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@browserTitle</title>
+    <meta name="theme-color" content="@Model.Configuration.PrimaryColor" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/marketing.css" asp-append-version="true" />
+    @await RenderSectionAsync("Head", required: false)
+    <link rel="stylesheet" href="~/css/business-site.css" asp-append-version="true" />
+</head>
+<body class="upliva-body">
+<header class="business-site-header">
+    <div class="container business-site-nav">
+        <a class="business-site-brand" href="#top" aria-label="@Model.Business.Name home">
+            @if (!string.IsNullOrWhiteSpace(Model.Business.LogoUrl))
+            {
+                <img src="@logoUrl" alt="@Model.Business.Name logo" />
+            }
+            <span class="business-site-brand-text">
+                <strong>@Model.Business.Name</strong>
+                <small>@Model.Business.BusinessType</small>
+            </span>
+        </a>
+        <nav class="business-site-links" aria-label="Business website navigation">
+            <a href="#about">About</a>
+            @if (Model.Configuration.ShowServices) { <a href="#services">Services</a> }
+            @if (Model.Configuration.ShowCatalog) { <a href="#catalog">Products</a> }
+            @if (Model.Configuration.ShowOffers && Model.Offers.Any()) { <a href="#offers">Offers</a> }
+            <a href="#enquiry">Contact</a>
+        </nav>
+    </div>
+</header>
+<main id="top">@RenderBody()</main>
+<footer class="business-site-footer">
+    <div class="container business-site-footer-grid">
+        <div>
+            <a class="business-site-footer-brand" href="#top" aria-label="@Model.Business.Name home">
+                @if (!string.IsNullOrWhiteSpace(Model.Business.LogoUrl))
+                {
+                    <img src="@logoUrl" alt="@Model.Business.Name" />
+                }
+                else
+                {
+                    <strong>@Model.Business.Name</strong>
+                }
+            </a>
+            <p>@(string.IsNullOrWhiteSpace(Model.Configuration.FooterText) ? $"{Model.Business.Name} · {Model.Business.BusinessType}" : Model.Configuration.FooterText)</p>
+        </div>
+        <div>
+            <span class="platform-kicker dark">POWERED BY</span>
+            <a href="@Url.Action("Index", "Home")" class="business-site-footer-brand" aria-label="UplivaAI">
+                <img src="~/images/upliva/upliva-logo.svg" alt="UplivaAI" />
+            </a>
+            <p>Website and WhatsApp tools by UplivaAI.</p>
+        </div>
+    </div>
+    <div class="container business-site-footer-bottom">
+        <span>© @DateTime.Now.Year @Model.Business.Name</span>
+        <span>Powered by UplivaAI</span>
+    </div>
+</footer>
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

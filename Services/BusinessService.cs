@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using UplivaResortBooking.Data;
-using UplivaResortBooking.Models;
+using UplivaAI.Data;
+using UplivaAI.Models;
 
-namespace UplivaResortBooking.Services;
+namespace UplivaAI.Services;
 
-public class BusinessService(ResortDbContext db) : IBusinessService
+public class BusinessService(UplivaDbContext db) : IBusinessService
 {
     public Task<Business?> GetBySlugAsync(string slug, CancellationToken cancellationToken = default) =>
         db.Businesses.AsNoTracking().FirstOrDefaultAsync(x => x.Slug == slug && x.IsPublished && x.Status == BusinessStatuses.Approved, cancellationToken);
@@ -32,6 +32,10 @@ public class BusinessService(ResortDbContext db) : IBusinessService
             WhatsAppNumber = model.WhatsAppNumber.Trim(),
             Address = model.Address.Trim(),
             City = model.City.Trim(),
+            State = model.State.Trim(),
+            PostalCode = model.PostalCode.Trim(),
+            Country = string.IsNullOrWhiteSpace(model.Country) ? "India" : model.Country.Trim(),
+            BusinessHours = model.BusinessHours.Trim(),
             Description = model.Description.Trim(),
             Tagline = "Grow your business with UplivaAI",
             CreatedAtUtc = DateTime.UtcNow
@@ -40,7 +44,24 @@ public class BusinessService(ResortDbContext db) : IBusinessService
         db.Businesses.Add(business);
         await db.SaveChangesAsync(cancellationToken);
 
-        db.WebsiteConfigurations.Add(new WebsiteConfiguration { BusinessId = business.Id });
+        db.WebsiteConfigurations.Add(new WebsiteConfiguration
+        {
+            BusinessId = business.Id,
+            WebsiteTitle = string.IsNullOrWhiteSpace(model.WebsiteTitle) ? business.Name : model.WebsiteTitle.Trim(),
+            MetaDescription = business.Description.Length > 300 ? business.Description[..300] : business.Description,
+            HeroTitle = business.Name,
+            HeroSubtitle = string.IsNullOrWhiteSpace(business.Description) ? business.Tagline : business.Description,
+            AboutTitle = $"About {business.Name}",
+            AboutContent = business.Description,
+            WhyChooseUsTitle = "Why choose us",
+            WhyChooseUsContent = "Tell customers what makes your business different, trusted and worth contacting.",
+            ServicesTitle = "Our products & services",
+            ServicesContent = "Add the products, services, support, warranty or other customer information that is important to your business.",
+            CallToActionTitle = "Ready to connect?",
+            CallToActionText = "Contact us on WhatsApp or send an enquiry and our team will help you.",
+            ContactIntro = "Have a question? Send an enquiry and our team can follow up with you.",
+            FooterText = $"{business.Name} · {business.BusinessType}"
+        });
         await db.SaveChangesAsync(cancellationToken);
         return business;
     }

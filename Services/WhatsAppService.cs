@@ -2,9 +2,9 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
-using UplivaResortBooking.Models;
+using UplivaAI.Models;
 
-namespace UplivaResortBooking.Services;
+namespace UplivaAI.Services;
 
 public class WhatsAppService(
     HttpClient httpClient,
@@ -35,20 +35,19 @@ public class WhatsAppService(
             messaging_product = "whatsapp",
             to = NormalizePhone(phoneNumber),
             type = "image",
-            image = new
-            {
-                link = imageUrl,
-                caption
-            }
+            image = new { link = imageUrl, caption }
         }, cancellationToken);
     }
 
     public Task<bool> SendWelcomeMenuAsync(
         string phoneNumber,
+        string? businessName = null,
         string? customerName = null,
         CancellationToken cancellationToken = default)
     {
-        var name = string.IsNullOrWhiteSpace(customerName) ? "" : $" {customerName}";
+        var displayBusiness = string.IsNullOrWhiteSpace(businessName) ? "UplivaAI Business" : businessName.Trim();
+        var greeting = string.IsNullOrWhiteSpace(customerName) ? "Welcome" : $"Welcome {customerName.Trim()}";
+
         return SendAsync(new
         {
             messaging_product = "whatsapp",
@@ -57,130 +56,30 @@ public class WhatsAppService(
             interactive = new
             {
                 type = "list",
-                header = new { type = "text", text = "🏝️ Paradise Palm Resort" },
-                body = new
-                {
-                    text = $"Welcome{name}! 👋\n\nHow can we help you today?"
-                },
-                footer = new { text = "Paradise Palm Resort" },
+                header = new { type = "text", text = displayBusiness },
+                body = new { text = $"{greeting}! 👋\n\nHow can we help you today?" },
+                footer = new { text = "Powered by UplivaAI" },
                 action = new
                 {
-                    button = "Explore Resort",
+                    button = "Explore",
                     sections = new[]
                     {
                         new
                         {
-                            title = "Guest Services",
+                            title = "Business Services",
                             rows = new[]
                             {
-                                new { id = "BOOK_ROOM", title = "🏨 Book a Room", description = "Find rooms and make a booking" },
-                                new { id = "CHECK_AVAILABILITY", title = "📅 Check Availability", description = "Check rooms for your dates" },
-                                new { id = "VIEW_PACKAGES", title = "💰 View Packages", description = "See our special packages" },
-                                new { id = "LOCATION", title = "📍 Resort Location", description = "Get directions to the resort" },
-                                new { id = "CONTACT", title = "📞 Contact Resort", description = "Speak with our team" }
+                                new { id = "VIEW_CATALOG", title = "🛍️ View Products", description = "Browse products or services" },
+                                new { id = "VIEW_OFFERS", title = "🔥 View Offers", description = "See current offers" },
+                                new { id = "WEBSITE", title = "🌐 Visit Website", description = "Open the business website" },
+                                new { id = "LOCATION", title = "📍 Location", description = "Get business location" },
+                                new { id = "CONTACT", title = "📞 Contact", description = "Contact the business" }
                             }
                         }
                     }
                 }
             }
         }, cancellationToken);
-    }
-
-    public Task<bool> SendBookingMenuAsync(
-        string phoneNumber,
-        CancellationToken cancellationToken = default)
-    {
-        return SendAsync(new
-        {
-            messaging_product = "whatsapp",
-            to = NormalizePhone(phoneNumber),
-            type = "interactive",
-            interactive = new
-            {
-                type = "button",
-                body = new
-                {
-                    text = "🏨 Let's find your perfect room.\n\nPlease use the booking website for date selection, or continue here for assistance."
-                },
-                action = new
-                {
-                    buttons = new[]
-                    {
-                        new { type = "reply", reply = new { id = "BOOKING_WEBSITE", title = "🌐 Book Online" } },
-                        new { type = "reply", reply = new { id = "CONTACT", title = "📞 Contact Us" } }
-                    }
-                }
-            }
-        }, cancellationToken);
-    }
-
-    public async Task<bool> SendRoomListAsync(
-        string phoneNumber,
-        DateTime checkIn,
-        DateTime checkOut,
-        int guests,
-        CancellationToken cancellationToken = default)
-    {
-        // The actual availability should come from BookingService.
-        // This method is kept for WhatsApp presentation after availability is resolved.
-        var nights = Math.Max(1, (checkOut.Date - checkIn.Date).Days);
-
-        return await SendAsync(new
-        {
-            messaging_product = "whatsapp",
-            to = NormalizePhone(phoneNumber),
-            type = "interactive",
-            interactive = new
-            {
-                type = "list",
-                header = new { type = "text", text = "🏨 Available Rooms" },
-                body = new
-                {
-                    text = $"For {guests} guest(s)\n{checkIn:dd MMM} → {checkOut:dd MMM} ({nights} night(s))"
-                },
-                footer = new { text = "Select a room to continue" },
-                action = new
-                {
-                    button = "View Rooms",
-                    sections = new[]
-                    {
-                        new
-                        {
-                            title = "Rooms",
-                            rows = new[]
-                            {
-                                new { id = "ROOM_DELUXE", title = "Deluxe Garden Room", description = "₹4,500/night · Up to 2 guests" },
-                                new { id = "ROOM_PREMIUM", title = "Premium Pool View", description = "₹6,500/night · Up to 3 guests" },
-                                new { id = "ROOM_FAMILY", title = "Family Suite", description = "₹9,000/night · Up to 5 guests" }
-                            }
-                        }
-                    }
-                }
-            }
-        }, cancellationToken);
-    }
-
-    public Task<bool> SendBookingSummaryAsync(
-        string phoneNumber,
-        string bookingReference,
-        string roomName,
-        DateTime checkIn,
-        DateTime checkOut,
-        int guests,
-        decimal totalAmount,
-        CancellationToken cancellationToken = default)
-    {
-        var text =
-            $"✅ Booking request received!\n\n" +
-            $"🏝️ Paradise Palm Resort\n" +
-            $"🏨 {roomName}\n" +
-            $"📅 {checkIn:dd MMM yyyy} → {checkOut:dd MMM yyyy}\n" +
-            $"👥 {guests} guest(s)\n" +
-            $"💰 ₹{totalAmount:N0}\n\n" +
-            $"Booking Reference: *{bookingReference}*\n\n" +
-            "Our team will contact you to confirm your reservation.";
-
-        return SendTextAsync(phoneNumber, text, cancellationToken);
     }
 
     private async Task<bool> SendAsync(object payload, CancellationToken cancellationToken)
@@ -217,14 +116,10 @@ public class WhatsAppService(
                     "WhatsApp API error. StatusCode: {StatusCode}. Response: {Response}",
                     (int)response.StatusCode,
                     responseBody);
-
                 return false;
             }
 
-            logger.LogInformation(
-                "WhatsApp message sent successfully. StatusCode: {StatusCode}",
-                (int)response.StatusCode);
-
+            logger.LogInformation("WhatsApp message sent successfully. StatusCode: {StatusCode}", (int)response.StatusCode);
             return true;
         }
         catch (Exception ex)
@@ -235,5 +130,5 @@ public class WhatsAppService(
     }
 
     private static string NormalizePhone(string phoneNumber) =>
-        new string(phoneNumber.Where(char.IsDigit).ToArray());
+        new(phoneNumber.Where(char.IsDigit).ToArray());
 }

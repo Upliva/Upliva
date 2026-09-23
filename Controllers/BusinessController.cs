@@ -1,13 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using UplivaResortBooking.Data;
-using UplivaResortBooking.Models;
-using UplivaResortBooking.Services;
+using UplivaAI.Data;
+using UplivaAI.Models;
+using UplivaAI.Services;
 
-namespace UplivaResortBooking.Controllers;
+namespace UplivaAI.Controllers;
 
 [Route("business")]
-public class BusinessController(IBusinessService businessService, ResortDbContext db) : Controller
+public class BusinessController(IBusinessService businessService, UplivaDbContext db) : Controller
 {
     [HttpGet("{slug}")]
     public async Task<IActionResult> Website(string slug, CancellationToken cancellationToken)
@@ -16,30 +16,7 @@ public class BusinessController(IBusinessService businessService, ResortDbContex
         if (business is null)
             return NotFound();
 
-        var configuration = await db.WebsiteConfigurations.AsNoTracking()
-            .FirstOrDefaultAsync(x => x.BusinessId == business.Id, cancellationToken)
-            ?? new WebsiteConfiguration { BusinessId = business.Id };
-
-        var model = new BusinessWebsiteViewModel
-        {
-            Business = business,
-            Configuration = configuration,
-            Catalog = await db.BusinessCatalogItems.AsNoTracking()
-                .Where(x => x.BusinessId == business.Id && x.IsActive)
-                .OrderBy(x => x.SortOrder)
-                .ToListAsync(cancellationToken),
-            Offers = await db.BusinessOffers.AsNoTracking()
-                .Where(x => x.BusinessId == business.Id && x.IsPublished)
-                .OrderByDescending(x => x.Id)
-                .ToListAsync(cancellationToken),
-            Testimonials = await db.BusinessTestimonials.AsNoTracking()
-                .Where(x => x.BusinessId == business.Id && x.IsPublished && !x.IsDemo)
-                .ToListAsync(cancellationToken)
-        };
-
-        // Only approved + published businesses are returned by BusinessService.
-        // The public route is therefore the shareable URL for a real business after admin publishing.
-        return View("Website", model);
+        return View("Website", await BuildWebsiteModelAsync(business, cancellationToken));
     }
 
     [HttpPost("{slug}/enquiry")]
@@ -53,15 +30,7 @@ public class BusinessController(IBusinessService businessService, ResortDbContex
         if (!ModelState.IsValid)
         {
             model.Slug = slug;
-            return View("Website", new BusinessWebsiteViewModel
-            {
-                Business = business,
-                Configuration = await db.WebsiteConfigurations.AsNoTracking().FirstOrDefaultAsync(x => x.BusinessId == business.Id, cancellationToken)
-                    ?? new WebsiteConfiguration { BusinessId = business.Id },
-                Catalog = await db.BusinessCatalogItems.AsNoTracking().Where(x => x.BusinessId == business.Id && x.IsActive).ToListAsync(cancellationToken),
-                Offers = await db.BusinessOffers.AsNoTracking().Where(x => x.BusinessId == business.Id && x.IsPublished).ToListAsync(cancellationToken),
-                Testimonials = await db.BusinessTestimonials.AsNoTracking().Where(x => x.BusinessId == business.Id && x.IsPublished && !x.IsDemo).ToListAsync(cancellationToken)
-            });
+            return View("Website", await BuildWebsiteModelAsync(business, cancellationToken));
         }
 
         db.BusinessEnquiries.Add(new BusinessEnquiry
@@ -78,5 +47,42 @@ public class BusinessController(IBusinessService businessService, ResortDbContex
 
         TempData["EnquirySuccess"] = "Thanks! Your enquiry has been sent to the business team.";
         return RedirectToAction(nameof(Website), new { slug });
+    }
+
+    private async Task<BusinessWebsiteViewModel> BuildWebsiteModelAsync(
+        Business business,
+        CancellationToken cancellationToken)
+    {
+        var configuration = await db.WebsiteConfigurations.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.BusinessId == business.Id, cancellationToken)
+            ?? new WebsiteConfiguration { BusinessId = business.Id };
+
+        var catalog = await db.BusinessCatalogItems.AsNoTracking()
+            .Where(x => x.BusinessId == business.Id && x.IsActive && x.ShowOnWebsite)
+            .OrderBy(x => x.SortOrder)
+            .ThenBy(x => x.Id)
+            .ToListAsync(cancellationToken);
+
+        var topCatalog = catalog
+            .Where(x => x.IsWhatsAppTopPick)
+            .OrderBy(x => x.SortOrder)
+            .ThenBy(x => x.Id)
+            .Take(6)
+            .ToList();
+
+        return new BusinessWebsiteViewModel
+        {
+            Business = business,
+            Configuration = configuration,
+            Catalog = catalog,
+            TopCatalog = topCatalog,
+            Offers = await db.BusinessOffers.AsNoTracking()
+                .Where(x => x.BusinessId == business.Id && x.IsPublished)
+                .OrderByDescending(x => x.Id)
+                .ToListAsync(cancellationToken),
+            Testimonials = await db.BusinessTestimonials.AsNoTracking()
+                .Where(x => x.BusinessId == business.Id && x.IsPublished && !x.IsDemo)
+                .ToListAsync(cancellationToken)
+        };
     }
 }

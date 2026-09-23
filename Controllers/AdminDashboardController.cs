@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using UplivaResortBooking.Models;
-using UplivaResortBooking.Services;
+using UplivaAI.Models;
+using UplivaAI.Services;
 
-namespace UplivaResortBooking.Controllers;
+namespace UplivaAI.Controllers;
 
 [Authorize(Roles = PlatformRoles.Admin)]
 public class AdminDashboardController(IBusinessService businessService) : Controller

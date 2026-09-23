@@ -1,16 +1,16 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using UplivaResortBooking.Data;
-using UplivaResortBooking.Models;
+using UplivaAI.Data;
+using UplivaAI.Models;
 
-namespace UplivaResortBooking.Services;
+namespace UplivaAI.Services;
 
 public static class PlatformAdminSeeder
 {
     public static async Task SeedAsync(IServiceProvider services, IConfiguration configuration)
     {
         using var scope = services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ResortDbContext>();
+        var db = scope.ServiceProvider.GetRequiredService<UplivaDbContext>();
         var passwordHasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher<PlatformUser>>();
 
         var email = configuration["Admin:Email"]?.Trim().ToLowerInvariant();

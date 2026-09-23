@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using UplivaResortBooking.Models;
-using UplivaResortBooking.Services;
+using UplivaAI.Models;
+using UplivaAI.Services;
 
-namespace UplivaResortBooking.Controllers;
+namespace UplivaAI.Controllers;
 
 public class WhatsAppController(
     IWhatsAppService whatsapp,
@@ -20,14 +20,15 @@ public class WhatsAppController(
         if (!ModelState.IsValid)
             return View("Index", model);
 
-        logger.LogInformation("Sending test WhatsApp menu to {PhoneNumber}", model.PhoneNumber);
+        logger.LogInformation("Sending generic WhatsApp menu to {PhoneNumber}", model.PhoneNumber);
 
         var success = await whatsapp.SendWelcomeMenuAsync(
             model.PhoneNumber,
+            businessName: "UplivaAI Demo Business",
             cancellationToken: cancellationToken);
 
         model.Result = success
-            ? "Welcome menu sent successfully."
+            ? "WhatsApp menu sent successfully."
             : "WhatsApp API call failed. Check the Visual Studio Output window.";
 
         return View("Index", model);
@@ -42,17 +43,13 @@ public class WhatsAppController(
         if (!ModelState.IsValid)
             return View("Index", model);
 
-        var imageUrl = "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=1200&q=80";
+        var imageUrl = "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=80";
         var caption =
-            "🏝️ Paradise Palm Resort\n\n" +
-            "Relax, reconnect and enjoy a memorable stay.\n\n" +
-            "🏨 Rooms from ₹4,500/night\n" +
-            "🍽️ Restaurant\n" +
-            "🏊 Swimming pool\n" +
-            "🌴 Resort experiences\n\n" +
-            "Reply *Hi* to explore booking options.";
+            "UplivaAI Demo Business\n\n" +
+            "A sample product image sent through the WhatsApp Business Platform.\n\n" +
+            "Reply *Hi* to explore the business menu.";
 
-        logger.LogInformation("Sending resort promotional image to {PhoneNumber}", model.PhoneNumber);
+        logger.LogInformation("Sending business promotional image to {PhoneNumber}", model.PhoneNumber);
 
         var success = await whatsapp.SendImageAsync(
             model.PhoneNumber,
@@ -61,7 +58,7 @@ public class WhatsAppController(
             cancellationToken);
 
         model.Result = success
-            ? "Resort image sent successfully."
+            ? "Business image sent successfully."
             : "WhatsApp API call failed. Check the Visual Studio Output window.";
 
         return View("Index", model);

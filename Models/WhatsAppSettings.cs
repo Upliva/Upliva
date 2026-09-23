@@ -1,4 +1,4 @@
-namespace UplivaResortBooking.Models;
+namespace UplivaAI.Models;
 
 public class WhatsAppSettings
 {

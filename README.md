@@ -1,243 +1,240 @@
-# UplivaAI - Reusable WhatsApp + Business Website Platform
+# UplivaAI
 
-This project started as the Paradise Palm Resort booking demo and now contains the reusable UplivaAI platform foundation while preserving the existing resort booking and WhatsApp implementation.
+UplivaAI is a reusable ASP.NET Core MVC platform for registering and managing different types of businesses, publishing business websites, managing catalog/offers/enquiries, and integrating WhatsApp communication.
 
-## Existing functionality preserved
+## Technical stack
 
-- Paradise Palm rooms, packages and booking flow
-- SQL Server / EF Core database
-- WhatsApp Cloud API send operations
-- WhatsApp webhook verification and incoming message handling
-- Existing `/Booking`, `/Rooms`, `/Packages` and `/WhatsApp` routes
-- Existing resort data and seed data
+- ASP.NET Core MVC / .NET 10
+- C#
+- Entity Framework Core 10
+- SQL Server
+- Meta WhatsApp Cloud API
+- ASP.NET Core Cookie Authentication
+- ASP.NET Core User Secrets for local secrets
 
-The original resort experience is still available at:
+## Architecture
 
-- `/Resort`
-- `/business/paradise-palm-resort`
+```text
+Marketing / Registration / Login
+            |
+            v
+      ASP.NET Core MVC
+            |
+      Controllers
+            |
+        Services
+            |
+      UplivaDbContext
+            |
+      Existing SQL Server
+            |
+   +--------+---------+
+   |                  |
+Business data      WhatsApp data
+   |                  |
+   +--------+---------+
+            |
+            v
+     Meta WhatsApp API
+```
 
-The root `/` is now the UplivaAI marketing website.
+## Generic database context
 
-## New platform foundation
+`UplivaDbContext` is the application-level EF Core context. It is intentionally not named after one business type.
 
-### Public
+It contains platform entities such as:
 
-- UplivaAI marketing website
-- Business registration
-- Business type selection
-- Loading screen / platform branding
-- Reusable business website route: `/business/{slug}`
-- Business-specific catalog, hot deals and enquiry form
-- Demo testimonials are explicitly marked as sample/demo content
+- `PlatformUser`
+- `Business`
+- `BusinessCatalogItem`
+- `BusinessOffer`
+- `BusinessTestimonial`
+- `WebsiteConfiguration` (browser title, SEO text, hero/about/services/CTA content and section visibility)
+- `BusinessEnquiry`
+- `BusinessWhatsAppSettings`
 
-### Authorization
+A business such as furniture, grocery, salon, restaurant or school is represented by a `Business` record and related records using `BusinessId`.
 
-Two roles are implemented:
+There is no separate DbContext or database for each customer business.
+
+## Business registration flow
+
+```text
+Registration View
+      |
+      v
+BusinessRegistrationController
+      |
+      v
+IBusinessService / BusinessService
+      |
+      v
+UplivaDbContext
+      |
+      v
+Businesses table
+      |
+      +--> WebsiteConfigurations
+      +--> BusinessCatalogItems
+      +--> BusinessOffers
+      +--> BusinessEnquiries
+      +--> BusinessWhatsAppSettings
+```
+
+## Business lifecycle
+
+```text
+Register
+   |
+   v
+Pending
+   |
+   v
+Admin Review
+   |
+   +--> Reject
+   |
+   v
+Approved
+   |
+   v
+Published
+   |
+   v
+/business/{slug}
+```
+
+## WhatsApp flow
+
+```text
+Customer WhatsApp
+       |
+       v
+Meta WhatsApp Cloud API
+       |
+       v
+/webhooks/whatsapp
+       |
+       v
+WhatsAppWebhookController
+       |
+       v
+WhatsAppFlowService
+       |
+       +--> UplivaDbContext
+       |       |
+       |       +--> Business
+       |       +--> Catalog
+       |       +--> Offers
+       |       +--> Contact / Location
+       |
+       v
+WhatsAppService
+       |
+       v
+Meta Graph API
+```
+
+The webhook uses the incoming WhatsApp `phone_number_id` to resolve the configured business through `BusinessWhatsAppSettings` when that mapping exists.
+
+## Database
+
+The existing SQL Server connection is reused. The application does not create a database for every business. Database schema is managed exclusively with Entity Framework Core migrations.
+
+For a fresh database, create the migration and database from the current models with `Add-Migration InitialCreate` and `Update-Database`. No custom schema initializer is required. The business model includes address, city, state, postal code, country and business hours so the generated site has complete contact information.
+
+## Authentication
+
+The existing marketing website and login modal are retained.
+
+Roles:
 
 - `Admin`
 - `BusinessOwner`
 
-Admin can:
+Business owners are linked to their `BusinessId`. Admin users can review, approve, reject, publish and manage businesses.
 
-- review registrations
-- approve/reject businesses
-- edit business information
-- manage content
-- publish/unpublish business websites
+## Local secrets
 
-Business owners can:
+Never commit passwords or Meta access tokens.
 
-- register their business
-- log in after admin approval
-- edit their own business information
-- manage their catalog and hot deals
-- view their business website and enquiries
-
-Business owners cannot approve or publish their own business.
-
-## First-time setup
-
-### 1. Configure the admin account with User Secrets
-
-Do not put the admin password in source control.
-
-From the project directory:
+Example User Secrets:
 
 ```powershell
 dotnet user-secrets set "Admin:Name" "UplivaAI Administrator"
 dotnet user-secrets set "Admin:Email" "your-admin-email@example.com"
-dotnet user-secrets set "Admin:Password" "YOUR_STRONG_ADMIN_PASSWORD"
-```
-
-### 2. Configure the existing WhatsApp secrets
-
-Use a newly generated Meta access token if an old token was exposed.
-
-```powershell
+dotnet user-secrets set "Admin:Password" "YOUR_STRONG_PASSWORD"
 dotnet user-secrets set "WhatsApp:AccessToken" "YOUR_META_ACCESS_TOKEN"
 dotnet user-secrets set "WhatsApp:PhoneNumberId" "YOUR_PHONE_NUMBER_ID"
 dotnet user-secrets set "WhatsApp:WebhookVerifyToken" "YOUR_WEBHOOK_VERIFY_TOKEN"
 ```
 
-Never commit access tokens or passwords.
+## Run
 
-### 3. Run the application
+```powershell
+dotnet restore
+dotnet build
+dotnet run
+```
 
-The existing EF Core migrations are applied first. The new platform tables are then added idempotently by `PlatformSchemaInitializer`, so the existing resort migration is not rewritten.
-
-## Business lifecycle
+For local Meta webhook testing, expose the HTTPS application with ngrok and configure:
 
 ```text
-Business Owner
-     |
-     v
-Registration
-     |
-     v
-Pending
-     |
-     | Admin review
-     v
-Approved
-     |
-     | Business owner can configure content
-     v
-Ready for publishing
-     |
-     | Admin only
-     v
-Published
-     |
-     v
-/business/{slug}
+https://YOUR-NGROK-HOST/webhooks/whatsapp
 ```
 
-## Reusable architecture
+## Public business website
 
-The same application is intended to support many businesses:
+Each approved/published business gets its own generated website route: `/business/{slug}`. The business page has its own website layout and does not use the UplivaAI marketing navigation. The browser title can be set to the business website title, the page uses the business name/content, and the footer identifies UplivaAI as the platform provider.
+
+Because the entire application is hosted together, a bare URL such as `/SmartZoneMobiles` would conflict with application routes such as `/login`, `/register` and `/privacy`. The current safe route is `/business/smartzone-mobiles`. A future custom domain or subdomain can point to the same application without changing the business content model.
+
+## Website content vs catalog
+
+Catalog items are product/service records and can be shown on the public website independently of WhatsApp. `ShowOnWebsite` controls website visibility, while `IsWhatsAppTopPick` controls the WhatsApp Top 6 showcase and also highlights those items on the website. Business storytelling is kept separate in `WebsiteConfiguration`: hero text, About, Why Choose Us, Services, call-to-action, contact introduction, SEO description and footer text. This prevents long website copy from being forced into product records.
+
+## Important design rule
+
+Do not create `FurnitureDbContext`, `GroceryDbContext`, `SalonDbContext`, etc. for each business type.
+
+Use the generic platform context:
 
 ```text
-UplivaAI
- |
- +-- Paradise Palm Resort
- +-- Grocery business
- +-- Hardware business
- +-- Furniture business
- +-- Salon
- +-- Restaurant
- +-- Pathology / Diagnostic
- +-- School
- +-- Transportation
- +-- ...
+UplivaDbContext
+      |
+      +-- Business: Furniture
+      +-- Business: Grocery
+      +-- Business: Salon
+      +-- Business: Restaurant
+      +-- Business: School
 ```
 
-No separate application is required for each business. Business-specific content is stored with a `BusinessId` and displayed through the reusable business website route.
+If a future business type requires specialized domain tables, those entities can still be added as a separate module while keeping the platform context generic unless a genuine bounded context requires a separate database/context.
 
-## WhatsApp roadmap
 
-The current WhatsApp Cloud API implementation remains application-level so the working demo is not disrupted.
+## Fresh database setup
 
-`BusinessWhatsAppSettings` has been added as the foundation for business-specific WhatsApp configuration. Production secrets should eventually be stored in a secure secret manager rather than plain database columns.
+This version uses Entity Framework Core migrations only. No custom schema initializer is used.
 
-Recommended next production stages:
-
-1. Complete business-specific WhatsApp number onboarding.
-2. Map incoming `phone_number_id` to a Business.
-3. Resolve the business before processing a webhook.
-4. Send replies using that business's WhatsApp configuration.
-5. Store message audit records.
-6. Add template management and delivery status handling.
-
-## Security roadmap
-
-Before production:
-
-- Move all WhatsApp tokens to a secret manager.
-- Use HTTPS with a stable public domain.
-- Add rate limiting to registration/login/webhook endpoints.
-- Add account lockout and password reset.
-- Add email/phone verification where required.
-- Add audit logs for admin approval/publishing actions.
-- Add stronger tenant isolation and authorization tests.
-- Add database backups and monitoring.
-
-## Important demo-content rule
-
-The prototype may contain clearly labeled demo testimonials. Do not present invented testimonials, customer names, operating regions or endorsements as real customer evidence. Replace demo content with verified customer feedback before public marketing use.
-
-## Local administrator login
-
-The admin account is intentionally not hard-coded. Configure it with User Secrets before signing in:
+In Visual Studio Package Manager Console, with `UplivaAI` selected as the Default project:
 
 ```powershell
-dotnet user-secrets set "Admin:Name" "UplivaAI Administrator"
-dotnet user-secrets set "Admin:Email" "your-admin-email@example.com"
-dotnet user-secrets set "Admin:Password" "your-strong-password"
+Add-Migration InitialCreate
+Update-Database
 ```
 
-Then restart the application. Verify the setting names with:
+If the database was deleted, run the same two commands to recreate it from the current model.
+## Fresh database / EF Core migrations
+
+This project uses Entity Framework Core migrations for database creation. There is no custom schema initializer.
+
+If the database has been deleted or this is a fresh checkout, use Visual Studio Package Manager Console with **UplivaAI** selected as the Default project:
 
 ```powershell
-dotnet user-secrets list
+Add-Migration InitialCreate
+Update-Database
 ```
 
-Do not commit passwords or WhatsApp access tokens to source control.
+Then run the application. Do not manually create the database or tables in SQL Server.
 
-### Marketing homepage
-The public homepage is intentionally concise: three scrolling sections focused on the WhatsApp lead problem, what UplivaAI provides, and business registration. A 15-second advertisement is stored under `wwwroot/videos/uplivaai-15s-ad.mp4`.
-
-## Marketing v8 refinements
-- Public marketing homepage is limited to three focused sections: lead hook, offering + representative feedback, and registration.
-- Friendly `/login` and `/register` routes were added without removing the existing controller routes.
-- Marketing login links now use `/login` explicitly.
-- The 15-second marketing video includes voiceover + subtle background audio.
-- The video copy no longer mentions Ranchi and is written for scalable local-business positioning.
-- Representative feedback is clearly labelled as illustrative and should be replaced with verified customer reviews before public launch.
-- No database migration is required for these marketing-only changes.
-
-## Login route verification
-
-The platform login is explicitly mapped to both of these URLs:
-
-- `https://localhost:7248/login`
-- `https://localhost:7248/Account/Login`
-
-Cookie authentication redirects unauthenticated users to `/login`. The marketing navigation also uses `/login`.
-
-Before testing login, configure the administrator with User Secrets:
-
-```powershell
-dotnet user-secrets set "Admin:Name" "UplivaAI Administrator"
-dotnet user-secrets set "Admin:Email" "your-email@example.com"
-dotnet user-secrets set "Admin:Password" "YOUR_STRONG_PASSWORD"
-```
-
-Then restart the application. Do not commit these secrets.
-
-
-## Refreshed marketing video
-The 20-second UplivaAI advertisement has been refreshed with a cleaner, friendly human-cartoon business owner, clearer WhatsApp-to-lead storytelling, and an original soft upbeat background music track. The MP4 includes H.264 video and AAC stereo audio.
-
-
-## Login routing
-The application uses explicit conventional routes for login: `/login` and `/Account/Login`, both handled by `AccountController.Login`. The marketing navigation and login form use MVC tag helpers instead of hard-coded login URLs.
-
-## Login setup
-
-The application uses a dedicated authentication cookie named `.UplivaAI.Auth` so cookies from older development builds do not interfere with the current login flow.
-
-Configure the local administrator with User Secrets:
-
-```powershell
-dotnet user-secrets set "Admin:Name" "UplivaAI Administrator"
-dotnet user-secrets set "Admin:Email" "your-email@example.com"
-dotnet user-secrets set "Admin:Password" "YOUR_STRONG_PASSWORD"
-```
-
-The public login URL is:
-
-`https://localhost:7248/login`
-
-`/Account/Login` remains available as a compatibility URL.
-
-The admin seeder creates or updates the configured admin account from User Secrets. No database migration is required for this login fix.
+The catalog `Rating` property is configured with SQL precision `decimal(3,2)`.

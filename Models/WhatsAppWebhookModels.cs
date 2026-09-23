@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace UplivaResortBooking.Models;
+namespace UplivaAI.Models;
 
 public class WhatsAppWebhookPayload
 {

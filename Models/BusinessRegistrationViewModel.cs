@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace UplivaResortBooking.Models;
+namespace UplivaAI.Models;
 
 public class BusinessRegistrationViewModel
 {
@@ -9,6 +9,9 @@ public class BusinessRegistrationViewModel
 
     [Required, Display(Name = "Business type")]
     public string BusinessType { get; set; } = string.Empty;
+
+    [Required, MaxLength(180), Display(Name = "Website title")]
+    public string WebsiteTitle { get; set; } = string.Empty;
 
     [Required, MaxLength(150), Display(Name = "Owner name")]
     public string OwnerName { get; set; } = string.Empty;
@@ -27,6 +30,18 @@ public class BusinessRegistrationViewModel
 
     [MaxLength(100)]
     public string City { get; set; } = string.Empty;
+
+    [MaxLength(100)]
+    public string State { get; set; } = string.Empty;
+
+    [MaxLength(20), Display(Name = "Pincode / postal code")]
+    public string PostalCode { get; set; } = string.Empty;
+
+    [MaxLength(100)]
+    public string Country { get; set; } = "India";
+
+    [MaxLength(500), Display(Name = "Business hours")]
+    public string BusinessHours { get; set; } = string.Empty;
 
     [MaxLength(1000)]
     public string Description { get; set; } = string.Empty;
