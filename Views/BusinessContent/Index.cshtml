@@ -16,6 +16,7 @@
                 <h1>@business.Name</h1>
                 <p>Add the product once and reuse it across the generated business website and WhatsApp. Website content such as About, Services and other business text is managed separately.</p>
             </div>
+            <div class="workspace-page-actions"><a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessDashboard" asp-action="Index">← Back to dashboard</a><a class="workspace-btn" asp-controller="BusinessManagement" asp-action="WebsiteContent">Website content</a></div>
         </div>
 
         @if (TempData["CatalogSuccess"] is not null)

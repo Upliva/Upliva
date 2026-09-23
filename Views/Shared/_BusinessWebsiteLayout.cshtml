@@ -16,7 +16,23 @@
     <link rel="stylesheet" href="~/css/business-site.css" asp-append-version="true" />
 </head>
 <body class="upliva-body">
+@{
+    var isBusinessOwnerForThisSite = User.IsInRole(PlatformRoles.BusinessOwner) && User.FindFirst("BusinessId")?.Value == Model.Business.Id.ToString();
+    var isWorkspaceViewer = User.IsInRole(PlatformRoles.Admin) || isBusinessOwnerForThisSite;
+    var workspaceUrl = User.IsInRole(PlatformRoles.Admin)
+        ? Url.Action("Index", "AdminDashboard")
+        : Url.Action("Index", "BusinessDashboard");
+}
 <header class="business-site-header">
+    @if (isWorkspaceViewer)
+    {
+        <div class="business-preview-bar">
+            <div class="container business-preview-bar-inner">
+                <span>Previewing <strong>@Model.Business.Name</strong></span>
+                <a href="@workspaceUrl">← Back to workspace</a>
+            </div>
+        </div>
+    }
     <div class="container business-site-nav">
         <a class="business-site-brand" href="#top" aria-label="@Model.Business.Name home">
             @if (!string.IsNullOrWhiteSpace(Model.Business.LogoUrl))

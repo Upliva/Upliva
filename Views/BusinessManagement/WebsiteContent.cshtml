@@ -13,7 +13,10 @@
                 <h1>@business.Name</h1>
                 <p>Manage the text that appears on the generated public website. Catalog products are managed separately.</p>
             </div>
-            <a class="platform-btn platform-btn-ghost" asp-controller="Business" asp-action="Website" asp-route-slug="@business.Slug" target="_blank">Preview website →</a>
+            <div class="workspace-page-actions">
+                <a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessDashboard" asp-action="Index">← Back to dashboard</a>
+                <a class="workspace-btn workspace-btn-primary" asp-controller="Business" asp-action="Website" asp-route-slug="@business.Slug">Preview website →</a>
+            </div>
         </div>
 
         @if (TempData["WebsiteContentSuccess"] is not null)

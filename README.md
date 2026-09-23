@@ -238,3 +238,12 @@ Update-Database
 Then run the application. Do not manually create the database or tables in SQL Server.
 
 The catalog `Rating` property is configured with SQL precision `decimal(3,2)`.
+
+
+## Workspace navigation refinement (v10)
+- Business-owner dashboard actions now use high-contrast buttons on the light workspace surface.
+- All business management screens expose a visible Back to dashboard action.
+- View website opens in the same tab so browser Back remains available.
+- When an authenticated business owner/admin previews a public business site, a small Back to workspace bar is shown. Public visitors do not see this bar.
+- Admin/business workspace header contains a persistent Dashboard link and Logout.
+- No database model or migration changes were introduced by this UI refinement.

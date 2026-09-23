@@ -445,6 +445,37 @@ h2 { font-family:"Playfair Display",serif; font-weight:500; font-size:clamp(36px
 .admin-table td small { display:block; color:#8792a1; margin-top:3px; }
 .admin-actions { display:flex; gap:6px; flex-wrap:wrap; }
 .admin-actions button,.admin-actions a,.content-row button { border:1px solid #d2dae5; background:#fff; border-radius:7px; padding:7px 9px; font-size:10px; cursor:pointer; }
+/* Business/admin workspace navigation: high-contrast actions on the light workspace surface. */
+.workspace-actions { display:flex; align-items:center; justify-content:flex-end; gap:10px; flex-wrap:wrap; }
+.workspace-btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:42px; padding:11px 15px; border:1px solid #cfd7e1; border-radius:10px; background:#ffffff; color:#172033 !important; text-decoration:none !important; font-size:12px; font-weight:800; line-height:1.2; box-shadow:0 6px 18px rgba(17,24,39,.06); transition:background .18s ease, border-color .18s ease, color .18s ease, transform .18s ease, box-shadow .18s ease; }
+.workspace-btn:hover { background:#eef7f2; border-color:#9dbcae; color:#123b2f !important; transform:translateY(-1px); box-shadow:0 9px 22px rgba(17,24,39,.09); }
+.workspace-btn:focus-visible, .workspace-top-link:focus-visible, .workspace-backup-actions a:focus-visible { outline:3px solid rgba(241,201,121,.75); outline-offset:2px; }
+.workspace-btn-primary { background:#f1c979; border-color:#e5b957; color:#111827 !important; }
+.workspace-btn-primary:hover { background:#f6d58e; border-color:#e5b957; color:#111827 !important; }
+.workspace-btn-secondary { background:#123b2f; border-color:#123b2f; color:#fff !important; }
+.workspace-btn-secondary:hover { background:#1c5543; border-color:#1c5543; color:#fff !important; }
+.workspace-page-actions { display:flex; justify-content:flex-end; align-items:center; gap:10px; flex-wrap:wrap; }
+.workspace-backup-actions { display:none; }
+.workspace-top-actions { display:flex; align-items:center; gap:10px; }
+.workspace-top-actions form { margin:0; }
+.workspace-top-link { display:inline-flex; align-items:center; justify-content:center; min-height:36px; padding:8px 13px; border:1px solid rgba(255,255,255,.24); border-radius:9px; background:rgba(255,255,255,.08); color:#fff !important; text-decoration:none !important; font-size:11px; font-weight:800; }
+.workspace-top-link:hover { background:rgba(255,255,255,.16); border-color:rgba(255,255,255,.4); }
+.workspace-top-logout { cursor:pointer; font-family:inherit; }
+.business-preview-bar { background:#123b2f; color:#fff; border-bottom:1px solid rgba(255,255,255,.12); }
+.business-preview-bar-inner { min-height:38px; display:flex; align-items:center; justify-content:space-between; gap:15px; font-size:11px; }
+.business-preview-bar-inner span { color:#dcebe4; }
+.business-preview-bar-inner a { display:inline-flex; align-items:center; min-height:28px; padding:5px 10px; border:1px solid rgba(255,255,255,.28); border-radius:7px; color:#fff !important; text-decoration:none !important; font-weight:800; }
+.business-preview-bar-inner a:hover { background:rgba(255,255,255,.12); }
+@media (max-width:900px) {
+    .workspace-actions { justify-content:flex-start; }
+    .workspace-page-actions { justify-content:flex-start; }
+}
+@media (max-width:650px) {
+    .workspace-actions .workspace-btn { flex:1 1 100%; }
+    .workspace-top-actions .workspace-top-link { padding-left:10px; padding-right:10px; }
+    .business-preview-bar-inner { align-items:flex-start; padding-top:8px; padding-bottom:8px; flex-direction:column; }
+}
+
 .status-badge { display:inline-block; padding:5px 8px; border-radius:999px; background:#edf0f4; font-size:9px; font-weight:800; }
 .status-badge.pending { background:#fff2d8; color:#8a6727; }.status-badge.approved { background:#e7f5eb; color:#2b6847; }.status-badge.rejected { background:#f9e6e3; color:#8b453c; }
 .admin-narrow { max-width:900px; }
