@@ -1,0 +1,55 @@
+@model IEnumerable<MarketingLead>
+
+<div class="admin-table-wrap admin-plan-table-wrap">
+    <table class="admin-table admin-plan-table">
+        <thead>
+            <tr>
+                <th>Business / Owner</th>
+                <th>Type</th>
+                <th>WhatsApp</th>
+                <th>Status</th>
+                <th>Notes</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+        @if (!Model.Any())
+        {
+            <tr><td colspan="6" class="admin-empty-cell">No Interested leads in this category.</td></tr>
+        }
+        else
+        {
+            foreach (var lead in Model)
+            {
+                <tr>
+                    <td>
+                        <strong>@lead.Name</strong>
+                        <small>@lead.Source</small>
+                    </td>
+                    <td>@lead.BusinessType</td>
+                    <td>
+                        <a href="tel:+@lead.WhatsAppNumber">
+                            @((lead.WhatsAppNumber.Length == 12 && lead.WhatsAppNumber.StartsWith("91", StringComparison.Ordinal)) ? $"+91 {lead.WhatsAppNumber[2..]}" : lead.WhatsAppNumber)
+                        </a>
+                    </td>
+                    <td><span class="lead-status lead-status-interested">Interested</span></td>
+                    <td class="lead-notes-cell">@(string.IsNullOrWhiteSpace(lead.AdminNotes) ? "—" : lead.AdminNotes)</td>
+                    <td>
+                        <div class="admin-actions admin-plan-actions">
+                            @if (lead.ConvertedBusinessId.HasValue)
+                            {
+                                <a class="workspace-btn workspace-btn-primary" asp-controller="AdminBusinessIntegration" asp-action="Manage" asp-route-id="@lead.ConvertedBusinessId.Value">WhatsApp Business</a>
+                                <a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessContent" asp-action="Index" asp-route-id="@lead.ConvertedBusinessId.Value">Add / Manage Catalog</a>
+                            }
+                            else
+                            {
+                                <a class="workspace-btn workspace-btn-primary" asp-controller="AdminMarketing" asp-action="CreateBusiness" asp-route-leadId="@lead.Id">Create Business</a>
+                            }
+                        </div>
+                    </td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+</div>

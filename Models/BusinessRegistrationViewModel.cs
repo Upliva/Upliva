@@ -2,53 +2,37 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UplivaAI.Models;
 
+/// <summary>
+/// Public registration is lead-only. The public form intentionally binds only
+/// Name, BusinessType and WhatsAppNumber. The legacy optional properties remain
+/// here for compatibility with the existing business/account provisioning services;
+/// they are not rendered or required by public registration.
+/// </summary>
 public class BusinessRegistrationViewModel
 {
-    [Required, MaxLength(180), Display(Name = "Business name")]
-    public string BusinessName { get; set; } = string.Empty;
+    [Required, MaxLength(150), Display(Name = "Your name")]
+    public string Name { get; set; } = string.Empty;
 
-    [Required, Display(Name = "Business type")]
+    [Required, MaxLength(80), Display(Name = "Business category")]
     public string BusinessType { get; set; } = string.Empty;
 
-    [Required, MaxLength(180), Display(Name = "Website title")]
-    public string WebsiteTitle { get; set; } = string.Empty;
-
-    [Required, MaxLength(150), Display(Name = "Owner name")]
-    public string OwnerName { get; set; } = string.Empty;
-
-    [Required, EmailAddress]
-    public string Email { get; set; } = string.Empty;
-
-    [Required, Phone, Display(Name = "Phone number")]
-    public string PhoneNumber { get; set; } = string.Empty;
-
-    [Phone, Display(Name = "WhatsApp number")]
+    [Required, MaxLength(30), Display(Name = "WhatsApp / phone number")]
     public string WhatsAppNumber { get; set; } = string.Empty;
 
-    [MaxLength(300)]
-    public string Address { get; set; } = string.Empty;
-
-    [MaxLength(100)]
-    public string City { get; set; } = string.Empty;
-
-    [MaxLength(100)]
-    public string State { get; set; } = string.Empty;
-
-    [MaxLength(20), Display(Name = "Pincode / postal code")]
-    public string PostalCode { get; set; } = string.Empty;
-
-    [MaxLength(100)]
-    public string Country { get; set; } = "India";
-
-    [MaxLength(500), Display(Name = "Business hours")]
-    public string BusinessHours { get; set; } = string.Empty;
-
-    [MaxLength(1000)]
-    public string Description { get; set; } = string.Empty;
-
-    [Required, MinLength(8), DataType(DataType.Password)]
-    public string Password { get; set; } = string.Empty;
-
-    [Required, Compare(nameof(Password)), DataType(DataType.Password), Display(Name = "Confirm password")]
-    public string ConfirmPassword { get; set; } = string.Empty;
+    // Kept only so the existing post-confirmation provisioning services continue
+    // to compile and can be reused when the admin creates a real Business later.
+    [MaxLength(180)] public string? BusinessName { get; set; }
+    [MaxLength(180)] public string? WebsiteTitle { get; set; }
+    [MaxLength(150)] public string OwnerName { get; set; } = string.Empty;
+    [EmailAddress, MaxLength(200)] public string? Email { get; set; }
+    [MaxLength(30)] public string? PhoneNumber { get; set; }
+    [MaxLength(300)] public string? Address { get; set; }
+    [MaxLength(100)] public string? City { get; set; }
+    [MaxLength(100)] public string? State { get; set; }
+    [MaxLength(20)] public string? PostalCode { get; set; }
+    [MaxLength(100)] public string? Country { get; set; }
+    [MaxLength(500)] public string? BusinessHours { get; set; }
+    [MaxLength(1000)] public string? Description { get; set; }
+    [MinLength(8), DataType(DataType.Password)] public string Password { get; set; } = string.Empty;
+    [Compare(nameof(Password)), DataType(DataType.Password)] public string ConfirmPassword { get; set; } = string.Empty;
 }

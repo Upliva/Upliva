@@ -1,0 +1,191 @@
+@model WhatsAppPreviewViewModel
+@{
+    ViewData["Title"] = "WhatsApp Preview";
+    Layout = "_AdminLayout";
+    var hasProducts = Model.Products.Count > 0;
+}
+
+<section class="admin-page">
+    <div class="container" style="max-width:1250px">
+        <div class="admin-head">
+            <div>
+                <span class="platform-kicker dark">WHATSAPP PREVIEW</span>
+                <h1>@Model.BusinessName</h1>
+                <p>Preview the catalog exactly from the products currently selected for WhatsApp.</p>
+            </div>
+            <div class="workspace-page-actions">
+                <a class="workspace-btn workspace-btn-secondary" asp-action="Index" asp-route-id="@Model.BusinessId">← Back to catalog</a>
+                <a class="workspace-btn workspace-btn-primary" asp-controller="AdminBusinessIntegration" asp-action="Manage" asp-route-id="@Model.BusinessId">Select / rank products →</a>
+            </div>
+        </div>
+
+        @if (Model.FocusProduct is not null && !Model.FocusProduct.IsSelectedForWhatsApp)
+        {
+            <div class="admin-note-card" style="margin-bottom:18px">
+                <strong>Previewing: @Model.FocusProduct.Name</strong>
+                <span>This item is in the master catalog but is not selected for the WhatsApp showcase yet. Select it on the WhatsApp Business screen if you want customers to see it.</span>
+            </div>
+        }
+
+        <div style="display:grid;grid-template-columns:minmax(330px,390px) minmax(0,1fr);gap:28px;align-items:start">
+            <!-- WhatsApp phone -->
+            <div style="position:sticky;top:24px">
+                <div style="background:#dfe7e1;border:10px solid #17231f;border-radius:38px;padding:10px;box-shadow:0 18px 50px rgba(20,45,35,.18);max-width:390px;margin:0 auto">
+                    <div style="height:24px;display:flex;align-items:center;justify-content:center">
+                        <div style="width:92px;height:18px;border-radius:20px;background:#17231f"></div>
+                    </div>
+                    <div style="background:#efe7da;border-radius:25px;overflow:hidden;min-height:690px;position:relative">
+                        <!-- WhatsApp-style header -->
+                        <div style="background:#075e54;color:#fff;padding:14px 15px;display:flex;align-items:center;gap:10px">
+                            @if (!string.IsNullOrWhiteSpace(Model.LogoUrl))
+                            {
+                                <img src="@Model.LogoUrl" alt="@Model.BusinessName" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.5)" onerror="this.style.display='none';" />
+                            }
+                            else
+                            {
+                                <div style="width:42px;height:42px;border-radius:50%;background:#d7f2e9;color:#075e54;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px">@(Model.BusinessName.Length > 0 ? Model.BusinessName[..1].ToUpperInvariant() : "U")</div>
+                            }
+                            <div style="min-width:0">
+                                <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">@Model.BusinessName</div>
+                                <div style="font-size:11px;opacity:.85">Business account · online</div>
+                            </div>
+                            <div style="margin-left:auto;font-size:18px;letter-spacing:2px">⋮</div>
+                        </div>
+
+                        <div style="padding:14px 11px 80px;background-image:linear-gradient(rgba(239,231,218,.82),rgba(239,231,218,.82)),radial-gradient(#d8cdbb 1px,transparent 1px);background-size:auto,12px 12px;min-height:620px">
+                            <div style="max-width:315px;margin:0 auto">
+                                <div style="background:#fff;border-radius:8px;padding:10px 12px;margin:3px 0 12px;box-shadow:0 1px 1px rgba(0,0,0,.08);font-size:12px;color:#37443f">
+                                    <strong>Hi 👋</strong><br />
+                                    Welcome to <strong>@Model.BusinessName</strong>.
+                                    @if (!string.IsNullOrWhiteSpace(Model.Tagline))
+                                    {
+                                        <span> @Model.Tagline</span>
+                                    }
+                                </div>
+
+                                @if (Model.FocusProduct is not null)
+                                {
+                                    <div style="background:#fff;border-radius:9px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.12);margin-bottom:12px">
+                                        @if (!string.IsNullOrWhiteSpace(Model.FocusProduct.ImageUrl))
+                                        {
+                                            <img src="@Model.FocusProduct.ImageUrl" alt="@Model.FocusProduct.Name" style="display:block;width:100%;height:190px;object-fit:cover" onerror="this.style.display='none';" />
+                                        }
+                                        <div style="padding:10px 11px 9px">
+                                            <div style="font-size:10px;color:#66736d;text-transform:uppercase;letter-spacing:.06em">Catalog preview</div>
+                                            <div style="font-weight:700;color:#17231f;font-size:15px;margin-top:3px">@Model.FocusProduct.Name</div>
+                                            @if (!string.IsNullOrWhiteSpace(Model.FocusProduct.Category))
+                                            {
+                                                <div style="font-size:11px;color:#78847f;margin-top:2px">@Model.FocusProduct.Category</div>
+                                            }
+                                            <div style="font-weight:700;color:#075e54;margin-top:7px">@Model.FocusProduct.PriceText</div>
+                                            @if (!string.IsNullOrWhiteSpace(Model.FocusProduct.ShortDescription))
+                                            {
+                                                <div style="font-size:11px;color:#5d6864;margin-top:5px;line-height:1.4">@Model.FocusProduct.ShortDescription</div>
+                                            }
+                                        </div>
+                                        <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #e9ecea">
+                                            <div style="text-align:center;padding:8px;color:#075e54;font-size:11px;font-weight:600;border-right:1px solid #e9ecea">💬 Enquire</div>
+                                            <div style="text-align:center;padding:8px;color:#075e54;font-size:11px;font-weight:600">↗ Share</div>
+                                        </div>
+                                    </div>
+                                }
+
+                                @if (hasProducts)
+                                {
+                                    <div style="background:#fff;border-radius:9px;padding:9px 10px;box-shadow:0 1px 2px rgba(0,0,0,.1);margin-bottom:8px">
+                                        <div style="font-size:11px;color:#66736d;font-weight:700;margin-bottom:8px">Featured catalog · @Model.Products.Count item(s)</div>
+                                        @foreach (var product in Model.Products)
+                                        {
+                                            <div style="display:flex;gap:8px;padding:7px 0;border-top:1px solid #edf0ee">
+                                                @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                                                {
+                                                    <img src="@product.ImageUrl" alt="@product.Name" style="width:48px;height:42px;object-fit:cover;border-radius:6px" onerror="this.style.display='none';" />
+                                                }
+                                                <div style="min-width:0;flex:1">
+                                                    <div style="font-size:12px;font-weight:700;color:#26332e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">#@product.Rank · @product.Name</div>
+                                                    <div style="font-size:10px;color:#78847f">@product.Category · @product.PriceText</div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                                else if (Model.FocusProduct is null)
+                                {
+                                    <div style="background:#fff;border-radius:9px;padding:15px;box-shadow:0 1px 2px rgba(0,0,0,.1);font-size:12px;color:#65716d">
+                                        No products are selected for the WhatsApp showcase yet.
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <div style="position:absolute;left:0;right:0;bottom:0;background:#f5f5f5;border-top:1px solid #d9d9d9;padding:9px 10px;display:flex;align-items:center;gap:8px">
+                            <div style="flex:1;background:#fff;border:1px solid #ddd;border-radius:20px;padding:8px 13px;color:#9aa29e;font-size:11px">Message @Model.BusinessName</div>
+                            <div style="width:34px;height:34px;border-radius:50%;background:#075e54;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px">➤</div>
+                        </div>
+                    </div>
+                    <div style="height:8px"></div>
+                </div>
+            </div>
+
+            <!-- Preview information -->
+            <div>
+                <div class="content-list" style="margin-bottom:18px">
+                    <div style="display:flex;justify-content:space-between;gap:15px;align-items:flex-start;flex-wrap:wrap">
+                        <div>
+                            <span class="platform-kicker dark">LIVE DATA PREVIEW</span>
+                            <h2 style="margin-bottom:5px">WhatsApp showcase</h2>
+                            <p style="margin:0;color:#687284;font-size:13px">This preview reads directly from your current catalog and WhatsApp selection. No database changes are made by opening this page.</p>
+                        </div>
+                        <span class="top-pick-badge">@Model.Products.Count selected</span>
+                    </div>
+                </div>
+
+                @if (!hasProducts)
+                {
+                    <div class="business-form" style="max-width:none">
+                        <h2>Select products first</h2>
+                        <p style="color:#687284">Add items to the master catalog, then select the products you want customers to see on WhatsApp and assign their ranking.</p>
+                        <a class="platform-btn platform-btn-primary" asp-controller="AdminBusinessIntegration" asp-action="Manage" asp-route-id="@Model.BusinessId">Open WhatsApp Business →</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="business-form" style="max-width:none">
+                        <h2>Selected products</h2>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;margin-top:16px">
+                            @foreach (var product in Model.Products)
+                            {
+                                <div style="border:1px solid #e2e9e5;border-radius:14px;overflow:hidden;background:#fff">
+                                    @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                                    {
+                                        <img src="@product.ImageUrl" alt="@product.Name" style="width:100%;height:160px;object-fit:cover;display:block" onerror="this.style.display='none';" />
+                                    }
+                                    <div style="padding:13px">
+                                        <div style="display:flex;justify-content:space-between;gap:8px;align-items:center">
+                                            <span class="top-pick-badge">Rank @product.Rank</span>
+                                            @if (!string.IsNullOrWhiteSpace(product.StockStatus))
+                                            {
+                                                <span style="font-size:11px;color:#5e6b66">@product.StockStatus</span>
+                                            }
+                                        </div>
+                                        <h3 style="font-size:15px;margin:9px 0 4px">@product.Name</h3>
+                                        <div style="font-size:11px;color:#74807b">@product.Category</div>
+                                        <div style="font-size:18px;font-weight:800;color:#075e54;margin-top:9px">@product.PriceText</div>
+                                        @if (!string.IsNullOrWhiteSpace(product.OriginalPriceText) || !string.IsNullOrWhiteSpace(product.DiscountText))
+                                        {
+                                            <div style="font-size:11px;color:#7c8581;margin-top:2px">@product.OriginalPriceText @product.DiscountText</div>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(product.ShortDescription))
+                                        {
+                                            <p style="font-size:12px;color:#687284;line-height:1.45;margin:8px 0 0">@product.ShortDescription</p>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</section>

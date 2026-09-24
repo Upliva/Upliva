@@ -47,8 +47,8 @@ public class BusinessCatalogItem
     public int ReviewCount { get; set; }
 
     /// <summary>
-    /// When true, this product is included in the business's WhatsApp Top 6 showcase.
-    /// The same Top 6 products are highlighted first on the public website.
+    /// When true, this product is included in the business's configurable WhatsApp featured showcase.
+    /// The same selected products are highlighted first on the public website.
     /// </summary>
     public bool IsWhatsAppTopPick { get; set; }
 

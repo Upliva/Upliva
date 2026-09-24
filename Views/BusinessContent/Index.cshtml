@@ -1,209 +1,315 @@
 @model BusinessCatalogItemViewModel
+@using System.Collections
 @{
     var business = (Business)ViewBag.Business;
     var catalog = (List<BusinessCatalogItem>)ViewBag.Catalog;
     var offers = (List<BusinessOffer>)ViewBag.Offers;
+    var categories = (IEnumerable<string>)ViewBag.Categories;
     var topPickCount = (int)(ViewBag.TopPickCount ?? 0);
-    ViewData["Title"] = "Catalog & Offers";
+    var allCatalogCount = (int)(ViewBag.AllCatalogCount ?? 0);
+    var selectedCategory = (string)(ViewBag.SelectedCategory ?? string.Empty);
+    var search = (string)(ViewBag.Search ?? string.Empty);
+    var isEditingCatalog = (bool)(ViewBag.IsEditingCatalog ?? false);
+    var isAdmin = User.IsInRole(PlatformRoles.Admin);
+    ViewData["Title"] = isAdmin ? "WhatsApp Catalog" : "Catalog & Offers";
     Layout = "_AdminLayout";
 }
 
 <section class="admin-page">
-    <div class="container">
+    <div class="container" style="max-width:1500px">
         <div class="admin-head">
             <div>
-                <span class="platform-kicker dark">CATALOG MANAGEMENT</span>
+                <span class="platform-kicker dark">@(isAdmin ? "WHATSAPP CATALOG" : "CATALOG MANAGEMENT")</span>
                 <h1>@business.Name</h1>
-                <p>Add the product once and reuse it across the generated business website and WhatsApp. Website content such as About, Services and other business text is managed separately.</p>
+                <p>Manage a reusable business catalog. Add products once, then choose which items appear on WhatsApp and arrange their ranking.</p>
             </div>
-            <div class="workspace-page-actions"><a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessDashboard" asp-action="Index">← Back to dashboard</a><a class="workspace-btn" asp-controller="BusinessManagement" asp-action="WebsiteContent">Website content</a></div>
+            <div class="workspace-page-actions">
+                <a class="workspace-btn workspace-btn-primary" asp-action="PreviewWhatsApp" asp-route-id="@business.Id">📱 Preview in WhatsApp</a>
+                @if (isAdmin)
+                {
+                    <a class="workspace-btn workspace-btn-secondary" asp-controller="AdminBusinessIntegration" asp-action="Manage" asp-route-id="@business.Id">← WhatsApp Business</a>
+                }
+                else
+                {
+                    <a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessDashboard" asp-action="Index">← Back to dashboard</a>
+                }
+            </div>
         </div>
 
-        @if (TempData["CatalogSuccess"] is not null)
-        {
-            <div class="success-banner" style="margin-bottom:20px">@TempData["CatalogSuccess"]</div>
-        }
-        @if (TempData["CatalogError"] is not null)
-        {
-            <div class="validation" style="margin-bottom:20px">@TempData["CatalogError"]</div>
-        }
+        <div class="admin-note-card" style="margin-bottom:18px">
+            <strong>@BusinessServicePlans.GetDisplayName(business.ServicePlan)</strong>
+            <span>
+                @allCatalogCount catalog item(s) · @categories.Count() categor@(categories.Count() == 1 ? "y" : "ies") · @topPickCount selected for WhatsApp.
+            </span>
+        </div>
+
         <div asp-validation-summary="ModelOnly" class="validation"></div>
 
-        <div class="content-admin-grid">
-            <div class="business-form">
-                <div style="display:flex;justify-content:space-between;gap:15px;align-items:flex-start;flex-wrap:wrap">
-                    <div>
-                        <h2>Add catalog product</h2>
-                        <p style="color:#687284;font-size:13px;margin-top:-8px">Use product details similar to a marketplace listing.</p>
-                    </div>
-                    <span class="top-pick-badge">@topPickCount / 6 WhatsApp Top Picks</span>
-                </div>
-
-                <form asp-action="AddCatalog" method="post">
-                    <input type="hidden" asp-for="BusinessId" />
-
-                    <div class="form-grid">
-                        <div class="field full">
-                            <label asp-for="Name"></label>
-                            <input asp-for="Name" placeholder="iPhone 18 Pro (1 TB) - Burgundy" />
-                            <span asp-validation-for="Name" class="validation"></span>
-                        </div>
-
-                        <div class="field">
-                            <label asp-for="Brand"></label>
-                            <input asp-for="Brand" placeholder="Apple" />
-                        </div>
-                        <div class="field">
-                            <label asp-for="Model"></label>
-                            <input asp-for="Model" placeholder="iPhone 18 Pro" />
-                        </div>
-
-                        <div class="field">
-                            <label asp-for="SKU"></label>
-                            <input asp-for="SKU" placeholder="IP18P-1TB-BRG" />
-                        </div>
-                        <div class="field">
-                            <label asp-for="Category"></label>
-                            <input asp-for="Category" placeholder="Smartphones" />
-                        </div>
-
-                        <div class="field">
-                            <label asp-for="PriceText"></label>
-                            <input asp-for="PriceText" placeholder="₹2,39,900" />
-                        </div>
-                        <div class="field">
-                            <label asp-for="OriginalPriceText"></label>
-                            <input asp-for="OriginalPriceText" placeholder="₹2,49,900" />
-                        </div>
-
-                        <div class="field">
-                            <label asp-for="DiscountText"></label>
-                            <input asp-for="DiscountText" placeholder="4% OFF" />
-                        </div>
-                        <div class="field">
-                            <label asp-for="StockStatus"></label>
-                            <input asp-for="StockStatus" placeholder="In stock · 2 left" />
-                        </div>
-
-                        <div class="field full">
-                            <label asp-for="ImageUrl"></label>
-                            <input asp-for="ImageUrl" placeholder="https://example.com/product-image.jpg" />
-                            <span asp-validation-for="ImageUrl" class="validation"></span>
-                            <div style="font-size:11px;color:#687284;margin-top:7px">For now use a public image URL. Later this field can point to your Azure Blob image URL without changing the catalog model.</div>
-                        </div>
-
-                        <div class="field full">
-                            <label asp-for="ShortDescription"></label>
-                            <input asp-for="ShortDescription" placeholder="6.3-inch display, ProMotion, A20 Pro chip, 48MP Fusion camera" />
-                        </div>
-
-                        <div class="field full">
-                            <label asp-for="Description"></label>
-                            <textarea asp-for="Description" rows="4" placeholder="Add the full product description, key features, warranty or service information."></textarea>
-                        </div>
-
-                        <div class="field">
-                            <label asp-for="Rating"></label>
-                            <input asp-for="Rating" type="number" step="0.1" min="0" max="5" placeholder="4.5" />
-                        </div>
-                        <div class="field">
-                            <label asp-for="ReviewCount"></label>
-                            <input asp-for="ReviewCount" type="number" min="0" placeholder="125" />
-                        </div>
-
-                        <div class="field">
-                            <label asp-for="SortOrder"></label>
-                            <input asp-for="SortOrder" type="number" min="0" placeholder="1" />
-                        </div>
-                        <div class="field" style="display:flex;align-items:center;gap:10px;padding-top:28px">
-                            <input asp-for="ShowOnWebsite" style="width:auto" />
-                            <label asp-for="ShowOnWebsite" style="margin:0">Show on business website</label>
-                        </div>
-                        <div class="field" style="display:flex;align-items:center;gap:10px;padding-top:28px">
-                            <input asp-for="IsWhatsAppTopPick" style="width:auto" />
-                            <label asp-for="IsWhatsAppTopPick" style="margin:0">Show in WhatsApp Top 6</label>
-                        </div>
-                    </div>
-
-                    <div style="background:#f7faf8;border:1px solid #e1ece5;border-radius:12px;padding:14px;margin:4px 0 18px;color:#536074;font-size:12px">
-                        <strong>How this works:</strong> every product can be shown on the business website. Select <strong>WhatsApp Top 6</strong> for up to 6 products; those products are sent through WhatsApp and are highlighted first on the website. A product selected for WhatsApp Top 6 is automatically kept visible on the website.
-                    </div>
-
-                    <div style="background:#fffaf0;border:1px solid #f1dfb4;border-radius:12px;padding:14px;margin:0 0 18px;color:#536074;font-size:12px">
-                        <strong>Mobile shop demo:</strong> use the sample product/image URLs I provided with this release. These are temporary public demo images; replace them with your own product images or Azure Blob URLs later.
-                    </div>
-                    <button class="platform-btn platform-btn-primary" type="submit">Add product</button>
-                </form>
-            </div>
-
-            <div class="business-form">
-                <h2>Add hot deal</h2>
-                <form asp-action="AddOffer" method="post">
-                    <input type="hidden" name="BusinessId" value="@business.Id" />
-                    <div class="field"><label>Title</label><input name="Title" required placeholder="Weekend Smartphone Offer" /></div>
-                    <div class="field"><label>Discount</label><input name="DiscountText" placeholder="10% OFF" /></div>
-                    <div class="field"><label>Image URL</label><input name="ImageUrl" /></div>
-                    <div class="field"><label>Description</label><textarea name="Description" rows="4"></textarea></div>
-                    <button class="platform-btn platform-btn-primary" type="submit">Add deal</button>
-                </form>
-            </div>
-        </div>
-
-        <div class="content-list" style="margin-top:25px">
-            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+        <!-- CATALOG LIST FIRST -->
+        <div class="content-list" style="margin-bottom:24px">
+            <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px">
                 <div>
-                    <h2>Current catalog</h2>
-                    <p style="color:#687284;font-size:12px">The catalog is shared across the generated website and WhatsApp. Use website visibility and Top 6 independently.</p>
+                    <h2 style="margin-bottom:4px">Catalog items</h2>
+                    <p style="color:#687284;font-size:13px;margin:0">The master catalog for this business. WhatsApp selection is managed separately.</p>
                 </div>
-                <span class="top-pick-badge">Top 6 selected: @topPickCount / 6</span>
+                <span class="top-pick-badge">WhatsApp selected: @topPickCount</span>
             </div>
+
+            <form method="get" asp-controller="BusinessContent" asp-action="Index" style="display:grid;grid-template-columns:minmax(260px,2fr) minmax(200px,1fr) auto auto;gap:10px;align-items:end;margin-bottom:18px">
+                <input type="hidden" name="id" value="@business.Id" />
+                <div class="field" style="margin:0">
+                    <label for="catalogSearch">Search catalog</label>
+                    <input id="catalogSearch" name="search" value="@search" placeholder="Search by name, SKU or category" />
+                </div>
+                <div class="field" style="margin:0">
+                    <label for="catalogCategory">Category</label>
+                    <select id="catalogCategory" name="category">
+                        <option value="">All categories</option>
+                        @foreach (var category in categories)
+                        {
+                            <option value="@category" selected="@(string.Equals(category, selectedCategory, StringComparison.OrdinalIgnoreCase))">@category</option>
+                        }
+                    </select>
+                </div>
+                <button class="platform-btn platform-btn-primary" type="submit">Search</button>
+                <a class="workspace-btn workspace-btn-secondary" asp-action="Index" asp-route-id="@business.Id">Clear</a>
+            </form>
 
             @if (catalog.Count == 0)
             {
-                <div class="content-row"><span>No products added yet.</span></div>
+                <div style="padding:32px 20px;text-align:center;border:1px dashed #ccd8d1;border-radius:14px;background:#fbfcfb;color:#687284">
+                    <strong style="display:block;color:#153d32;margin-bottom:5px">No catalog items found.</strong>
+                    <span>Add the first item using the form below.</span>
+                </div>
             }
             else
             {
-                @foreach (var item in catalog)
-                {
-                    <div class="content-row" style="grid-template-columns:2fr 1fr 1fr 1fr auto;">
-                        <div>
-                            <strong>@item.Name</strong>
-                            <div style="font-size:10px;color:#89919e;margin-top:3px">@item.Brand @item.Model</div>
-                        </div>
-                        <span>@item.Category</span>
-                        <span>@item.PriceText</span>
-                        <span>@(item.IsWhatsAppTopPick ? "WhatsApp Top 6" : (item.ShowOnWebsite ? "Website" : "Hidden"))</span>
-                        <div style="display:flex;gap:6px;flex-wrap:wrap">
-                            <form asp-action="ToggleWhatsAppTopPick" method="post">
-                                <input type="hidden" name="id" value="@item.Id" />
-                                <button type="submit">@(item.IsWhatsAppTopPick ? "Remove Top 6" : "Add to Top 6")</button>
-                            </form>
-                            <form asp-action="DeleteCatalog" method="post" onsubmit="return confirm('Remove this product from the catalog?');">
-                                <input type="hidden" name="id" value="@item.Id" />
-                                <button type="submit">Delete</button>
-                            </form>
-                        </div>
-                    </div>
-                }
-            }
-
-            <h2 style="margin-top:35px">Current deals</h2>
-            @foreach (var offer in offers)
-            {
-                <div class="content-row">
-                    <strong>@offer.Title</strong>
-                    <span>@offer.DiscountText</span>
-                    <span>@(offer.IsPublished ? "Published" : "Waiting for admin")</span>
-                    @if (!offer.IsPublished && User.IsInRole(PlatformRoles.Admin))
-                    {
-                        <form asp-action="PublishOffer" method="post">
-                            <input type="hidden" name="id" value="@offer.Id" />
-                            <button type="submit">Publish</button>
-                        </form>
-                    }
+                <div style="overflow-x:auto">
+                    <table style="width:100%;border-collapse:collapse;min-width:1050px">
+                        <thead>
+                            <tr style="text-align:left;border-bottom:1px solid #e5ebe7;color:#657487;font-size:12px;text-transform:uppercase;letter-spacing:.08em">
+                                <th style="padding:12px">Image</th>
+                                <th style="padding:12px">Item</th>
+                                <th style="padding:12px">Category</th>
+                                <th style="padding:12px">Price</th>
+                                <th style="padding:12px">Availability</th>
+                                <th style="padding:12px">WhatsApp</th>
+                                <th style="padding:12px">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var item in catalog)
+                        {
+                            <tr style="border-bottom:1px solid #edf1ef">
+                                <td style="padding:12px;width:90px">
+                                    @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                                    {
+                                        <img src="@item.ImageUrl" alt="@item.Name" loading="lazy" style="width:72px;height:58px;object-fit:cover;border-radius:10px;border:1px solid #e1e7e3" onerror="this.style.display='none';" />
+                                    }
+                                    else
+                                    {
+                                        <div style="width:72px;height:58px;border-radius:10px;background:#f1f5f2;display:flex;align-items:center;justify-content:center;font-size:11px;color:#819087">No image</div>
+                                    }
+                                </td>
+                                <td style="padding:12px">
+                                    <strong>@item.Name</strong>
+                                    @if (!string.IsNullOrWhiteSpace(item.ShortDescription))
+                                    {
+                                        <div style="font-size:12px;color:#687284;margin-top:4px;max-width:420px">@item.ShortDescription</div>
+                                    }
+                                    @if (!string.IsNullOrWhiteSpace(item.SKU))
+                                    {
+                                        <div style="font-size:11px;color:#89919e;margin-top:4px">SKU: @item.SKU</div>
+                                    }
+                                </td>
+                                <td style="padding:12px">@item.Category</td>
+                                <td style="padding:12px"><strong>@item.PriceText</strong></td>
+                                <td style="padding:12px">@(string.IsNullOrWhiteSpace(item.StockStatus) ? "—" : item.StockStatus)</td>
+                                <td style="padding:12px">
+                                    @if (item.IsWhatsAppTopPick)
+                                    {
+                                        <span class="top-pick-badge">Selected · #@item.SortOrder</span>
+                                    }
+                                    else
+                                    {
+                                        <span style="font-size:12px;color:#7c8793">Not selected</span>
+                                    }
+                                </td>
+                                <td style="padding:12px">
+                                    <div style="display:flex;gap:7px;flex-wrap:wrap">
+                                        <a class="workspace-btn workspace-btn-primary" asp-action="PreviewWhatsApp" asp-route-id="@business.Id" asp-route-productId="@item.Id">📱 Preview</a>
+                                        <a class="workspace-btn workspace-btn-secondary" asp-action="EditCatalog" asp-route-id="@item.Id">Edit</a>
+                                        <form asp-action="DeleteCatalog" method="post" onsubmit="return confirm('Remove @item.Name from the catalog?');" style="margin:0">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button class="workspace-btn" type="submit" style="border:1px solid #efcaca;background:#fff5f5;color:#8d2e2e">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
                 </div>
             }
         </div>
+
+        <!-- ADD / EDIT FORM BELOW THE LIST -->
+        <div class="business-form" style="max-width:none">
+            <div style="display:flex;justify-content:space-between;gap:15px;align-items:flex-start;flex-wrap:wrap">
+                <div>
+                    <span class="platform-kicker dark">CATALOG ITEM</span>
+                    <h2>@(isEditingCatalog ? "Edit catalog item" : "Add catalog item")</h2>
+                    <p style="color:#687284;font-size:13px;margin-top:-8px">@(isEditingCatalog ? "Update this item and save it back to the master catalog." : "Add a reusable catalog item. You can use an internet image URL now and move to Azure Blob Storage later.")</p>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+                    <span class="top-pick-badge">WhatsApp selection: @topPickCount</span>
+                    <a class="workspace-btn workspace-btn-secondary" asp-controller="AdminBusinessIntegration" asp-action="Manage" asp-route-id="@business.Id">Select / rank WhatsApp items →</a>
+                </div>
+            </div>
+
+            <form action="@Url.Action(isEditingCatalog ? "UpdateCatalog" : "AddCatalog", "BusinessContent")" method="post" id="catalogItemForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="BusinessId" value="@business.Id" />
+
+                <div class="form-grid">
+                    <div class="field full">
+                        <label asp-for="Name"></label>
+                        <input asp-for="Name" placeholder="e.g. Premium 3 BHK Apartment" autocomplete="off" />
+                        <span asp-validation-for="Name" class="validation"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="Category"></label>
+                        <input asp-for="Category" list="catalogCategories" placeholder="e.g. Residential Property" autocomplete="off" />
+                        <datalist id="catalogCategories">
+                            @foreach (var category in categories)
+                            {
+                                <option value="@category"></option>
+                            }
+                        </datalist>
+                        <span asp-validation-for="Category" class="validation"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="PriceText"></label>
+                        <input asp-for="PriceText" placeholder="e.g. ₹1.25 Cr" />
+                        <span asp-validation-for="PriceText" class="validation"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="Brand"></label>
+                        <input asp-for="Brand" placeholder="Optional" />
+                    </div>
+                    <div class="field">
+                        <label asp-for="Model"></label>
+                        <input asp-for="Model" placeholder="Optional" />
+                    </div>
+                    <div class="field">
+                        <label asp-for="SKU"></label>
+                        <input asp-for="SKU" placeholder="Optional property/product code" />
+                        <span asp-validation-for="SKU" class="validation"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="StockStatus"></label>
+                        <input asp-for="StockStatus" placeholder="e.g. Available / Ready to move" />
+                    </div>
+                    <div class="field full">
+                        <label asp-for="ImageUrl"></label>
+                        <input asp-for="ImageUrl" id="imageUrl" placeholder="https://example.com/property-image.jpg" />
+                        <span asp-validation-for="ImageUrl" class="validation"></span>
+                        <div id="imagePreview" style="display:none;margin-top:10px">
+                            <img id="imagePreviewImage" src="" alt="Catalog preview" style="width:180px;height:120px;object-fit:cover;border-radius:12px;border:1px solid #dce5df" />
+                        </div>
+                    </div>
+                    <div class="field full">
+                        <label asp-for="ShortDescription"></label>
+                        <input asp-for="ShortDescription" placeholder="Short line shown in the catalog list" />
+                    </div>
+                    <div class="field full">
+                        <label asp-for="Description"></label>
+                        <textarea asp-for="Description" rows="5" placeholder="Property/product details, features, location, amenities, etc."></textarea>
+                    </div>
+                    <div class="field">
+                        <label asp-for="OriginalPriceText"></label>
+                        <input asp-for="OriginalPriceText" placeholder="Optional" />
+                    </div>
+                    <div class="field">
+                        <label asp-for="DiscountText"></label>
+                        <input asp-for="DiscountText" placeholder="Optional" />
+                    </div>
+                    <div class="field">
+                        <label asp-for="Rating"></label>
+                        <input asp-for="Rating" type="number" step="0.1" min="0" max="5" placeholder="Optional" />
+                    </div>
+                    <div class="field">
+                        <label asp-for="ReviewCount"></label>
+                        <input asp-for="ReviewCount" type="number" min="0" placeholder="Optional" />
+                    </div>
+                    @if (!isAdmin)
+                    {
+                        <div class="field"><label asp-for="ShowOnWebsite"></label><input asp-for="ShowOnWebsite" type="checkbox" /></div>
+                        <div class="field"><label asp-for="SortOrder"></label><input asp-for="SortOrder" type="number" min="0" placeholder="Optional" /></div>
+                    }
+                </div>
+
+                @if (isAdmin)
+                {
+                    <div style="background:#f7faf8;border:1px solid #e1ece5;border-radius:12px;padding:14px;margin:4px 0 18px;color:#536074;font-size:12px">
+                        <strong>WhatsApp rule:</strong> this form only creates the master catalog item. Open <b>WhatsApp Business</b> after saving to select items and arrange Rank 1, Rank 2, Rank 3, etc.
+                    </div>
+                }
+
+                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                    <button class="platform-btn platform-btn-primary" type="submit">@(isEditingCatalog ? "Save changes" : "Add catalog item")</button>
+                    @if (isEditingCatalog)
+                    {
+                        <a class="workspace-btn workspace-btn-secondary" asp-action="Index" asp-route-id="@business.Id">Cancel</a>
+                    }
+                </div>
+            </form>
+        </div>
+
+        @if (!isAdmin)
+        {
+            <div class="business-form" style="max-width:none;margin-top:24px">
+                <h2>Add hot deal</h2>
+                <form asp-action="AddOffer" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="BusinessId" value="@business.Id" />
+                    <div class="form-grid">
+                        <div class="field"><label>Title</label><input name="Title" required placeholder="Weekend Offer" /></div>
+                        <div class="field"><label>Discount</label><input name="DiscountText" placeholder="10% OFF" /></div>
+                        <div class="field full"><label>Image URL</label><input name="ImageUrl" placeholder="https://example.com/offer.jpg" /></div>
+                        <div class="field full"><label>Description</label><textarea name="Description" rows="4"></textarea></div>
+                    </div>
+                    <button class="platform-btn platform-btn-primary" type="submit">Add deal</button>
+                </form>
+            </div>
+        }
     </div>
 </section>
+
+@section Scripts {
+<script>
+(() => {
+    const input = document.getElementById('imageUrl');
+    const preview = document.getElementById('imagePreview');
+    const image = document.getElementById('imagePreviewImage');
+    if (!input || !preview || !image) return;
+
+    const refresh = () => {
+        const url = input.value.trim();
+        if (!url) {
+            preview.style.display = 'none';
+            image.removeAttribute('src');
+            return;
+        }
+        image.src = url;
+        preview.style.display = 'block';
+    };
+
+    image.addEventListener('error', () => preview.style.display = 'none');
+    input.addEventListener('input', refresh);
+    refresh();
+})();
+</script>
+}

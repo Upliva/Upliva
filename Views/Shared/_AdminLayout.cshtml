@@ -19,6 +19,8 @@
                 @if (User.IsInRole(PlatformRoles.Admin))
                 {
                     <a class="workspace-top-link" asp-controller="AdminDashboard" asp-action="Index">Dashboard</a>
+                    <a class="workspace-top-link" asp-controller="AdminMarketing" asp-action="Index">Leads & visits</a>
+                    <a class="workspace-top-link" asp-controller="AdminErrorLogs" asp-action="Index">Error logs</a>
                 }
                 else if (User.IsInRole(PlatformRoles.BusinessOwner))
                 {
@@ -32,6 +34,18 @@
         </div>
     </header>
     <main>@RenderBody()</main>
+    @if (TempData["ToastMessage"] is string toastMessage)
+    {
+        var toastType = TempData["ToastType"]?.ToString() ?? "success";
+        <div id="uplivaToast" class="upliva-toast upliva-toast-@toastType" role="status" aria-live="polite">
+            <div class="upliva-toast-icon">@(toastType == "error" ? "!" : toastType == "info" ? "i" : "✓")</div>
+            <div class="upliva-toast-body">
+                <strong>@(toastType == "error" ? "Not saved" : toastType == "info" ? "Information" : "Saved successfully")</strong>
+                <span>@toastMessage</span>
+            </div>
+            <button type="button" class="upliva-toast-close" onclick="document.getElementById('uplivaToast')?.remove()" aria-label="Close">×</button>
+        </div>
+    }
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

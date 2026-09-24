@@ -1,3 +1,39 @@
 @model BusinessEditViewModel
 @{ ViewData["Title"] = "Edit Business"; Layout = "_AdminLayout"; }
-<section class="admin-page"><div class="container admin-narrow"><div class="admin-head"><div><span class="platform-kicker dark">BUSINESS CONFIGURATION</span><h1>Edit business</h1><p>Business information can be updated here. Publishing remains an admin-only action.</p></div><div class="workspace-page-actions"><a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessDashboard" asp-action="Index">← Back to dashboard</a><a class="workspace-btn" asp-controller="BusinessManagement" asp-action="WebsiteContent">Website content</a><a class="workspace-btn" asp-controller="BusinessContent" asp-action="Index">Catalog &amp; offers</a></div></div><div class="business-form"><form method="post"><input type="hidden" asp-for="BusinessId" /><div asp-validation-summary="ModelOnly" class="validation"></div><div class="form-grid"><div class="field full"><label asp-for="Name"></label><input asp-for="Name" /></div><div class="field"><label asp-for="BusinessType"></label><input asp-for="BusinessType" /></div><div class="field"><label asp-for="OwnerName"></label><input asp-for="OwnerName" /></div><div class="field"><label asp-for="Email"></label><input asp-for="Email" /></div><div class="field"><label asp-for="PhoneNumber"></label><input asp-for="PhoneNumber" /></div><div class="field"><label asp-for="WhatsAppNumber"></label><input asp-for="WhatsAppNumber" /></div><div class="field"><label asp-for="City"></label><input asp-for="City" /></div><div class="field"><label asp-for="State"></label><input asp-for="State" /></div><div class="field"><label asp-for="PostalCode"></label><input asp-for="PostalCode" /></div><div class="field"><label asp-for="Country"></label><input asp-for="Country" /></div><div class="field full"><label asp-for="Address"></label><input asp-for="Address" /></div><div class="field full"><label asp-for="BusinessHours"></label><textarea asp-for="BusinessHours" rows="3"></textarea></div><div class="field full"><label asp-for="Tagline"></label><input asp-for="Tagline" /></div><div class="field full"><label asp-for="Description"></label><textarea asp-for="Description" rows="5"></textarea></div><div class="field full"><label asp-for="LogoUrl"></label><input asp-for="LogoUrl" /></div><div class="field full"><label asp-for="HeroImageUrl"></label><input asp-for="HeroImageUrl" /></div></div><button class="platform-btn platform-btn-primary" type="submit">Save changes →</button></form></div></div></section>
+<section class="admin-page"><div class="container admin-narrow"><div class="admin-head"><div><span class="platform-kicker dark">BUSINESS CONFIGURATION</span><h1>Edit business</h1><p>Business information can be updated here. Publishing remains an admin-only action.</p></div><div class="workspace-page-actions">@if (User.IsInRole(PlatformRoles.Admin)) { <a class="workspace-btn workspace-btn-secondary" asp-controller="AdminDashboard" asp-action="Index">← Back to admin</a> } else { <a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessDashboard" asp-action="Index">← Back to dashboard</a> }<a class="workspace-btn" asp-controller="BusinessManagement" asp-action="WebsiteContent">Website content</a><a class="workspace-btn" asp-controller="BusinessContent" asp-action="Index">Catalog &amp; offers</a></div></div><div class="business-form"><form asp-controller="BusinessManagement" asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()<input type="hidden" asp-for="BusinessId" /><div asp-validation-summary="ModelOnly" class="validation"></div><div class="form-grid"><div class="field full"><label asp-for="Name"></label><input asp-for="Name" />
+<span asp-validation-for="Name" class="field-validation"></span></div><div class="field"><label asp-for="BusinessType"></label><select asp-for="BusinessType">
+@foreach (var businessType in BusinessTypeOptions.All)
+{
+    <option value="@businessType">@businessType</option>
+}
+</select>
+<span asp-validation-for="BusinessType" class="field-validation"></span></div><div class="field"><label asp-for="OwnerName"></label><input asp-for="OwnerName" />
+<span asp-validation-for="OwnerName" class="field-validation"></span></div><div class="field"><label asp-for="Email"></label><input asp-for="Email" />
+<span asp-validation-for="Email" class="field-validation"></span></div><div class="field"><label asp-for="PhoneNumber"></label><input asp-for="PhoneNumber" />
+<span asp-validation-for="PhoneNumber" class="field-validation"></span></div><div class="field"><label asp-for="WhatsAppNumber"></label><input asp-for="WhatsAppNumber" />
+<span asp-validation-for="WhatsAppNumber" class="field-validation"></span></div><div class="field"><label asp-for="City"></label><input asp-for="City" />
+<span asp-validation-for="City" class="field-validation"></span></div><div class="field"><label asp-for="State"></label><input asp-for="State" />
+<span asp-validation-for="State" class="field-validation"></span></div><div class="field"><label asp-for="PostalCode"></label><input asp-for="PostalCode" />
+<span asp-validation-for="PostalCode" class="field-validation"></span></div><div class="field"><label asp-for="Country"></label><input asp-for="Country" />
+<span asp-validation-for="Country" class="field-validation"></span></div><div class="field full"><label asp-for="Address"></label><input asp-for="Address" />
+<span asp-validation-for="Address" class="field-validation"></span></div><div class="field full"><label asp-for="BusinessHours"></label><textarea asp-for="BusinessHours" rows="3"></textarea>
+<span asp-validation-for="BusinessHours" class="field-validation"></span></div><div class="field full"><label asp-for="Tagline"></label><input asp-for="Tagline" />
+<span asp-validation-for="Tagline" class="field-validation"></span></div><div class="field full"><label asp-for="Description"></label><textarea asp-for="Description" rows="5"></textarea>
+<span asp-validation-for="Description" class="field-validation"></span></div><div class="field full"><label asp-for="LogoUrl"></label><input asp-for="LogoUrl" />
+<span asp-validation-for="LogoUrl" class="field-validation"></span></div><div class="field full"><label asp-for="HeroImageUrl"></label><input asp-for="HeroImageUrl" />
+<span asp-validation-for="HeroImageUrl" class="field-validation"></span></div></div><button id="saveBusinessButton" class="platform-btn platform-btn-primary" type="submit">Save changes →</button></form></div></div></section>
+
+@section Scripts {
+<script>
+(() => {
+    const form = document.querySelector('form[asp-action="Edit"]') || document.querySelector('form[action$="/BusinessManagement/Edit"]');
+    const button = document.getElementById('saveBusinessButton');
+    if (!form || !button) return;
+    form.addEventListener('submit', () => {
+        button.disabled = true;
+        button.textContent = 'Saving…';
+    });
+})();
+</script>
+}

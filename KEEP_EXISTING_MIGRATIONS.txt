@@ -1,0 +1,10 @@
+IMPORTANT
+
+This package intentionally does NOT contain an EF Core Migrations folder.
+
+Keep the Migrations folder from your currently working project exactly as it is.
+Do not delete the database.
+Do not run Add-Migration for the registration changes in this package.
+
+The registration changes are application/view-model changes only.
+After copying the source files, Clean + Rebuild and run the application.

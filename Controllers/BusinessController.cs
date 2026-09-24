@@ -7,7 +7,11 @@ using UplivaAI.Services;
 namespace UplivaAI.Controllers;
 
 [Route("business")]
-public class BusinessController(IBusinessService businessService, UplivaDbContext db) : Controller
+public class BusinessController(
+    IBusinessService businessService,
+    UplivaDbContext db,
+    IBusinessCacheService businessCache,
+    IBusinessBrochureService brochureService) : Controller
 {
     [HttpGet("{slug}")]
     public async Task<IActionResult> Website(string slug, CancellationToken cancellationToken)
@@ -16,7 +20,26 @@ public class BusinessController(IBusinessService businessService, UplivaDbContex
         if (business is null)
             return NotFound();
 
-        return View("Website", await BuildWebsiteModelAsync(business, cancellationToken));
+        // If the business has chosen and verified its own domain, make that domain
+        // the canonical public URL. The UplivaAI /business/{slug} URL remains a
+        // fallback entry point, but customers are redirected to the business domain.
+        if (business.IsCustomDomainEnabled && business.IsCustomDomainVerified &&
+            !string.IsNullOrWhiteSpace(business.CustomDomain))
+        {
+            var requestHost = Request.Host.Host.Trim().ToLowerInvariant();
+            var customHost = business.CustomDomain.Trim().ToLowerInvariant();
+            if (!string.Equals(requestHost, customHost, StringComparison.OrdinalIgnoreCase))
+            {
+                return RedirectPermanent($"https://{customHost}/");
+            }
+        }
+
+        var model = await businessCache.GetOrCreateWebsiteAsync(
+            business.Id,
+            () => BuildWebsiteModelAsync(business, cancellationToken),
+            cancellationToken);
+
+        return View("Website", model);
     }
 
     [HttpPost("{slug}/enquiry")]
@@ -57,8 +80,9 @@ public class BusinessController(IBusinessService businessService, UplivaDbContex
             .FirstOrDefaultAsync(x => x.BusinessId == business.Id, cancellationToken)
             ?? new WebsiteConfiguration { BusinessId = business.Id };
 
+        // The public business website shows the full active catalog. WhatsApp uses only Admin-selected featured products.
         var catalog = await db.BusinessCatalogItems.AsNoTracking()
-            .Where(x => x.BusinessId == business.Id && x.IsActive && x.ShowOnWebsite)
+            .Where(x => x.BusinessId == business.Id && x.IsActive)
             .OrderBy(x => x.SortOrder)
             .ThenBy(x => x.Id)
             .ToListAsync(cancellationToken);
@@ -67,7 +91,6 @@ public class BusinessController(IBusinessService businessService, UplivaDbContex
             .Where(x => x.IsWhatsAppTopPick)
             .OrderBy(x => x.SortOrder)
             .ThenBy(x => x.Id)
-            .Take(6)
             .ToList();
 
         return new BusinessWebsiteViewModel
@@ -82,7 +105,8 @@ public class BusinessController(IBusinessService businessService, UplivaDbContex
                 .ToListAsync(cancellationToken),
             Testimonials = await db.BusinessTestimonials.AsNoTracking()
                 .Where(x => x.BusinessId == business.Id && x.IsPublished && !x.IsDemo)
-                .ToListAsync(cancellationToken)
+                .ToListAsync(cancellationToken),
+            Brochures = await brochureService.GetAsync(business.Id, cancellationToken)
         };
     }
 }

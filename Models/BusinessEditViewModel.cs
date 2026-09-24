@@ -18,10 +18,10 @@ public class BusinessEditViewModel
     [EmailAddress, MaxLength(200)]
     public string Email { get; set; } = string.Empty;
 
-    [Phone, MaxLength(30)]
+    [MaxLength(30)]
     public string PhoneNumber { get; set; } = string.Empty;
 
-    [Phone, MaxLength(30)]
+    [MaxLength(30)]
     public string WhatsAppNumber { get; set; } = string.Empty;
 
     [MaxLength(300)]

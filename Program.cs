@@ -4,14 +4,17 @@ using Microsoft.EntityFrameworkCore;
 using UplivaAI.Data;
 using UplivaAI.Models;
 using UplivaAI.Services;
+using UplivaAI.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Logging.ClearProviders();
-builder.Logging.AddConsole();
+builder.Logging.AddJsonConsole();
 builder.Logging.AddDebug();
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddMemoryCache(options => options.SizeLimit = 10_000);
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -27,6 +30,12 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IPasswordHasher<PlatformUser>, PasswordHasher<PlatformUser>>();
 builder.Services.AddScoped<IPlatformAuthService, PlatformAuthService>();
 builder.Services.AddScoped<IBusinessService, BusinessService>();
+builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+builder.Services.AddScoped<IErrorLogService, ErrorLogService>();
+builder.Services.AddScoped<IBusinessBrochureService, BusinessBrochureService>();
+builder.Services.AddScoped<IMarketingEngagementService, MarketingEngagementService>();
+builder.Services.AddScoped<IBusinessUrlService, BusinessUrlService>();
+builder.Services.AddSingleton<IBusinessCacheService, BusinessCacheService>();
 
 builder.Services.AddDbContext<UplivaDbContext>(options =>
     options.UseSqlServer(
@@ -47,9 +56,12 @@ var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
+app.UseMiddleware<CorrelationIdMiddleware>();
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+app.UseMiddleware<CustomDomainMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

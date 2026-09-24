@@ -23,4 +23,7 @@ public class BusinessWhatsAppSettings
     public string GraphApiVersion { get; set; } = "v26.0";
 
     public bool IsEnabled { get; set; }
+
+    /// <summary>Maximum number of business-selected products to showcase in WhatsApp.</summary>
+    public int FeaturedProductLimit { get; set; } = 6;
 }

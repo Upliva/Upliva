@@ -1,0 +1,233 @@
+@model BusinessIntegrationViewModel
+@{
+    ViewData["Title"] = "WhatsApp Business";
+    Layout = "_AdminLayout";
+    var groupedProducts = Model.WhatsAppProducts
+        .GroupBy(x => string.IsNullOrWhiteSpace(x.Category) ? "Other" : x.Category.Trim(), StringComparer.OrdinalIgnoreCase)
+        .OrderBy(x => x.Key);
+}
+
+<section class="admin-page">
+    <div class="container" style="max-width:1500px">
+        <div class="admin-head">
+            <div>
+                <span class="platform-kicker dark">WHATSAPP BUSINESS</span>
+                <h1>@Model.BusinessName</h1>
+                <p>@Model.BusinessType · @Model.WhatsAppNumber · @BusinessServicePlans.GetDisplayName(Model.ServicePlan)</p>
+            </div>
+            <div class="workspace-page-actions">
+                <a class="workspace-btn workspace-btn-secondary" asp-controller="AdminDashboard" asp-action="Index">← Back to dashboard</a>
+                <a class="workspace-btn" asp-controller="BusinessContent" asp-action="Index" asp-route-id="@Model.BusinessId">Manage catalog</a>
+            </div>
+        </div>
+
+        <div class="admin-note-card">
+            <strong>WhatsApp catalog showcase</strong>
+            <span>Maintain the master catalog separately. Here you select the items that should be shown on WhatsApp and arrange their display ranking.</span>
+        </div>
+
+        <div class="business-form" style="max-width:none;margin-top:18px">
+            <form asp-action="Manage" method="post" id="whatsappBusinessForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="BusinessId" />
+                <input type="hidden" asp-for="BusinessName" />
+                <input type="hidden" asp-for="BusinessType" />
+                <input type="hidden" asp-for="WhatsAppNumber" />
+                <input type="hidden" asp-for="ServicePlan" />
+                <div asp-validation-summary="ModelOnly" class="validation"></div>
+
+                <h2>1. WhatsApp Business connection</h2>
+                <div class="form-grid">
+                    <div class="field"><label asp-for="WabaId"></label><input asp-for="WabaId" placeholder="Meta WABA ID" /></div>
+                    <div class="field"><label asp-for="PhoneNumberId"></label><input asp-for="PhoneNumberId" placeholder="Meta Phone Number ID" /></div>
+                    <div class="field full"><label asp-for="AccessToken"></label><input asp-for="AccessToken" type="password" autocomplete="new-password" placeholder="Leave blank to keep current token" /></div>
+                    <div class="field"><label asp-for="WebhookVerifyToken"></label><input asp-for="WebhookVerifyToken" type="password" autocomplete="off" /></div>
+                    <div class="field"><label asp-for="GraphApiVersion"></label><input asp-for="GraphApiVersion" /></div>
+                    <div class="field"><label asp-for="FeaturedProductLimit"></label><input asp-for="FeaturedProductLimit" type="number" min="1" max="50" /></div>
+                    <div class="field full"><label><input asp-for="IsEnabled" /> Enable WhatsApp integration for this business</label></div>
+                </div>
+
+                <hr style="margin:32px 0" />
+
+                <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap">
+                    <div>
+                        <h2 style="margin-bottom:5px">2. WhatsApp catalog</h2>
+                        <p class="form-help" style="margin-bottom:0">Check an item to include it. Rank 1 is shown first. Categories are created automatically from your catalog.</p>
+                    </div>
+                    <span class="top-pick-badge"><span id="selectedCount">@Model.SelectedWhatsAppProductIds.Count</span> / @Model.FeaturedProductLimit selected</span>
+                </div>
+
+                @if (Model.WhatsAppProducts.Count == 0)
+                {
+                    <div style="padding:25px;margin-top:18px;background:#f7f5ef;border:1px solid #e7e0d4;border-radius:12px;color:#687284">
+                        No catalog items yet. <a asp-controller="BusinessContent" asp-action="Index" asp-route-id="@Model.BusinessId">Add the first catalog item →</a>
+                    </div>
+                }
+                else
+                {
+                    <div style="display:grid;grid-template-columns:minmax(260px,2fr) minmax(220px,1fr);gap:10px;margin:18px 0">
+                        <div class="field" style="margin:0">
+                            <label for="whatsappSearch">Search catalog</label>
+                            <input id="whatsappSearch" placeholder="Search property, product or SKU" />
+                        </div>
+                        <div class="field" style="margin:0">
+                            <label for="whatsappCategory">Category</label>
+                            <select id="whatsappCategory">
+                                <option value="">All categories</option>
+                                @foreach (var group in groupedProducts)
+                                {
+                                    <option value="@group.Key">@group.Key (@group.Count())</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="whatsappCatalogGroups">
+                    @foreach (var group in groupedProducts)
+                    {
+                        <section class="whatsapp-category-group" data-category="@group.Key" style="margin-top:20px;border:1px solid #e3ebe6;border-radius:14px;overflow:hidden;background:#fff">
+                            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;background:#f7faf8;border-bottom:1px solid #e3ebe6">
+                                <div>
+                                    <strong style="font-size:16px;color:#153d32">@group.Key</strong>
+                                    <span style="display:block;color:#77838e;font-size:12px;margin-top:3px">@group.Count() catalog item(s)</span>
+                                </div>
+                                <button type="button" class="workspace-btn workspace-btn-secondary select-category-btn" data-category="@group.Key">Select visible</button>
+                            </div>
+
+                            <div class="whatsapp-product-list">
+                            @foreach (var product in group.OrderBy(x => x.Rank > 0 ? x.Rank : int.MaxValue).ThenBy(x => x.Name))
+                            {
+                                <div class="whatsapp-rank-row" data-product-id="@product.Id" data-category="@group.Key" data-search="@($"{product.Name} {product.SKU} {product.Category}".ToLowerInvariant())" style="display:grid;grid-template-columns:auto 72px minmax(220px,1fr) 100px 80px;gap:14px;align-items:center;padding:14px 16px;border-bottom:1px solid #edf0ed">
+                                    <input class="whatsapp-product-checkbox" type="checkbox" name="SelectedWhatsAppProductIds" value="@product.Id" @(product.IsSelected ? "checked" : "") style="width:auto" />
+                                    @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
+                                    {
+                                        <img src="@product.ImageUrl" alt="@product.Name" loading="lazy" style="width:62px;height:50px;object-fit:cover;border-radius:9px;border:1px solid #e1e7e3" onerror="this.style.display='none';" />
+                                    }
+                                    else
+                                    {
+                                        <div style="width:62px;height:50px;border-radius:9px;background:#f1f5f2;display:flex;align-items:center;justify-content:center;font-size:10px;color:#819087">No image</div>
+                                    }
+                                    <span>
+                                        <strong>@product.Name</strong>
+                                        <span style="display:block;font-size:12px;color:#687284;margin-top:3px">@product.Category @(!string.IsNullOrWhiteSpace(product.SKU) ? "· SKU " + product.SKU : "")</span>
+                                    </span>
+                                    <span style="font-size:13px;color:#536074">@product.PriceText</span>
+                                    <input class="whatsapp-rank-input" type="number" min="1" max="50" name="WhatsAppProductRanks[@product.Id]" value="@(product.Rank > 0 ? product.Rank : "")" placeholder="#" @(product.IsSelected ? "" : "disabled") aria-label="Rank for @product.Name" />
+                                </div>
+                            }
+                            </div>
+                        </section>
+                    }
+                    </div>
+
+                    <div style="background:#f7faf8;border:1px solid #e1ece5;border-radius:12px;padding:14px;margin-top:14px;color:#536074;font-size:12px">
+                        <strong>WhatsApp rule:</strong> only checked products are included. UplivaAI normalizes the selected ranks to 1..N before saving, so the WhatsApp showcase always has a clean order.
+                    </div>
+                }
+
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:24px">
+                    <button id="saveWhatsAppButton" class="platform-btn platform-btn-primary" type="submit">Save WhatsApp Business &amp; catalog ranking →</button>
+                </div>
+            </form>
+
+            @if (Model.IsEnabled)
+            {
+                <form asp-action="TestWhatsApp" method="post" style="margin-top:12px">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.BusinessId" />
+                    <button class="workspace-btn" type="submit">Test WhatsApp connection</button>
+                </form>
+            }
+
+            <div style="margin-top:28px;padding:20px;background:#f7f5ef;border-radius:12px">
+                <strong>Webhook</strong>
+                <p style="margin:6px 0;color:#687872"><code>/webhooks/whatsapp</code></p>
+                <p style="margin:6px 0;color:#687872;font-size:13px">Meta/WABA onboarding and phone-number ownership still happen in Meta. This page stores the per-business connection and catalog showcase configuration used by UplivaAI.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+(() => {
+    const form = document.getElementById('whatsappBusinessForm');
+    const button = document.getElementById('saveWhatsAppButton');
+    const limitInput = document.getElementById('FeaturedProductLimit');
+    const count = document.getElementById('selectedCount');
+    const search = document.getElementById('whatsappSearch');
+    const category = document.getElementById('whatsappCategory');
+    const rows = [...document.querySelectorAll('.whatsapp-rank-row')];
+    const groups = [...document.querySelectorAll('.whatsapp-category-group')];
+
+    const refreshCountAndRanks = () => {
+        const selected = rows.filter(row => row.querySelector('.whatsapp-product-checkbox')?.checked);
+        if (count) count.textContent = selected.length;
+        selected.forEach((row, index) => {
+            const rank = row.querySelector('.whatsapp-rank-input');
+            if (rank && !rank.value) rank.value = index + 1;
+        });
+        rows.forEach(row => {
+            const checkbox = row.querySelector('.whatsapp-product-checkbox');
+            const rank = row.querySelector('.whatsapp-rank-input');
+            if (rank) rank.disabled = !checkbox?.checked;
+        });
+    };
+
+    const filter = () => {
+        const q = (search?.value || '').trim().toLowerCase();
+        const cat = (category?.value || '').trim().toLowerCase();
+        groups.forEach(group => {
+            const groupCategory = (group.dataset.category || '').toLowerCase();
+            let visible = 0;
+            group.querySelectorAll('.whatsapp-rank-row').forEach(row => {
+                const matchesText = !q || (row.dataset.search || '').includes(q);
+                const matchesCategory = !cat || groupCategory === cat;
+                const show = matchesText && matchesCategory;
+                row.style.display = show ? 'grid' : 'none';
+                if (show) visible++;
+            });
+            group.style.display = visible ? 'block' : 'none';
+        });
+    };
+
+    rows.forEach(row => row.querySelector('.whatsapp-product-checkbox')?.addEventListener('change', () => {
+        const limit = Number(limitInput?.value || 6);
+        const selected = rows.filter(x => x.querySelector('.whatsapp-product-checkbox')?.checked);
+        if (selected.length > limit) {
+            row.querySelector('.whatsapp-product-checkbox').checked = false;
+            alert(`You can select up to ${limit} WhatsApp products.`);
+        }
+        refreshCountAndRanks();
+    }));
+
+    document.querySelectorAll('.select-category-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            const cat = button.dataset.category;
+            const group = groups.find(x => (x.dataset.category || '') === cat);
+            if (!group) return;
+            const limit = Number(limitInput?.value || 6);
+            let selectedCount = rows.filter(x => x.querySelector('.whatsapp-product-checkbox')?.checked).length;
+            group.querySelectorAll('.whatsapp-rank-row').forEach(row => {
+                const checkbox = row.querySelector('.whatsapp-product-checkbox');
+                if (!checkbox?.checked && selectedCount < limit) {
+                    checkbox.checked = true;
+                    selectedCount++;
+                }
+            });
+            refreshCountAndRanks();
+        });
+    });
+
+    search?.addEventListener('input', filter);
+    category?.addEventListener('change', filter);
+
+    if (form && button) form.addEventListener('submit', () => {
+        button.disabled = true;
+        button.textContent = 'Saving…';
+    });
+
+    refreshCountAndRanks();
+})();
+</script>
+}

@@ -1,3 +1,5 @@
+using UplivaAI.Services;
+
 namespace UplivaAI.Models;
 
 public class BusinessWebsiteViewModel
@@ -8,4 +10,5 @@ public class BusinessWebsiteViewModel
     public List<BusinessCatalogItem> TopCatalog { get; set; } = [];
     public List<BusinessOffer> Offers { get; set; } = [];
     public List<BusinessTestimonial> Testimonials { get; set; } = [];
+    public IReadOnlyList<BusinessBrochure> Brochures { get; set; } = [];
 }

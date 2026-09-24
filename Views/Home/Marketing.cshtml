@@ -98,7 +98,7 @@
 
         <div class="upliva-proof-band">
             <div><strong>Serving businesses in 3 markets</strong><span>India · Sri Lanka · USA</span></div>
-            <div><strong>Built for growing businesses</strong><span>Retail · Grocery · Furniture · Salon · Restaurant · Services</span></div>
+            <div><strong>Built for growing businesses</strong><span>Retail · Grocery · Furniture · Real Estate · Rental Property · Hotel · Resort · Services</span></div>
             <div><strong>Start simple. Grow smarter.</strong><span>WhatsApp, website and AI-assisted productivity in one practical platform.</span></div>
         </div>
 
@@ -120,21 +120,21 @@
             <div class="upliva-pricing-grid">
                 <article class="upliva-price-card">
                     <span class="price-label">START</span>
-                    <h3>₹699</h3><small>/ starting</small>
+                    <h3>₹699</h3><small>/ month</small>
                     <p>For businesses getting their digital presence started.</p>
                     <ul><li>Business website</li><li>WhatsApp enquiry setup</li><li>Basic business showcase</li></ul>
                     <a href="/register" class="upliva-btn upliva-btn-secondary full">Get Started <span>↗</span></a>
                 </article>
                 <article class="upliva-price-card featured">
                     <span class="price-label">GROW</span><span class="price-popular">POPULAR</span>
-                    <h3>₹999</h3><small>/ starting</small>
+                    <h3>₹999</h3><small>/ month</small>
                     <p>A practical package for businesses ready to showcase products and offers.</p>
                     <ul><li>Everything in Start</li><li>Catalog & featured products</li><li>Hot deals showcase</li></ul>
                     <a href="/register" class="upliva-btn upliva-btn-primary full">Register your business <span>↗</span></a>
                 </article>
                 <article class="upliva-price-card">
                     <span class="price-label">SCALE</span>
-                    <h3>₹1,999</h3><small>/ starting</small>
+                    <h3>₹1,999</h3><small>/ month</small>
                     <p>For businesses that want a richer customer and WhatsApp experience.</p>
                     <ul><li>Everything in Grow</li><li>Advanced business showcase</li><li>AI-assisted productivity features</li></ul>
                     <a href="/register" class="upliva-btn upliva-btn-secondary full">Get Started <span>↗</span></a>
@@ -144,8 +144,187 @@
         </div>
 
         <div class="upliva-register-panel">
-            <div><span class="upliva-kicker">READY WHEN YOU ARE</span><h2>Make WhatsApp the front door to your business.</h2><p>Register your business. Our admin team reviews the details, configures your business page and publishes it when ready.</p></div>
-            <div class="upliva-register-card"><span class="register-badge">SERVING INDIA · SRI LANKA · USA</span><h3>Ready to turn chats into opportunities?</h3><div class="register-types"><span>Retail</span><span>Grocery</span><span>Hardware</span><span>Furniture</span><span>Salon</span><span>Restaurant</span><span>Services</span></div><a class="upliva-btn upliva-btn-primary full" href="/register">Register your business <span>↗</span></a><div class="register-login">Already registered? <a asp-route="UplivaLogin">Login here</a></div></div>
+            <div><span class="upliva-kicker">READY WHEN YOU ARE</span><h2>Make WhatsApp the front door to your business.</h2><p>Share your details. Our business team will call you first, understand what you need and then complete onboarding after you confirm.</p></div>
+            <div class="upliva-register-card"><span class="register-badge">SERVING INDIA · SRI LANKA · USA</span><h3>Ready to turn chats into opportunities?</h3><div class="register-types"><span>Retail</span><span>Grocery</span><span>Furniture</span><span>Real Estate</span><span>Rental Property</span><span>Hotel &amp; Resort</span><span>Services</span></div><a class="upliva-btn upliva-btn-primary full" href="/register">Register your business <span>↗</span></a><div class="register-login">Already registered? <a asp-route="UplivaLogin">Login here</a></div></div>
         </div>
     </div>
 </section>
+
+<!-- UplivaAI marketing lead chatbot: intentionally limited to three qualification questions for the initial MVP. -->
+<button type="button" class="upliva-chatbot-launch" id="uplivaChatbotLaunch" aria-label="Talk to Upliva Platform">
+    <span class="upliva-chatbot-dot"></span> Let's talk
+</button>
+<div class="upliva-chatbot" id="uplivaMarketingChatbot" aria-hidden="true">
+    <div class="upliva-chatbot-card">
+        <div class="upliva-chatbot-head"><div><span class="upliva-kicker">UPLIVA PLATFORM</span><strong>Let's grow your business</strong></div><div class="upliva-chatbot-head-actions"><button type="button" id="uplivaChatbotVoice" aria-label="Turn voice prompts on or off" title="Voice prompts">🔊</button><button type="button" id="uplivaChatbotClose" aria-label="Close">×</button></div></div>
+        <div class="upliva-chatbot-body">
+            <div class="upliva-chatbot-message">Johar Jharkhand! 👋 Welcome to the Upliva Platform. We're happy to help you grow your business with Upliva.</div>
+            <form id="uplivaLeadForm" class="upliva-chatbot-form" novalidate>
+                @Html.AntiForgeryToken()
+                <label data-chat-step="1">Please enter your name<input name="Name" maxlength="150" autocomplete="name" placeholder="Your name" required /></label>
+                <label data-chat-step="2" hidden>What type of business do you have?<select name="BusinessType" required><option value="">Select business type</option>@foreach (var type in BusinessTypeOptions.All){<option value="@type">@type</option>}</select></label>
+                <label data-chat-step="3" hidden>Please enter your 10-digit WhatsApp or mobile number<input name="WhatsAppNumber" maxlength="10" inputmode="numeric" autocomplete="tel" pattern="[6-9][0-9]{9}" placeholder="9876543210" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" required /></label>
+                <button type="button" class="upliva-chatbot-next" id="uplivaLeadNext">Continue</button>
+            </form>
+            <div class="upliva-chatbot-progress" id="uplivaLeadProgress">Question 1 of 3</div>
+            <div class="upliva-chatbot-result" id="uplivaLeadResult" hidden></div>
+        </div>
+    </div>
+</div>
+<script>
+(function(){
+ const launch=document.getElementById('uplivaChatbotLaunch'), chat=document.getElementById('uplivaMarketingChatbot'), close=document.getElementById('uplivaChatbotClose'), voiceButton=document.getElementById('uplivaChatbotVoice'), form=document.getElementById('uplivaLeadForm'), progress=document.getElementById('uplivaLeadProgress'), result=document.getElementById('uplivaLeadResult'), next=document.getElementById('uplivaLeadNext');
+ if(!launch||!chat||!form)return;
+ const steps=[...form.querySelectorAll('[data-chat-step]')];
+ const voiceSupported='speechSynthesis' in window && 'SpeechSynthesisUtterance' in window;
+ let current=0;
+ let voiceEnabled=voiceSupported;
+ const prompts=[
+   'Johar Jharkhand! Welcome to the Upliva Platform. We are happy to help you grow your business with Upliva. Please enter your name, tell us what type of business you have, and share your WhatsApp or phone number.',
+   'Please enter your name.',
+   'What type of business do you have?',
+   'Please enter your 10-digit WhatsApp or mobile number.',
+   'Your information was received successfully. Our business team will reach out to you within 24 hours. For support and assistance, connect with us at uplivasupport@gmail.com.'
+ ];
+ function speak(text){
+   if(!voiceEnabled||!voiceSupported)return;
+   window.speechSynthesis.cancel();
+   const utterance=new SpeechSynthesisUtterance(text);
+   utterance.lang='en-IN';
+   utterance.rate=0.95;
+   utterance.pitch=1;
+   window.speechSynthesis.speak(utterance);
+ }
+ function resetChat(){
+   current=0;
+   form.reset();
+   steps.forEach((step,n)=>{ step.hidden=n!==0; });
+   progress.hidden=false;
+   progress.textContent='Question 1 of 3';
+   result.hidden=true;
+   result.className='upliva-chatbot-result';
+   result.textContent='';
+   next.disabled=false;
+   next.textContent='Continue';
+ }
+ function open(){
+   // Always start a fresh lead conversation when the chatbot is opened again.
+   // This prevents previously submitted values from remaining in the DOM.
+   resetChat();
+   chat.classList.add('is-open');
+   chat.setAttribute('aria-hidden','false');
+   speak(prompts[0]);
+   setTimeout(()=>steps[0].querySelector('input,select')?.focus(),100);
+ }
+ function hide(){
+   chat.classList.remove('is-open');
+   chat.setAttribute('aria-hidden','true');
+   if(voiceSupported)window.speechSynthesis.cancel();
+ }
+ function showStep(i){steps.forEach((x,n)=>x.hidden=n!==i);progress.textContent=`Question ${i+1} of 3`;next.textContent=i===2?'Send details':'Continue';speak(prompts[i+1]);steps[i].querySelector('input,select')?.focus();}
+ launch.addEventListener('click',open);
+ close?.addEventListener('click',hide);
+ voiceButton?.addEventListener('click',()=>{
+   voiceEnabled=!voiceEnabled;
+   voiceButton.textContent=voiceEnabled?'🔊':'🔇';
+   voiceButton.setAttribute('aria-pressed',voiceEnabled?'true':'false');
+   if(voiceEnabled)speak(prompts[current+1] || prompts[0]); else if(voiceSupported)window.speechSynthesis.cancel();
+ });
+ next.addEventListener('click',async ()=>{
+   const field=steps[current].querySelector('input,select');
+   if(!field) return;
+
+   const value=(field.value||'').trim();
+   if(!value){
+     field.setCustomValidity('Please complete this question.');
+     field.reportValidity();
+     field.setCustomValidity('');
+     return;
+   }
+
+   if(current===0 && value.length>150){
+     field.setCustomValidity('Please enter a shorter name.');
+     field.reportValidity();
+     field.setCustomValidity('');
+     return;
+   }
+
+   if(current===1 && !value){
+     field.reportValidity();
+     return;
+   }
+
+   if(current===2){
+     const digits=value.replace(/\D/g,'');
+     if(!/^[6-9]\d{9}$/.test(digits)){
+       field.setCustomValidity('Please enter your 10-digit Indian WhatsApp / mobile number, for example 9876543210.');
+       field.reportValidity();
+       field.setCustomValidity('');
+       return;
+     }
+
+     next.disabled=true;
+     next.textContent='Sending...';
+     result.hidden=true;
+
+     // Protect the initial MVP from an indefinitely pending browser request.
+     const controller=new AbortController();
+     const timeoutId=setTimeout(()=>controller.abort(),15000);
+
+     try{
+       const fd=new FormData(form);
+       const token=form.querySelector('input[name="__RequestVerificationToken"]')?.value;
+       const headers={'X-Requested-With':'XMLHttpRequest','Accept':'application/json'};
+       if(token) headers['RequestVerificationToken']=token;
+
+       const res=await fetch('/marketing/chatbot/lead',{
+         method:'POST',
+         body:fd,
+         headers,
+         signal:controller.signal
+       });
+
+       const contentType=res.headers.get('content-type')||'';
+       let data;
+       if(contentType.includes('application/json')){
+         data=await res.json();
+       }else{
+         const text=await res.text();
+         data={success:false,message:text||'The server returned an unexpected response.'};
+       }
+
+       if(!res.ok||!data.success){
+         throw new Error(data.message||'We could not save your details. Please try again.');
+       }
+
+       // The lead is saved successfully. Do not leave the button in a fake
+       // loading state; explicitly show the completed state to the visitor.
+       // Do not hide the whole form: the stylesheet intentionally controls its layout.
+       // Hide only the question fields so the completed state is always visible.
+       steps.forEach(step=>step.hidden=true);
+       progress.hidden=true;
+       next.textContent='Submitted ✓';
+       next.disabled=true;
+       result.hidden=false;
+       result.className='upliva-chatbot-result success';
+       result.textContent='Your information was received successfully. Our business team will reach out to you within 24 hours. For support and assistance, connect with us at uplivasupport@gmail.com.';
+       speak(prompts[4]);
+     }catch(err){
+       result.hidden=false;
+       result.className='upliva-chatbot-result error';
+       result.textContent=err?.name==='AbortError'
+         ? 'The request took too long. Please check your connection and try again.'
+         : (err?.message||'We could not save your details. Please try again.');
+       next.disabled=false;
+       next.textContent='Send details';
+     }finally{
+       clearTimeout(timeoutId);
+     }
+     return;
+   }
+
+   current++;
+   showStep(current);
+ });
+})();
+</script>

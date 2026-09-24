@@ -13,6 +13,10 @@ public class UplivaDbContext(DbContextOptions<UplivaDbContext> options) : DbCont
     public DbSet<WebsiteConfiguration> WebsiteConfigurations => Set<WebsiteConfiguration>();
     public DbSet<BusinessEnquiry> BusinessEnquiries => Set<BusinessEnquiry>();
     public DbSet<BusinessWhatsAppSettings> BusinessWhatsAppSettings => Set<BusinessWhatsAppSettings>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<ErrorLog> ErrorLogs => Set<ErrorLog>();
+    public DbSet<MarketingLead> ChatbotLeads => Set<MarketingLead>();
+    public DbSet<PlatformVisit> PlatformVisits => Set<PlatformVisit>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -36,6 +40,28 @@ public class UplivaDbContext(DbContextOptions<UplivaDbContext> options) : DbCont
             .HasIndex(x => x.BusinessId)
             .IsUnique();
 
+        modelBuilder.Entity<AuditLog>()
+            .HasIndex(x => new { x.BusinessId, x.CreatedAtUtc });
+
+        modelBuilder.Entity<AuditLog>()
+            .HasIndex(x => x.CorrelationId);
+
+        modelBuilder.Entity<Business>()
+            .HasIndex(x => x.CustomDomain)
+            .IsUnique()
+            .HasFilter("[CustomDomain] IS NOT NULL");
+
+        modelBuilder.Entity<Business>()
+            .HasIndex(x => x.WhatsAppNumber)
+            .IsUnique()
+            .HasFilter("[WhatsAppNumber] IS NOT NULL AND [WhatsAppNumber] <> ''");
+
+        modelBuilder.Entity<ErrorLog>()
+            .HasIndex(x => new { x.BusinessId, x.CreatedAtUtc });
+
+        modelBuilder.Entity<ErrorLog>()
+            .HasIndex(x => x.CorrelationId);
+
         modelBuilder.Entity<BusinessCatalogItem>()
             .HasIndex(x => x.BusinessId);
 
@@ -50,5 +76,23 @@ public class UplivaDbContext(DbContextOptions<UplivaDbContext> options) : DbCont
 
         modelBuilder.Entity<BusinessTestimonial>()
             .HasIndex(x => x.BusinessId);
+
+        modelBuilder.Entity<MarketingLead>()
+            .ToTable("ChatbotLeads");
+
+        modelBuilder.Entity<MarketingLead>()
+            .HasIndex(x => x.CreatedAtUtc);
+
+        modelBuilder.Entity<MarketingLead>()
+            .HasIndex(x => x.WhatsAppNumber);
+
+        modelBuilder.Entity<MarketingLead>()
+            .HasIndex(x => x.Status);
+
+        modelBuilder.Entity<PlatformVisit>()
+            .HasIndex(x => x.CreatedAtUtc);
+
+        modelBuilder.Entity<PlatformVisit>()
+            .HasIndex(x => x.VisitorId);
     }
 }

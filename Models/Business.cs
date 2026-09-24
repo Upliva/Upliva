@@ -2,6 +2,20 @@ using System.ComponentModel.DataAnnotations;
 
 namespace UplivaAI.Models;
 
+public static class BusinessServicePlans
+{
+    public const string WhatsAppOnly = MarketingLeadPlans.WhatsAppOnly;
+    public const string WhatsAppWebsite = MarketingLeadPlans.WhatsAppWebsite;
+    public const string WhatsAppWebsiteEnquiry = MarketingLeadPlans.WhatsAppWebsiteEnquiry;
+
+    public static IReadOnlyList<string> All { get; } = new[]
+    {
+        WhatsAppOnly, WhatsAppWebsite, WhatsAppWebsiteEnquiry
+    };
+
+    public static string GetDisplayName(string? plan) => MarketingLeadPlans.GetDisplayName(plan);
+}
+
 public static class BusinessStatuses
 {
     public const string Pending = "Pending";
@@ -25,6 +39,9 @@ public class Business
 
     [Required, MaxLength(40)]
     public string Status { get; set; } = BusinessStatuses.Pending;
+
+    [MaxLength(40)]
+    public string ServicePlan { get; set; } = string.Empty;
 
     public bool IsPublished { get; set; }
 
@@ -69,6 +86,12 @@ public class Business
 
     [MaxLength(500)]
     public string HeroImageUrl { get; set; } = string.Empty;
+
+    [MaxLength(253)]
+    public string? CustomDomain { get; set; }
+
+    public bool IsCustomDomainEnabled { get; set; }
+    public bool IsCustomDomainVerified { get; set; }
 
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime? ApprovedAtUtc { get; set; }

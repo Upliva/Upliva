@@ -16,3 +16,12 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+
+// Auto-dismiss save/result notifications without affecting existing page behavior.
+document.addEventListener("DOMContentLoaded", () => {
+    const toast = document.getElementById("uplivaToast");
+    if (toast) {
+        window.setTimeout(() => toast.remove(), 5500);
+    }
+});

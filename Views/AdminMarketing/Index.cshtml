@@ -1,0 +1,126 @@
+@model MarketingLeadStatsViewModel
+@{ ViewData["Title"] = "Business Leads & Website Visits"; Layout = "_AdminLayout"; }
+<section class="admin-page">
+    <div class="container">
+        <div class="admin-head">
+            <div>
+                <span class="platform-kicker dark">MARKETING &amp; SALES PIPELINE</span>
+                <h1>Business leads &amp; website visits</h1>
+                <p>Capture interest first. Call the prospect yourself, record the outcome and select the plan only after the customer confirms.</p>
+            </div>
+            <a class="admin-primary-link" asp-action="ExportLeadsCsv">Export CSV</a>
+        </div>
+
+        <div class="admin-stats">
+            <div><strong>@Model.TotalVisits</strong><span>Total visits</span></div>
+            <div><strong>@Model.UniqueVisitors</strong><span>Unique visitors</span></div>
+            <div><strong>@Model.TotalLeads</strong><span>Total leads</span></div>
+            <div><strong>@Model.LeadsToday</strong><span>Leads today</span></div>
+            <div><strong>@Model.InterestedLeads</strong><span>Interested</span></div>
+            <div><strong>@Model.WhatsAppOnlyLeads</strong><span>WhatsApp plan</span></div>
+            <div><strong>@Model.WhatsAppWebsiteLeads</strong><span>WhatsApp + Website</span></div>
+            <div><strong>@Model.WhatsAppWebsiteEnquiryLeads</strong><span>WhatsApp + Website + Enquiry</span></div>
+        </div>
+
+        <form method="get" asp-action="Index" class="lead-search-bar">
+            <div class="lead-search-field">
+                <label for="leadSearch">Search leads</label>
+                <input id="leadSearch" name="q" value="@Model.SearchTerm" placeholder="Search by name, business category or WhatsApp number" autocomplete="off" />
+            </div>
+            <button type="submit" class="workspace-btn workspace-btn-secondary">Search</button>
+            @if (!string.IsNullOrWhiteSpace(Model.SearchTerm))
+            {
+                <a asp-action="Index" class="workspace-btn workspace-btn-secondary">Clear</a>
+            }
+        </form>
+
+        <div class="admin-table-wrap">
+            <table class="admin-table lead-pipeline-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Business type</th>
+                        <th>WhatsApp / phone</th>
+                        <th>Status</th>
+                        <th>Plan</th>
+                        <th>Internal notes</th>
+                        <th>Captured</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @if (Model.RecentLeads.Count == 0)
+                {
+                    <tr><td colspan="8">No business leads yet.</td></tr>
+                }
+                else
+                {
+                    foreach (var lead in Model.RecentLeads)
+                    {
+                        <tr>
+                            <td><strong>@lead.Name</strong><small class="lead-source">@lead.Source</small></td>
+                            <td>@lead.BusinessType</td>
+                            <td><a href="tel:+@lead.WhatsAppNumber">@((lead.WhatsAppNumber.Length == 12 && lead.WhatsAppNumber.StartsWith("91", StringComparison.Ordinal)) ? $"+91 {lead.WhatsAppNumber[2..]}" : lead.WhatsAppNumber)</a></td>
+                            <td><span class="lead-status lead-status-@lead.Status.ToLowerInvariant().Replace(" ", "-")">@lead.Status</span></td>
+                            <td><span class="lead-plan-display">@MarketingLeadPlans.GetDisplayName(lead.SelectedPlan)</span></td>
+                            <td class="lead-notes-cell">@(string.IsNullOrWhiteSpace(lead.AdminNotes) ? "—" : lead.AdminNotes)</td>
+                            <td>@lead.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</td>
+                            <td>
+                                <div class="lead-actions-stack">
+                                    <div class="lead-edit-label">Edit lead</div>
+                                    <form asp-action="UpdateLead" method="post" class="lead-update-form">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@lead.Id" />
+                                        <input type="hidden" name="q" value="@Model.SearchTerm" />
+                                        <input type="hidden" name="page" value="@Model.Page" />
+                                        <select name="status" aria-label="Update status for @lead.Name">
+                                            @foreach (var status in MarketingLeadStatuses.All)
+                                            {
+                                                <option value="@status" selected="@(lead.Status == status ? "selected" : null)">@status</option>
+                                            }
+                                        </select>
+                                        <select name="selectedPlan" aria-label="Select plan for @lead.Name">
+                                            <option value="">Plan not selected</option>
+                                            @foreach (var plan in MarketingLeadPlans.All)
+                                            {
+                                                <option value="@plan" selected="@(lead.SelectedPlan == plan ? "selected" : null)">@MarketingLeadPlans.GetDisplayName(plan)</option>
+                                            }
+                                        </select>
+                                        <input name="adminNotes" value="@lead.AdminNotes" maxlength="1000" placeholder="Call notes" aria-label="Internal notes for @lead.Name" />
+                                        <button type="submit" class="workspace-btn workspace-btn-secondary">Save</button>
+                                    </form>
+                                    <form asp-action="DeleteLead" method="post" onsubmit="return confirm('Delete this lead permanently? This cannot be undone.');">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@lead.Id" />
+                                        <button type="submit" class="workspace-btn workspace-btn-danger">Delete lead</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                </tbody>
+            </table>
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <div class="lead-pagination" aria-label="Lead pagination">
+                @if (Model.Page > 1)
+                {
+                    <a asp-action="Index" asp-route-q="@Model.SearchTerm" asp-route-page="@(Model.Page - 1)" class="workspace-btn workspace-btn-secondary">← Previous</a>
+                }
+                <span>Page @Model.Page of @Model.TotalPages · @Model.TotalFilteredLeads matching leads</span>
+                @if (Model.Page < Model.TotalPages)
+                {
+                    <a asp-action="Index" asp-route-q="@Model.SearchTerm" asp-route-page="@(Model.Page + 1)" class="workspace-btn workspace-btn-secondary">Next →</a>
+                }
+            </div>
+        }
+
+        <div class="admin-note-card">
+            <strong>Recommended initial process</strong>
+            <span>Website/chatbot → Name + Business Category + WhatsApp/phone → ChatbotLeads → Upliva team calls the person → mark Interested or Not Interested → if Interested, select WhatsApp, WhatsApp + Website, or WhatsApp + Website + Business Enquiry → the lead appears immediately in its plan category on the admin dashboard → create the Business → it becomes active immediately. If the person is not interested, delete the lead. No IP address is stored.</span>
+        </div>
+    </div>
+</section>

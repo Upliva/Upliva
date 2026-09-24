@@ -1,5 +1,67 @@
-@model BusinessRegistrationViewModel
-@{ ViewData["Title"] = "Register your business"; Layout = "_MarketingLayout"; }
-<section class="platform-page-hero"><div class="container"><span class="platform-kicker">BUSINESS REGISTRATION</span><h1>Tell us about your business.</h1><p>Choose your business type and submit your details. An UplivaAI administrator will review the registration before the website is approved and published.</p></div></section>
-<section class="platform-section platform-soft"><div class="container registration-grid"><div class="registration-info"><span class="platform-kicker dark">WHAT HAPPENS NEXT</span><h2>Approval before publishing.</h2><ol><li><strong>Register</strong><span>Submit business and owner details.</span></li><li><strong>Admin review</strong><span>Our authorized admin verifies the submission.</span></li><li><strong>Configure</strong><span>Approved owners can manage permitted content.</span></li><li><strong>Publish</strong><span>Only admin can publish the public website.</span></li></ol></div><div class="business-form"><form method="post"><div asp-validation-summary="ModelOnly" class="validation"></div><div class="form-grid"><div class="field full"><label asp-for="BusinessName"></label><input asp-for="BusinessName" placeholder="ABC Grocery" /><span asp-validation-for="BusinessName"></span></div><div class="field"><label asp-for="BusinessType"></label><select asp-for="BusinessType"><option value="">Select business type</option><option>Mobile Shop</option><option>Electronics Store</option><option>Retail</option><option>Grocery</option><option>Hardware</option><option>Furniture</option><option>Salon &amp; Beauty</option><option>Restaurant</option><option>Pathology / Diagnostic</option><option>School / Education</option><option>Transportation</option><option>Other</option></select><span asp-validation-for="BusinessType"></span></div><div class="field"><label asp-for="WebsiteTitle"></label><input asp-for="WebsiteTitle" placeholder="SmartZone Mobiles – Smartphones &amp; Accessories" /><span asp-validation-for="WebsiteTitle"></span></div><div class="field"><label asp-for="OwnerName"></label><input asp-for="OwnerName" /><span asp-validation-for="OwnerName"></span></div><div class="field"><label asp-for="Email"></label><input asp-for="Email" /><span asp-validation-for="Email"></span></div><div class="field"><label asp-for="PhoneNumber"></label><input asp-for="PhoneNumber" /><span asp-validation-for="PhoneNumber"></span></div><div class="field"><label asp-for="WhatsAppNumber"></label><input asp-for="WhatsAppNumber" placeholder="919XXXXXXXXX" /><span asp-validation-for="WhatsAppNumber"></span></div><div class="field"><label asp-for="City"></label><input asp-for="City" /></div><div class="field"><label asp-for="State"></label><input asp-for="State" /></div><div class="field"><label asp-for="PostalCode"></label><input asp-for="PostalCode" /></div><div class="field"><label asp-for="Country"></label><input asp-for="Country" /></div><div class="field full"><label asp-for="Address"></label><input asp-for="Address" /></div><div class="field full"><label asp-for="BusinessHours"></label><textarea asp-for="BusinessHours" rows="3" placeholder="Mon-Sat: 10:00 AM - 8:00 PM
-Sunday: 11:00 AM - 5:00 PM"></textarea></div><div class="field full"><label asp-for="Description"></label><textarea asp-for="Description" rows="4" placeholder="What does your business offer?"></textarea></div><div class="field"><label asp-for="Password"></label><input asp-for="Password" /><span asp-validation-for="Password"></span></div><div class="field"><label asp-for="ConfirmPassword"></label><input asp-for="ConfirmPassword" /><span asp-validation-for="ConfirmPassword"></span></div></div><button class="platform-btn platform-btn-primary" type="submit">Submit registration →</button></form></div></div></section>
+@model UplivaAI.Models.LeadRegistrationViewModel
+@{ ViewData["Title"] = "Grow your business with Upliva"; Layout = "_MarketingLayout"; }
+
+<section class="platform-section platform-soft">
+    <div class="container registration-grid registration-lead-only">
+        <div class="registration-info">
+            <span class="platform-kicker dark">START WITH UPLIVA</span>
+            <h2>Let's grow your business.</h2>
+            <p class="registration-lead-copy">Share just three details. There is no password, catalog or lengthy business form at this stage.</p>
+            <div class="registration-steps">
+                <div><span>01</span><strong>Tell us about you</strong><small>Name, business category and WhatsApp / phone.</small></div>
+                <div><span>02</span><strong>Our team connects</strong><small>We will contact you within 24 hours to understand your needs.</small></div>
+                <div><span>03</span><strong>Complete onboarding later</strong><small>After confirmation, we collect your catalog, images, PDF and website details.</small></div>
+            </div>
+        </div>
+
+        <div class="business-form lead-registration-card">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="validation" role="alert">
+                    <strong>Please check the details below.</strong>
+                    <ul style="margin:6px 0 0 18px;padding:0;">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors).Where(e => !string.IsNullOrWhiteSpace(e.ErrorMessage)))
+                        { <li>@error.ErrorMessage</li> }
+                    </ul>
+                </div>
+            }
+
+            <div class="lead-form-heading">
+                <span class="platform-kicker dark">BUSINESS ENQUIRY</span>
+                <h3>Tell us how we can help</h3>
+                <p>Share three details and we will save your enquiry. No account, password or business profile is created at this stage.</p>
+            </div>
+
+            <form method="post">
+                @Html.AntiForgeryToken()
+                <div class="lead-form-fields">
+                    <div class="field full">
+                        <label asp-for="Name"></label>
+                        <input asp-for="Name" placeholder="Rahul Sharma" autocomplete="name" autofocus />
+                        <span asp-validation-for="Name"></span>
+                    </div>
+                    <div class="field full">
+                        <label asp-for="BusinessType"></label>
+                        <select asp-for="BusinessType">
+                            <option value="">Select your business category</option>
+                            @foreach (var businessType in BusinessTypeOptions.All)
+                            { <option value="@businessType">@businessType</option> }
+                        </select>
+                        <span asp-validation-for="BusinessType"></span>
+                    </div>
+                    <div class="field full">
+                        <label asp-for="WhatsAppNumber"></label>
+                        <input asp-for="WhatsAppNumber" placeholder="9876543210" maxlength="10" autocomplete="tel" inputmode="numeric" pattern="[6-9][0-9]{9}" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" />
+                        <span class="field-hint">Enter 10 digits only. Example: 9876543210. We will add +91 automatically.</span>
+                        <span asp-validation-for="WhatsAppNumber"></span>
+                    </div>
+                </div>
+
+                <button class="platform-btn platform-btn-primary full lead-submit-btn" type="submit">Send my details <span>→</span></button>
+                <p class="lead-privacy-note">No account is created at this stage. Your details are used to help our business team follow up with you.</p>
+            </form>
+        </div>
+    </div>
+</section>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

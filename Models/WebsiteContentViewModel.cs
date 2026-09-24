@@ -51,4 +51,8 @@ public class WebsiteContentViewModel
     public bool ShowWhyChooseUs { get; set; } = true;
     public bool ShowServices { get; set; } = true;
     public bool ShowCallToAction { get; set; } = true;
+    public bool ShowOffers { get; set; } = true;
+    public bool ShowTestimonials { get; set; } = true;
+    public bool ShowCatalog { get; set; } = true;
+    public bool ShowWhatsApp { get; set; } = true;
 }

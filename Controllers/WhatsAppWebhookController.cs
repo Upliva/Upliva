@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using UplivaAI.Models;
 using UplivaAI.Services;
+using UplivaAI.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace UplivaAI.Controllers;
 
@@ -10,22 +12,27 @@ namespace UplivaAI.Controllers;
 [Route("webhooks/whatsapp")]
 public class WhatsAppWebhookController(
     IOptions<WhatsAppSettings> options,
+    UplivaDbContext db,
     IWhatsAppFlowService flowService,
     ILogger<WhatsAppWebhookController> logger) : ControllerBase
 {
     private readonly WhatsAppSettings _settings = options.Value;
 
     [HttpGet]
-    public IActionResult Verify(
+    public async Task<IActionResult> Verify(
         [FromQuery(Name = "hub.mode")] string? mode,
         [FromQuery(Name = "hub.verify_token")] string? verifyToken,
         [FromQuery(Name = "hub.challenge")] string? challenge)
     {
         logger.LogInformation("WhatsApp webhook verification request received.");
 
+        var businessTokenMatches = !string.IsNullOrWhiteSpace(verifyToken) &&
+            await db.BusinessWhatsAppSettings.AsNoTracking()
+                .AnyAsync(x => x.IsEnabled && x.WebhookVerifyToken == verifyToken, HttpContext.RequestAborted);
+
         if (mode == "subscribe" &&
             !string.IsNullOrWhiteSpace(verifyToken) &&
-            verifyToken == _settings.WebhookVerifyToken)
+            (verifyToken == _settings.WebhookVerifyToken || businessTokenMatches))
         {
             logger.LogInformation("WhatsApp webhook verification successful.");
             return Content(challenge ?? string.Empty);

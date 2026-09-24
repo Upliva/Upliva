@@ -4,6 +4,7 @@ namespace UplivaAI.Models;
 
 public class BusinessCatalogItemViewModel
 {
+    public int Id { get; set; }
     public int BusinessId { get; set; }
 
     [Required, MaxLength(150)]
@@ -56,7 +57,7 @@ public class BusinessCatalogItemViewModel
     [Display(Name = "Review count")]
     public int ReviewCount { get; set; }
 
-    [Display(Name = "WhatsApp Top 6")]
+    [Display(Name = "WhatsApp Featured Product")]
     public bool IsWhatsAppTopPick { get; set; }
 
     [Display(Name = "Show on website")]

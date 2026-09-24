@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UplivaAI.Models;
 using UplivaAI.Services;
 
 namespace UplivaAI.Controllers;
 
+[Authorize(Roles = PlatformRoles.Admin)]
 public class WhatsAppController(
     IWhatsAppService whatsapp,
     ILogger<WhatsAppController> logger) : Controller

@@ -21,6 +21,10 @@ public class BusinessDashboardController(UplivaDbContext db) : Controller
         if (business is null)
             return NotFound();
 
+        // A business owner dashboard is available only after platform approval.
+        if (!string.Equals(business.Status, BusinessStatuses.Approved, StringComparison.OrdinalIgnoreCase))
+            return Forbid();
+
         ViewBag.CatalogCount = await db.BusinessCatalogItems.CountAsync(x => x.BusinessId == business.Id, cancellationToken);
         ViewBag.OfferCount = await db.BusinessOffers.CountAsync(x => x.BusinessId == business.Id, cancellationToken);
         ViewBag.EnquiryCount = await db.BusinessEnquiries.CountAsync(x => x.BusinessId == business.Id, cancellationToken);

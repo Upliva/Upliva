@@ -49,6 +49,7 @@
             @if (Model.Configuration.ShowServices) { <a href="#services">Services</a> }
             @if (Model.Configuration.ShowCatalog) { <a href="#catalog">Products</a> }
             @if (Model.Configuration.ShowOffers && Model.Offers.Any()) { <a href="#offers">Offers</a> }
+            @if (Model.Brochures.Any()) { <a href="#brochures">Brochures</a> }
             <a href="#enquiry">Contact</a>
         </nav>
     </div>

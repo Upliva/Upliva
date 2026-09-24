@@ -1,46 +1,80 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using UplivaAI.Data;
-using UplivaAI.Models;
 using UplivaAI.Services;
+using UplivaAI.Models;
 
 namespace UplivaAI.Controllers;
 
 public class BusinessRegistrationController(
-    IBusinessService businessService,
-    IPlatformAuthService authService,
-    UplivaDbContext db) : Controller
+    IMarketingEngagementService marketingEngagement) : Controller
 {
-
     [HttpGet]
-    public IActionResult Register() => View(new BusinessRegistrationViewModel());
+    public async Task<IActionResult> Register(CancellationToken cancellationToken)
+    {
+        var visitorId = Request.Cookies.TryGetValue("UplivaAI.VisitorId", out var existing) && !string.IsNullOrWhiteSpace(existing)
+            ? existing
+            : Guid.NewGuid().ToString("N");
+
+        if (!Request.Cookies.ContainsKey("UplivaAI.VisitorId"))
+        {
+            Response.Cookies.Append("UplivaAI.VisitorId", visitorId, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Lax,
+                IsEssential = true,
+                MaxAge = TimeSpan.FromDays(365)
+            });
+        }
+
+        await marketingEngagement.RecordVisitAsync(visitorId, Request.Path, cancellationToken);
+        return View(new LeadRegistrationViewModel());
+    }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Register(BusinessRegistrationViewModel model, CancellationToken cancellationToken)
+    public async Task<IActionResult> Register(LeadRegistrationViewModel model, CancellationToken cancellationToken)
     {
+        model.Name = model.Name?.Trim() ?? string.Empty;
+        model.BusinessType = model.BusinessType?.Trim() ?? string.Empty;
+        var enteredPhone = new string((model.WhatsAppNumber ?? string.Empty).Where(char.IsDigit).ToArray());
+
+        if (!BusinessRegistrationInputHelper.IsValidIndianLeadWhatsAppNumber(enteredPhone))
+        {
+            ModelState.AddModelError(nameof(model.WhatsAppNumber),
+                "Please enter your 10-digit Indian WhatsApp / mobile number.");
+        }
+        else
+        {
+            // Visitors enter only 10 digits. Store 91xxxxxxxxxx internally for WhatsApp.
+            model.WhatsAppNumber = BusinessRegistrationInputHelper.NormalizeIndianLeadWhatsAppNumber(enteredPhone);
+        }
+
         if (!ModelState.IsValid)
             return View(model);
 
-        if (await authService.FindByEmailAsync(model.Email, cancellationToken) is not null)
+        try
         {
-            ModelState.AddModelError(nameof(model.Email), "An account already exists with this email address.");
+            var visitorId = Request.Cookies.TryGetValue("UplivaAI.VisitorId", out var value)
+                ? value ?? string.Empty
+                : string.Empty;
+
+            await marketingEngagement.CaptureLeadAsync(
+                model.Name,
+                model.BusinessType,
+                model.WhatsAppNumber,
+                visitorId,
+                "BusinessRegistration",
+                cancellationToken);
+
+            return RedirectToAction(nameof(Success));
+        }
+        catch (ArgumentException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
             return View(model);
         }
-
-        var business = await businessService.RegisterAsync(model, cancellationToken);
-        await authService.CreateBusinessOwnerAsync(model, business.Id, cancellationToken);
-
-        return RedirectToAction(nameof(Pending), new { slug = business.Slug });
     }
 
     [HttpGet]
-    public async Task<IActionResult> Pending(string slug, CancellationToken cancellationToken)
-    {
-        var business = await db.Businesses.AsNoTracking().FirstOrDefaultAsync(x => x.Slug == slug, cancellationToken);
-        if (business is null)
-            return NotFound();
-
-        return View(business);
-    }
+    public IActionResult Success() => View();
 }

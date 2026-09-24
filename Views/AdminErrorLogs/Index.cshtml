@@ -1,0 +1,40 @@
+@model IReadOnlyList<ErrorLog>
+@{ ViewData["Title"] = "Application Error Logs"; Layout = "_AdminLayout"; }
+<section class="admin-page">
+    <div class="container">
+        <div class="admin-head">
+            <div>
+                <span class="platform-kicker dark">TROUBLESHOOTING</span>
+                <h1>Application error logs</h1>
+                <p>Every unhandled application exception is stored with its correlation ID so support can trace the request.</p>
+            </div>
+        </div>
+        <form method="get" class="business-form" style="margin-bottom:24px">
+            <div class="form-grid">
+                <div class="field"><label>Correlation ID</label><input name="correlationId" value="@ViewBag.CorrelationId" /></div>
+                <div class="field"><label>Business ID</label><input name="businessId" type="number" value="@ViewBag.BusinessId" /></div>
+            </div>
+            <button class="platform-btn platform-btn-primary" type="submit">Search logs</button>
+        </form>
+        <div class="admin-table-wrap">
+            <table class="admin-table">
+                <thead><tr><th>Time</th><th>Status</th><th>Error</th><th>Request</th><th>User</th><th>Business</th><th>Correlation ID</th></tr></thead>
+                <tbody>
+                @foreach (var log in Model)
+                {
+                    <tr>
+                        <td>@log.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy HH:mm:ss")</td>
+                        <td>@log.StatusCode</td>
+                        <td><strong>@log.ExceptionType</strong><small>@log.Message</small></td>
+                        <td>@log.HttpMethod<br /><small>@log.RequestPath</small></td>
+                        <td>@log.UserEmail</td>
+                        <td>@(log.BusinessId?.ToString() ?? "-")</td>
+                        <td><code>@log.CorrelationId</code></td>
+                    </tr>
+                }
+                @if (Model.Count == 0) { <tr><td colspan="7">No application errors found.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

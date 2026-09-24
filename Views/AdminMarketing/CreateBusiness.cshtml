@@ -1,0 +1,55 @@
+@model CreateBusinessFromLeadViewModel
+@{ ViewData["Title"] = "Create Business from Lead"; Layout = "_AdminLayout"; }
+<section class="admin-page">
+    <div class="container admin-narrow">
+        <div class="admin-head">
+            <div>
+                <span class="platform-kicker dark">CONFIRMED LEAD</span>
+                <h1>Create business</h1>
+                <p>Create the real business record only after your team has spoken with the interested customer. Catalog and website content can be added next.</p>
+            </div>
+            <a class="workspace-btn workspace-btn-secondary" asp-action="Index">← Back to leads</a>
+        </div>
+
+        <div asp-validation-summary="ModelOnly" class="validation"></div>
+        <form asp-action="CreateBusiness" method="post" class="business-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="LeadId" />
+            <div class="form-grid">
+                <div class="field full">
+                    <label asp-for="BusinessName"></label>
+                    <input asp-for="BusinessName" placeholder="e.g. GreenView Realty & Developers" autofocus />
+                    <span asp-validation-for="BusinessName" class="validation"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="OwnerName"></label>
+                    <input asp-for="OwnerName" readonly />
+                </div>
+                <div class="field">
+                    <label asp-for="BusinessType"></label>
+                    <input asp-for="BusinessType" readonly />
+                </div>
+                <div class="field">
+                    <label asp-for="WhatsAppNumber"></label>
+                    <input asp-for="WhatsAppNumber" readonly />
+                </div>
+                <div class="field">
+                    <label asp-for="ServicePlan"></label>
+                    <input value="@MarketingLeadPlans.GetDisplayName(Model.ServicePlan)" readonly />
+                    <input type="hidden" asp-for="ServicePlan" />
+                    <span asp-validation-for="ServicePlan" class="validation"></span>
+                </div>
+            </div>
+
+            <div class="admin-note-card">
+                <strong>Next step after creation</strong>
+                <span>This creates the Business record only; no owner login is created yet. Next, use <b>Add / manage catalog</b> to add products. Images can use public URLs now and move to Azure Blob Storage later. PDF brochures can be uploaded from Website Content. Website and customer-enquiry features can be enabled according to the selected plan.</span>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
+                <button type="submit" class="platform-btn platform-btn-primary">Create business</button>
+                <a asp-action="Index" class="workspace-btn workspace-btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</section>

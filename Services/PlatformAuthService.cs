@@ -11,8 +11,13 @@ public class PlatformAuthService(
 {
     public async Task<PlatformUser?> FindByEmailAsync(string email, CancellationToken cancellationToken = default)
     {
-        var normalized = email.Trim().ToLowerInvariant();
-        return await db.PlatformUsers.FirstOrDefaultAsync(x => x.Email == normalized, cancellationToken);
+        var identifier = email?.Trim() ?? string.Empty;
+        var normalizedEmail = identifier.ToLowerInvariant();
+        var normalizedPhone = BusinessRegistrationInputHelper.NormalizePhone(identifier);
+
+        return await db.PlatformUsers.FirstOrDefaultAsync(
+            x => x.Email == normalizedEmail ||
+                 (!string.IsNullOrWhiteSpace(normalizedPhone) && x.PhoneNumber == normalizedPhone), cancellationToken);
     }
 
     public async Task<PlatformUser?> ValidateCredentialsAsync(
@@ -43,8 +48,10 @@ public class PlatformAuthService(
         var user = new PlatformUser
         {
             FullName = model.OwnerName.Trim(),
-            Email = model.Email.Trim().ToLowerInvariant(),
-            PhoneNumber = model.PhoneNumber.Trim(),
+            Email = string.IsNullOrWhiteSpace(model.Email)
+                ? BusinessRegistrationInputHelper.BuildInternalEmail(model.WhatsAppNumber)
+                : model.Email.Trim().ToLowerInvariant(),
+            PhoneNumber = BusinessRegistrationInputHelper.NormalizePhone(model.WhatsAppNumber),
             Role = PlatformRoles.BusinessOwner,
             BusinessId = businessId,
             IsActive = true,

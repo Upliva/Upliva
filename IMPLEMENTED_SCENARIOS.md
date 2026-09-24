@@ -38,3 +38,22 @@ The existing SQL Server database is reused. Database schema is managed exclusive
 
 ## Scenario 13 - Security
 Cookie authentication and role authorization are used for `Admin` and `BusinessOwner`. Passwords are hashed using ASP.NET Core's password hasher. Sensitive configuration is kept outside source control.
+
+
+## Domain and featured catalog scenarios
+- Existing business domain configured: WhatsApp uses the business domain rather than the UplivaAI subdomain/path.
+- UplivaAI URL remains available as a fallback and redirects to the business domain when the custom domain is verified and enabled.
+- Business website lists all active products marked `ShowOnWebsite`.
+- WhatsApp featured count is configurable per business; default 6, maximum 50.
+- Admin controls the featured limit from Business Integrations.
+
+## Initial multi-business website and WhatsApp operating rule
+
+- Business owners manage their complete active product catalog.
+- The public business website displays the complete active catalog.
+- Platform Admin selects the smaller WhatsApp featured product subset from the Admin Business Integrations page.
+- `FeaturedProductLimit` defaults to 6 and can be increased up to 50.
+- WhatsApp sends only Admin-selected active products and then provides the business public website link for the rest of the catalog.
+- If a business already has its own public domain/website, Admin can configure that domain as the public link; UplivaAI does not force its fallback URL.
+- If no business domain is configured, UplivaAI uses `/business/{slug}` as the fallback public website.
+- Initial domain and Meta/WhatsApp setup remains intentionally manual. No DNS automation or Meta onboarding automation is introduced in this MVP.

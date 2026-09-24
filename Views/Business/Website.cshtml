@@ -95,6 +95,29 @@
     </section>
 }
 
+@if (Model.Brochures.Any())
+{
+    <section class="platform-section platform-soft" id="brochures">
+        <div class="container">
+            <div class="platform-section-head">
+                <div><span class="platform-kicker dark">BROCHURES &amp; PDF CATALOG</span><h2>Property details &amp; brochures</h2></div>
+                <p>View or download the business's brochures, property catalogues, rate cards or packages.</p>
+            </div>
+            <div class="feature-grid">
+                @foreach (var brochure in Model.Brochures)
+                {
+                    <article class="offer-card">
+                        <div style="font-size:36px">PDF</div>
+                        <h3>@brochure.DisplayName</h3>
+                        <p>PDF brochure · @((brochure.Length / 1024d / 1024d).ToString("0.0")) MB</p>
+                        <a class="platform-btn platform-btn-primary" href="@brochure.RelativeUrl" target="_blank" rel="noopener">View brochure →</a>
+                    </article>
+                }
+            </div>
+        </div>
+    </section>
+}
+
 @if (config.ShowOffers && Model.Offers.Any())
 {
     <section class="platform-section platform-soft" id="offers">

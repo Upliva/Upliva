@@ -1,3 +1,96 @@
 @model AdminBusinessListViewModel
 @{ ViewData["Title"] = "Admin Dashboard"; Layout = "_AdminLayout"; }
-<section class="admin-page"><div class="container"><div class="admin-head"><div><span class="platform-kicker dark">UPLIVAAI ADMIN</span><h1>Business approvals</h1><p>Review registrations, approve owners and control which websites are published.</p></div></div><div class="admin-stats"><div><strong>@Model.Businesses.Count</strong><span>Total businesses</span></div><div><strong>@Model.Businesses.Count(x => x.Status == BusinessStatuses.Pending)</strong><span>Pending</span></div><div><strong>@Model.Businesses.Count(x => x.Status == BusinessStatuses.Approved)</strong><span>Approved</span></div><div><strong>@Model.Businesses.Count(x => x.IsPublished)</strong><span>Published</span></div></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Business</th><th>Type</th><th>Owner</th><th>Status</th><th>Published</th><th>Actions</th></tr></thead><tbody>@foreach (var business in Model.Businesses) { <tr><td><strong>@business.Name</strong><small>@business.Slug</small></td><td>@business.BusinessType</td><td>@business.OwnerName<br /><small>@business.Email</small></td><td><span class="status-badge @business.Status.ToLowerInvariant()">@business.Status</span></td><td>@(business.IsPublished ? "Yes" : "No")</td><td><div class="admin-actions">@if (business.Status == BusinessStatuses.Pending) { <form asp-action="Approve" method="post"><input type="hidden" name="id" value="@business.Id" /><button type="submit">Approve</button></form><form asp-action="Reject" method="post"><input type="hidden" name="id" value="@business.Id" /><button type="submit">Reject</button></form> } @if (business.Status == BusinessStatuses.Approved && !business.IsPublished) { <form asp-action="Publish" method="post"><input type="hidden" name="id" value="@business.Id" /><button type="submit">Publish</button></form> } @if (business.IsPublished) { <a asp-controller="BusinessManagement" asp-action="Edit" asp-route-id="@business.Id">Edit</a><a asp-controller="BusinessManagement" asp-action="WebsiteContent" asp-route-id="@business.Id">Website</a><a asp-controller="BusinessContent" asp-action="Index" asp-route-id="@business.Id">Content</a><a href="@Url.Action("Website", "Business", new { slug = business.Slug })" target="_blank">Open</a><form asp-action="Unpublish" method="post"><input type="hidden" name="id" value="@business.Id" /><button type="submit">Unpublish</button></form> }</div></td></tr> }</tbody></table></div></div></section>
+<section class="admin-page admin-plan-dashboard">
+    <div class="container admin-wide">
+        <div class="admin-head">
+            <div>
+                <span class="platform-kicker dark">UPLIVAAI ADMIN</span>
+                <h1>Business dashboard</h1>
+                <p>Interested leads appear here immediately. Once a business is created, the same row gives you direct access to WhatsApp Business and Catalog.</p>
+            </div>
+            <a class="admin-primary-link" asp-controller="AdminMarketing" asp-action="Index">All leads &amp; CSV →</a>
+        </div>
+
+        <div class="admin-dashboard-toolbar">
+            <form method="get" asp-action="Index" class="business-selector-form">
+                <div class="field">
+                    <label for="businessId">Select business</label>
+                    <select id="businessId" name="businessId" onchange="this.form.submit()">
+                        <option value="">All businesses</option>
+                        @foreach (var business in Model.Businesses)
+                        {
+                            <option value="@business.Id" selected="@(Model.SelectedBusinessId == business.Id ? "selected" : null)">@business.Name · @business.BusinessType</option>
+                        }
+                    </select>
+                </div>
+                @if (Model.SelectedBusinessId.HasValue)
+                {
+                    <a class="workspace-btn workspace-btn-secondary" asp-action="Index">Clear selection</a>
+                }
+            </form>
+
+            <div class="admin-dashboard-summary">
+                <div><strong>@Model.InterestedLeads.Count</strong><span>Interested</span></div>
+                <div><strong>@Model.Businesses.Count</strong><span>Active businesses</span></div>
+            </div>
+        </div>
+
+        @if (Model.UnassignedInterestedLeads.Any())
+        {
+            <section class="admin-plan-card admin-plan-card-full">
+                <div class="admin-plan-card-head">
+                    <div>
+                        <span class="platform-kicker dark">PLAN NOT SELECTED</span>
+                        <h2>Interested leads</h2>
+                        <p>Select the confirmed plan from the lead screen. The lead will immediately move into the correct category below.</p>
+                    </div>
+                    <strong>@Model.UnassignedInterestedLeads.Count()</strong>
+                </div>
+                @await Html.PartialAsync("_InterestedLeadTable", Model.UnassignedInterestedLeads)
+            </section>
+        }
+
+        <div class="admin-plan-grid admin-plan-grid-large">
+            <section class="admin-plan-card admin-plan-card-full">
+                <div class="admin-plan-card-head">
+                    <div>
+                        <span class="platform-kicker dark">PLAN 01</span>
+                        <h2>WhatsApp</h2>
+                        <p>WhatsApp-first business setup and catalog showcase.</p>
+                    </div>
+                    <strong>@Model.WhatsAppLeads.Count()</strong>
+                </div>
+                @await Html.PartialAsync("_InterestedLeadTable", Model.WhatsAppLeads)
+            </section>
+
+            <section class="admin-plan-card admin-plan-card-full">
+                <div class="admin-plan-card-head">
+                    <div>
+                        <span class="platform-kicker dark">PLAN 02</span>
+                        <h2>WhatsApp + Website</h2>
+                        <p>WhatsApp catalog plus a business website.</p>
+                    </div>
+                    <strong>@Model.WhatsAppWebsiteLeads.Count()</strong>
+                </div>
+                @await Html.PartialAsync("_InterestedLeadTable", Model.WhatsAppWebsiteLeads)
+            </section>
+
+            <section class="admin-plan-card admin-plan-card-full">
+                <div class="admin-plan-card-head">
+                    <div>
+                        <span class="platform-kicker dark">PLAN 03</span>
+                        <h2>WhatsApp + Website + Business Enquiry</h2>
+                        <p>WhatsApp, website and customer enquiry management.</p>
+                    </div>
+                    <strong>@Model.WhatsAppWebsiteEnquiryLeads.Count()</strong>
+                </div>
+                @await Html.PartialAsync("_InterestedLeadTable", Model.WhatsAppWebsiteEnquiryLeads)
+            </section>
+        </div>
+
+        <div class="admin-note-card">
+            <strong>Workflow</strong>
+            <span>Lead captured → Upliva team calls → status changed to Interested → plan selected → lead appears in the correct plan category → Create Business → business becomes active immediately → open WhatsApp Business or Catalog from the same row.</span>
+        </div>
+    </div>
+</section>

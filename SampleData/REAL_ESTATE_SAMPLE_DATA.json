@@ -1,0 +1,18 @@
+{
+  "business": {
+    "name": "GreenView Realty & Developers",
+    "businessType": "Real Estate",
+    "ownerName": "Amit Kumar",
+    "email": "amit@greenviewrealty.example",
+    "phoneNumber": "9876543210",
+    "whatsAppNumber": "919876543210",
+    "address": "Main Road, Ranchi",
+    "city": "Ranchi",
+    "state": "Jharkhand",
+    "postalCode": "834001",
+    "country": "India",
+    "businessHours": "Mon-Sat 9:30 AM - 7:00 PM",
+    "tagline": "Verified homes, plots and investment properties in Ranchi"
+  },
+  "whatsAppFeaturedSku": ["GVR-3BHK-101", "GVR-PLT-201", "GVR-HSE-301", "GVR-2BHK-501"]
+}

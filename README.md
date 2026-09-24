@@ -247,3 +247,21 @@ The catalog `Rating` property is configured with SQL precision `decimal(3,2)`.
 - When an authenticated business owner/admin previews a public business site, a small Back to workspace bar is shown. Public visitors do not see this bar.
 - Admin/business workspace header contains a persistent Dashboard link and Logout.
 - No database model or migration changes were introduced by this UI refinement.
+
+
+## Public domain and catalog behavior
+
+### Business-owned domain
+If a published business has a verified custom domain configured, that domain is the preferred public/canonical URL. The platform does not force the UplivaAI `/business/{slug}` URL. The UplivaAI URL remains a fallback entry point and redirects to the configured business domain when the request reaches the UplivaAI application.
+
+A business can also use its existing externally hosted website/domain as the public link. In that scenario the configured domain is simply used as the customer-facing URL; DNS/hosting remains under the business's existing website setup.
+
+### Catalog
+The generated business website shows the complete active catalog. `IsWhatsAppTopPick` is a featured flag, not a hard-coded six-product website limit.
+
+### WhatsApp featured products
+Each business has `BusinessWhatsAppSettings.FeaturedProductLimit`. It defaults to 6 and can be configured by Admin from Business Integrations between 1 and 50. WhatsApp sends up to that many business-selected featured products.
+
+
+## Current registration model
+Public registration is lead-only: Name + Business Category + WhatsApp/phone. A real Business/PlatformUser is created only after the Upliva team contacts and confirms onboarding. See `REGISTRATION_LEAD_ONLY_FLOW.md`.

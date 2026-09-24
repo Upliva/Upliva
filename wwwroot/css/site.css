@@ -679,3 +679,121 @@ h2 { font-family:"Playfair Display",serif; font-weight:500; font-size:clamp(36px
     .business-flow-card { grid-template-columns:1fr; }
     .platform-section { padding:78px 0; }
 }
+
+
+/* UplivaAI save/result toast */
+.upliva-toast {
+    position: fixed;
+    top: 82px;
+    right: 24px;
+    z-index: 2000;
+    width: min(430px, calc(100vw - 32px));
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 15px 16px;
+    border-radius: 14px;
+    background: #ffffff;
+    border: 1px solid #dfe7e2;
+    box-shadow: 0 16px 40px rgba(24, 34, 28, .16);
+    animation: uplivaToastIn .25s ease-out;
+}
+.upliva-toast-success { border-left: 4px solid #159447; }
+.upliva-toast-error { border-left: 4px solid #d63b3b; }
+.upliva-toast-info { border-left: 4px solid #3178c6; }
+.upliva-toast-icon {
+    width: 30px; height: 30px; border-radius: 50%;
+    display: grid; place-items: center; flex: 0 0 30px;
+    font-weight: 800; background: #eef8f1; color: #168344;
+}
+.upliva-toast-error .upliva-toast-icon { background: #fff0f0; color: #c62828; }
+.upliva-toast-info .upliva-toast-icon { background: #eef5ff; color: #2466a8; }
+.upliva-toast-body { display: flex; flex-direction: column; gap: 3px; line-height: 1.35; }
+.upliva-toast-body strong { font-size: 14px; color: #172019; }
+.upliva-toast-body span { font-size: 13px; color: #5e6b63; }
+.upliva-toast-close { margin-left: auto; border: 0; background: transparent; color: #78837c; font-size: 22px; line-height: 1; cursor: pointer; padding: 0 2px; }
+@keyframes uplivaToastIn { from { opacity: 0; transform: translateY(-10px) translateX(8px); } to { opacity: 1; transform: translateY(0) translateX(0); } }
+@media (max-width: 640px) { .upliva-toast { top: 70px; right: 16px; left: 16px; width: auto; } }
+
+.field-validation { display:block; margin-top:5px; color:#b42318; font-size:12px; }
+.platform-btn:disabled { opacity:.65; cursor:wait; }
+.required-label { display:inline-block; margin-left:7px; font-size:11px; font-weight:700; color:#0b5d4e; text-transform:uppercase; letter-spacing:.04em; }
+.business-form .validation ul { color:#8e4035; }
+
+.admin-marketing-link{margin:14px 0 20px;padding:16px 18px;background:#f1f8f4;border:1px solid #dbe9e1;border-radius:14px;display:flex;justify-content:space-between;gap:15px;align-items:center}.admin-marketing-link a{font-weight:800;color:#063b2f;text-decoration:none}.admin-marketing-link span{font-size:12px;color:#68766f}.admin-primary-link{display:inline-flex;align-items:center;padding:11px 16px;border-radius:10px;background:#063b2f;color:#fff;text-decoration:none;font-weight:800;font-size:12px}.admin-note-card{margin-top:18px;padding:16px 18px;border:1px solid #e0e7e3;border-radius:14px;background:#fff;display:flex;gap:12px;flex-direction:column}.admin-note-card strong{font-weight:800}.admin-note-card span{font-size:12px;color:#68766f;line-height:1.6}
+
+
+/* Lead-only registration and lead lifecycle UI - additive, does not replace existing styles. */
+.registration-lead-only { align-items:center; }
+.registration-lead-copy { max-width:540px; font-size:16px; line-height:1.75; color:#617083; margin:14px 0 26px; }
+.registration-steps { display:grid; gap:12px; max-width:560px; }
+.registration-steps > div { display:grid; grid-template-columns:42px 1fr; column-gap:12px; padding:14px 0; border-top:1px solid #e7eaf0; }
+.registration-steps span { grid-row:span 2; width:34px; height:34px; display:grid; place-items:center; border-radius:50%; background:#f1f4f8; color:#3157d5; font-size:10px; font-weight:800; }
+.registration-steps strong { color:#172235; font-size:13px; }
+.registration-steps small { color:#7b8797; font-size:11px; line-height:1.5; margin-top:3px; }
+.lead-registration-card { padding:34px; }
+.lead-form-heading h3 { margin:8px 0 8px; font-size:28px; color:#172235; }
+.lead-form-heading p { margin:0 0 24px; color:#748094; font-size:12px; line-height:1.65; }
+.lead-form-fields { display:grid; grid-template-columns:1fr; gap:2px; }
+.lead-submit-btn { margin-top:8px; width:100%; }
+.lead-privacy-note { margin:12px 0 0; text-align:center; color:#8993a1; font-size:10px; line-height:1.5; }
+.lead-success-card h1 { max-width:700px; margin-left:auto; margin-right:auto; }
+.lead-success-note { margin:22px 0; padding:16px 18px; border:1px solid #e2e7ef; border-radius:12px; background:#f8fafc; text-align:left; }
+.lead-success-note strong,.lead-success-note span { display:block; }
+.lead-success-note strong { color:#172235; margin-bottom:5px; }
+.lead-success-note span { color:#687587; font-size:12px; line-height:1.6; }
+.lead-pipeline-table { min-width:1180px; }
+.lead-status { display:inline-flex; padding:5px 8px; border-radius:999px; background:#eef2f7; color:#4d5c70; font-size:10px; font-weight:800; }
+.lead-status-confirmed,.lead-status-converted { background:#e8f7ed; color:#287447; }
+.lead-status-interested { background:#fff5df; color:#8b641e; }
+.lead-status-notinterested { background:#f9eaea; color:#934949; }
+.lead-status-form { display:flex; align-items:center; gap:6px; }
+.lead-status-form select { min-width:120px; padding:7px 8px; border:1px solid #d9dee6; border-radius:7px; background:#fff; font-size:11px; }
+.lead-status-form .workspace-btn { padding:7px 10px; font-size:10px; }
+@media (max-width:760px) { .lead-registration-card { padding:22px; } .registration-steps { max-width:none; } .admin-stats { grid-template-columns:1fr 1fr; } }
+
+/* Lead pipeline v2 - additive only. */
+.lead-source { display:block; margin-top:4px; color:#8b95a4; font-size:9px; }
+.lead-notes-cell { max-width:220px; white-space:normal; line-height:1.45; color:#596678; }
+.lead-actions-stack { display:flex; flex-direction:column; gap:7px; min-width:300px; }
+.lead-update-form { display:grid; grid-template-columns:120px 190px 1fr auto; gap:6px; align-items:center; }
+.lead-update-form select,.lead-update-form input { min-width:0; padding:7px 8px; border:1px solid #d9dee6; border-radius:7px; background:#fff; font-size:10px; }
+.workspace-btn-danger { border:1px solid #e5caca; background:#fff5f5; color:#9a3f3f; padding:7px 10px; border-radius:7px; font-size:10px; cursor:pointer; }
+@media(max-width:1100px) { .lead-update-form { grid-template-columns:1fr 1fr; } .lead-actions-stack { min-width:240px; } }
+
+.admin-section-heading{margin:18px 0 10px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px}.admin-section-heading strong{display:block;color:#16342b;font-size:15px}.admin-section-heading span{display:block;margin-top:4px;color:#718078;font-size:11px;line-height:1.5}.approval-lead-row{background:#fcfefd}.approval-lead-row td{vertical-align:middle}.approval-lead-row .workspace-btn{white-space:nowrap}
+
+/* UplivaAI plan-first admin dashboard */
+.admin-plan-grid{display:grid;grid-template-columns:1fr;gap:22px;margin-top:22px}
+.admin-plan-card{background:#fff;border:1px solid #e1e6ed;border-radius:18px;padding:18px;overflow:hidden}
+.admin-plan-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:14px}
+.admin-plan-card-head h2{margin:5px 0 3px;color:#123a2f;font-size:20px}
+.admin-plan-card-head p{margin:0;color:#718078;font-size:12px;line-height:1.5}
+.admin-plan-card-head>strong{min-width:42px;height:42px;border-radius:12px;background:#edf8f3;color:#07553f;display:flex;align-items:center;justify-content:center;font-size:16px}
+.admin-plan-table-wrap{border-radius:12px}
+.admin-plan-table{min-width:980px}
+.admin-plan-actions{min-width:230px}
+.admin-empty-cell{color:#687284!important;text-align:center!important;padding:24px!important}
+@media (min-width:1200px){.admin-plan-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.admin-plan-card{min-width:0}}
+
+/* Plan dashboard v3: full-width categories + business selector. */
+.admin-wide{max-width:1500px!important}
+.admin-plan-dashboard .admin-head{margin-bottom:18px}
+.admin-dashboard-toolbar{display:flex;justify-content:space-between;align-items:flex-end;gap:18px;flex-wrap:wrap;background:#fff;border:1px solid #e1e6ed;border-radius:18px;padding:18px 20px;margin-bottom:22px}
+.business-selector-form{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap;min-width:min(100%,620px)}
+.business-selector-form .field{min-width:min(100%,520px);margin:0}
+.business-selector-form label{display:block;margin-bottom:6px;color:#5e6b7c;font-size:11px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
+.business-selector-form select{width:100%;height:42px;border:1px solid #d9e1e7;border-radius:10px;background:#fff;padding:0 12px;color:#18362d;font-size:13px}
+.admin-dashboard-summary{display:flex;gap:10px;flex-wrap:wrap}
+.admin-dashboard-summary>div{min-width:110px;padding:9px 14px;border-radius:12px;background:#edf8f3;text-align:center}
+.admin-dashboard-summary strong,.admin-dashboard-summary span{display:block}
+.admin-dashboard-summary strong{font-size:18px;color:#07553f}
+.admin-dashboard-summary span{font-size:10px;color:#617267;margin-top:2px}
+.admin-plan-grid-large{grid-template-columns:1fr!important;gap:20px;margin-top:0}
+.admin-plan-card-full{width:100%;padding:22px}
+.admin-plan-card-full .admin-plan-table-wrap{width:100%;overflow-x:auto}
+.admin-plan-card-full .admin-plan-table{width:100%;min-width:1000px}
+.admin-plan-card-full .admin-plan-card-head h2{font-size:25px}
+.admin-plan-card-full .admin-plan-card-head p{font-size:13px}
+.admin-plan-actions{display:flex;flex-wrap:wrap;gap:8px;min-width:280px}
+@media(max-width:760px){.admin-dashboard-toolbar{align-items:stretch}.business-selector-form,.business-selector-form .field{width:100%;min-width:0}.admin-dashboard-summary{width:100%}.admin-dashboard-summary>div{flex:1}.admin-plan-card-full{padding:14px}.admin-plan-card-full .admin-plan-card-head h2{font-size:20px}}

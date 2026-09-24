@@ -7,7 +7,8 @@ namespace UplivaAI.Services;
 public class WhatsAppFlowService(
     IWhatsAppService whatsapp,
     UplivaDbContext db,
-    IConfiguration configuration,
+    IBusinessCacheService businessCache,
+    IBusinessUrlService businessUrlService,
     ILogger<WhatsAppFlowService> logger) : IWhatsAppFlowService
 {
     public async Task HandleIncomingMessageAsync(
@@ -25,15 +26,26 @@ public class WhatsAppFlowService(
 
         var business = await ResolveBusinessAsync(phoneNumberId, cancellationToken);
 
+        // Never send a tenant message using platform-level credentials when the
+        // incoming Phone Number ID cannot be mapped to a published business.
+        if (business is null)
+        {
+            logger.LogWarning(
+                "No published business is mapped to WhatsApp PhoneNumberId {PhoneNumberId}. Message ignored.",
+                phoneNumberId);
+            return;
+        }
+
         if (!string.IsNullOrWhiteSpace(selectionId))
         {
             await HandleSelectionAsync(from, selectionId, business, cancellationToken);
             return;
         }
 
-        await whatsapp.SendWelcomeMenuAsync(
+        await whatsapp.SendWelcomeMenuForBusinessAsync(
+            business.Id,
             from,
-            business?.Name,
+            business.Name,
             customerName,
             cancellationToken);
     }
@@ -52,7 +64,6 @@ public class WhatsAppFlowService(
             where settings.PhoneNumberId == phoneNumberId
                   && settings.IsEnabled
                   && business.Status == BusinessStatuses.Approved
-                  && business.IsPublished
             select business)
             .AsNoTracking()
             .FirstOrDefaultAsync(cancellationToken);
@@ -61,9 +72,15 @@ public class WhatsAppFlowService(
     private async Task HandleSelectionAsync(
         string from,
         string selectionId,
-        Business? business,
+        Business business,
         CancellationToken cancellationToken)
     {
+        if (business is null)
+        {
+            logger.LogWarning("Ignoring WhatsApp selection because no business could be resolved. SelectionId={SelectionId}", selectionId);
+            return;
+        }
+
         switch (selectionId)
         {
             case "VIEW_CATALOG":
@@ -75,77 +92,62 @@ public class WhatsAppFlowService(
                 break;
 
             case "WEBSITE":
-                if (business is null)
-                {
-                    await whatsapp.SendTextAsync(from, "The business website is not configured yet.", cancellationToken);
-                    break;
-                }
-
-                var baseUrl = (configuration["Platform:PublicBaseUrl"] ?? "https://localhost:7248").TrimEnd('/');
-                await whatsapp.SendTextAsync(
+                var websiteUrl = businessUrlService.GetWebsiteUrl(business);
+                await whatsapp.SendTextForBusinessAsync(
+                    business.Id,
                     from,
-                    $"🌐 *{business.Name}*\n\nVisit the business website:\n{baseUrl}/business/{business.Slug}",
+                    $"🌐 *{business.Name}*\n\nVisit the business website:\n{websiteUrl}",
                     cancellationToken);
                 break;
 
             case "LOCATION":
-                await whatsapp.SendTextAsync(
-                    from,
-                    business is null
-                        ? "📍 Business location is not configured yet."
-                        : $"📍 *{business.Name}*\n{business.Address}\n{business.City}",
-                    cancellationToken);
+                await whatsapp.SendTextForBusinessAsync(business.Id, from, $"📍 *{business.Name}*\n{business.Address}\n{business.City}", cancellationToken);
                 break;
 
             case "CONTACT":
-                await whatsapp.SendTextAsync(
-                    from,
-                    business is null
-                        ? "📞 Business contact details are not configured yet."
-                        : $"📞 *{business.Name}*\nPhone: {business.PhoneNumber}\nWhatsApp: {business.WhatsAppNumber}\nEmail: {business.Email}",
-                    cancellationToken);
+                await whatsapp.SendTextForBusinessAsync(business.Id, from, $"📞 *{business.Name}*\nPhone: {business.PhoneNumber}\nWhatsApp: {business.WhatsAppNumber}\nEmail: {business.Email}", cancellationToken);
                 break;
 
             default:
-                await whatsapp.SendWelcomeMenuAsync(from, business?.Name, cancellationToken: cancellationToken);
+                await whatsapp.SendWelcomeMenuForBusinessAsync(business.Id, from, business.Name, cancellationToken: cancellationToken);
                 break;
         }
     }
 
     private async Task SendCatalogAsync(
         string from,
-        Business? business,
+        Business business,
         CancellationToken cancellationToken)
     {
-        if (business is null)
-        {
-            await whatsapp.SendTextAsync(from, "The business catalog is not configured yet.", cancellationToken);
-            return;
-        }
+        // Only the products explicitly selected by an Admin are shown in
+        // the WhatsApp showcase. Their SortOrder is the WhatsApp display rank.
+        var settings = await db.BusinessWhatsAppSettings.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.BusinessId == business.Id, cancellationToken);
+        var featuredLimit = Math.Clamp(settings?.FeaturedProductLimit ?? 6, 1, 50);
 
-        // Only the products explicitly selected by the business owner are shown in
-        // the WhatsApp showcase. The public website remains the place for the full catalog.
-        var items = await db.BusinessCatalogItems
-            .AsNoTracking()
-            .Where(x => x.BusinessId == business.Id && x.IsActive && x.IsWhatsAppTopPick)
-            .OrderBy(x => x.SortOrder)
-            .ThenBy(x => x.Id)
-            .Take(6)
-            .ToListAsync(cancellationToken);
-
-        var baseUrl = (configuration["Platform:PublicBaseUrl"] ?? "https://localhost:7248").TrimEnd('/');
-        var websiteUrl = $"{baseUrl}/business/{business.Slug}";
+        var items = await businessCache.GetWhatsAppTopPicksAsync(
+            business.Id,
+            () => db.BusinessCatalogItems
+                .AsNoTracking()
+                .Where(x => x.BusinessId == business.Id && x.IsActive && x.IsWhatsAppTopPick)
+                .OrderBy(x => x.SortOrder)
+                .ThenBy(x => x.Id)
+                .Take(featuredLimit)
+                .ToListAsync(cancellationToken),
+            cancellationToken);
 
         if (items.Count == 0)
         {
-            await whatsapp.SendTextAsync(
+            await whatsapp.SendTextForBusinessAsync(
+                business.Id,
                 from,
-                $"🛍️ *{business.Name}*\n\nThe full catalog is available on the website:\n{websiteUrl}",
+                $"🛍️ *{business.Name}*\n\nNo products have been selected for the WhatsApp showcase yet.",
                 cancellationToken);
             return;
         }
 
-        await whatsapp.SendTextAsync(
+        await whatsapp.SendTextForBusinessAsync(
+            business.Id,
             from,
             $"🔥 *{business.Name} – Top {items.Count} picks*\n\nHere are the products selected for our WhatsApp showcase:",
             cancellationToken);
@@ -175,31 +177,30 @@ public class WhatsAppFlowService(
 
             if (!string.IsNullOrWhiteSpace(item.ImageUrl))
             {
-                await whatsapp.SendImageAsync(from, item.ImageUrl, caption, cancellationToken);
+                await whatsapp.SendImageForBusinessAsync(business.Id, from, item.ImageUrl, caption, cancellationToken);
             }
             else
             {
-                await whatsapp.SendTextAsync(from, caption, cancellationToken);
+                await whatsapp.SendTextForBusinessAsync(business.Id, from, caption, cancellationToken);
             }
         }
 
-        await whatsapp.SendTextAsync(
-            from,
-            $"🌐 *See the complete catalog*\n\n{websiteUrl}\n\nBrowse all products and services on the website.",
-            cancellationToken);
+        if (business.ServicePlan != BusinessServicePlans.WhatsAppOnly)
+        {
+            var websiteUrl = businessUrlService.GetWebsiteUrl(business);
+            await whatsapp.SendTextForBusinessAsync(
+                business.Id,
+                from,
+                $"🌐 *See the complete catalog*\n\n{websiteUrl}\n\nBrowse all products and services on the website.",
+                cancellationToken);
+        }
     }
 
     private async Task SendOffersAsync(
         string from,
-        Business? business,
+        Business business,
         CancellationToken cancellationToken)
     {
-        if (business is null)
-        {
-            await whatsapp.SendTextAsync(from, "The business offers are not configured yet.", cancellationToken);
-            return;
-        }
-
         var offers = await db.BusinessOffers
             .AsNoTracking()
             .Where(x => x.BusinessId == business.Id && x.IsPublished)
@@ -209,13 +210,13 @@ public class WhatsAppFlowService(
 
         if (offers.Count == 0)
         {
-            await whatsapp.SendTextAsync(from, $"🔥 *{business.Name}*\n\nNo active offers are available right now.", cancellationToken);
+            await whatsapp.SendTextForBusinessAsync(business.Id, from, $"🔥 *{business.Name}*\n\nNo active offers are available right now.", cancellationToken);
             return;
         }
 
         var text = $"🔥 *{business.Name} Offers*\n\n" + string.Join("\n\n", offers.Select(x =>
             $"*{x.Title}*\n{x.Description}\n{x.DiscountText}"));
 
-        await whatsapp.SendTextAsync(from, text, cancellationToken);
+        await whatsapp.SendTextForBusinessAsync(business.Id, from, text, cancellationToken);
     }
 }

@@ -43,14 +43,14 @@ public class AccountController(IPlatformAuthService authService) : Controller
     {
         if (!ModelState.IsValid)
         {
-            TempData["LoginError"] = "Please enter a valid email and password.";
+            TempData["LoginError"] = "Please enter your email or WhatsApp number and password.";
             return RedirectToAction("Index", "Home", new { login = 1, returnUrl = model.ReturnUrl });
         }
 
         var user = await authService.ValidateCredentialsAsync(model.Email, model.Password, cancellationToken);
         if (user is null)
         {
-            TempData["LoginError"] = "Invalid email or password.";
+            TempData["LoginError"] = "Invalid email/WhatsApp number or password.";
             return RedirectToAction("Index", "Home", new { login = 1, returnUrl = model.ReturnUrl });
         }
 
