@@ -1,39 +1,33 @@
 @model Business
-@{ ViewData["Title"] = "Business Dashboard"; Layout = "_AdminLayout"; }
+@{ ViewData["Title"] = "WhatsApp Business Dashboard"; Layout = "_AdminLayout"; }
 <section class="admin-page">
     <div class="container">
         <div class="admin-head">
             <div>
-                <span class="platform-kicker dark">BUSINESS OWNER</span>
+                <span class="platform-kicker dark">WHATSAPP BUSINESS</span>
                 <h1>@Model.Name</h1>
-                <p>@Model.BusinessType · @Model.Status · @(Model.IsPublished ? "Published" : "Not published")</p>
+                <p>@Model.BusinessType · @Model.Status · WhatsApp-first business workspace</p>
             </div>
-            <div class="admin-head-actions workspace-actions" aria-label="Business workspace actions">
-                <a class="workspace-btn" asp-controller="BusinessManagement" asp-action="Edit">Edit profile</a>
-                <a class="workspace-btn" asp-controller="BusinessManagement" asp-action="WebsiteContent">Website content</a>
-                <a class="workspace-btn" asp-controller="BusinessContent" asp-action="Index">Catalog &amp; offers</a>
-                <a class="workspace-btn workspace-btn-primary" asp-controller="Business" asp-action="Website" asp-route-slug="@Model.Slug">View website <span aria-hidden="true">→</span></a>
+            <div class="admin-head-actions workspace-actions">
+                <a class="workspace-btn workspace-btn-primary" asp-controller="BusinessContent" asp-action="Index">Catalog</a>
+                <a class="workspace-btn" asp-controller="AdminBusinessIntegration" asp-action="Manage" asp-route-id="@Model.Id">WhatsApp setup</a>
+                <a class="workspace-btn" asp-controller="BusinessEnquiry" asp-action="Index">Enquiries</a>
+                <a class="workspace-btn" asp-controller="BusinessFollowUp" asp-action="Index">Follow-ups</a>
             </div>
-        </div>
-
-        <div class="workspace-backup-actions">
-            <span>Business workspace</span>
-            <a asp-controller="BusinessManagement" asp-action="Edit">Edit profile</a>
-            <a asp-controller="BusinessManagement" asp-action="WebsiteContent">Website content</a>
-            <a asp-controller="BusinessContent" asp-action="Index">Catalog &amp; offers</a>
         </div>
 
         <div class="admin-stats">
             <div><strong>@ViewBag.CatalogCount</strong><span>Catalog items</span></div>
-            <div><strong>@ViewBag.OfferCount</strong><span>Offers</span></div>
-            <div><strong>@ViewBag.EnquiryCount</strong><span>Enquiries</span></div>
-            <div><strong>@(Model.IsPublished ? "LIVE" : "PENDING")</strong><span>Website status</span></div>
+            <div><strong>@ViewBag.WhatsAppSelectedCount</strong><span>WhatsApp products</span></div>
+            <div><a asp-controller="BusinessEnquiry" asp-action="Index" style="text-decoration:none;color:inherit"><strong>@ViewBag.EnquiryCount</strong><span>Enquiries</span></a></div>
+            <div><strong>@ViewBag.MessageCount</strong><span>Messages</span></div>
+            <div><strong>@ViewBag.FollowUpCount</strong><span>Open follow-ups</span></div>
         </div>
 
         <div class="owner-info-grid">
-            <article><span>Business details</span><h3>@Model.Name</h3><p>@Model.Description</p><p>@Model.Address, @Model.City, @Model.State - @Model.PostalCode</p></article>
-            <article><span>WhatsApp</span><h3>@Model.WhatsAppNumber</h3><p>WhatsApp configuration can be connected to this business after the base approval flow is complete.</p></article>
-            <article><span>Admin publishing</span><h3>@(Model.IsPublished ? "Published" : "Waiting for admin")</h3><p>The business owner cannot publish or approve the public website.</p></article>
+            <article><span>Business</span><h3>@Model.Name</h3><p>@Model.Description</p><p>@Model.Address, @Model.City, @Model.State</p></article>
+            <article><span>WhatsApp number</span><h3>@Model.WhatsAppNumber</h3><p>@(ViewBag.WhatsAppEnabled == true ? "WhatsApp integration is enabled." : "WhatsApp integration is not enabled yet.")</p></article>
+            <article><span>Catalog engine</span><h3>@ViewBag.CatalogTemplateKey</h3><p>Business-specific fields are rendered from the catalog template and stored with the catalog item.</p></article>
         </div>
     </div>
 </section>

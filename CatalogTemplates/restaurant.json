@@ -1,0 +1,80 @@
+{
+  "Key": "restaurant",
+  "DisplayName": "Restaurant",
+  "ItemLabel": "Menu item",
+  "AddButtonText": "Add menu item",
+  "Fields": [
+    {
+      "Key": "cuisine",
+      "Label": "Cuisine",
+      "Type": "text",
+      "Placeholder": "e.g. Indian",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 10,
+      "Required": false
+    },
+    {
+      "Key": "foodType",
+      "Label": "Food type",
+      "Type": "select",
+      "Options": [
+        "Vegetarian",
+        "Non-Vegetarian",
+        "Vegan",
+        "Egg",
+        "Other"
+      ],
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 20,
+      "Required": false
+    },
+    {
+      "Key": "servingSize",
+      "Label": "Serving size",
+      "Type": "text",
+      "Placeholder": "e.g. Serves 2",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 30,
+      "Required": false
+    },
+    {
+      "Key": "spiceLevel",
+      "Label": "Spice level",
+      "Type": "select",
+      "Options": [
+        "Mild",
+        "Medium",
+        "Spicy",
+        "Very Spicy",
+        "Not applicable"
+      ],
+      "ShowOnWhatsApp": false,
+      "ShowOnWebsite": true,
+      "SortOrder": 40,
+      "Required": false
+    },
+    {
+      "Key": "ingredients",
+      "Label": "Ingredients",
+      "Type": "textarea",
+      "Placeholder": "Main ingredients",
+      "ShowOnWhatsApp": false,
+      "ShowOnWebsite": true,
+      "SortOrder": 50,
+      "Required": false
+    },
+    {
+      "Key": "preparationTime",
+      "Label": "Preparation time",
+      "Type": "text",
+      "Placeholder": "e.g. 25 minutes",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 60,
+      "Required": false
+    }
+  ]
+}

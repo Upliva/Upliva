@@ -1,0 +1,28 @@
+{
+  "Key": "generic",
+  "DisplayName": "Generic business",
+  "ItemLabel": "Product / service",
+  "AddButtonText": "Add catalog item",
+  "Fields": [
+    {
+      "Key": "features",
+      "Label": "Key features",
+      "Type": "textarea",
+      "Placeholder": "Main features, specifications or service details",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 10,
+      "Required": false
+    },
+    {
+      "Key": "availability",
+      "Label": "Availability",
+      "Type": "text",
+      "Placeholder": "Available / On request",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 20,
+      "Required": false
+    }
+  ]
+}

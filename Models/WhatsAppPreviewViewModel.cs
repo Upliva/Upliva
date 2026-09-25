@@ -29,4 +29,12 @@ public class WhatsAppPreviewProductViewModel
     public int ReviewCount { get; set; }
     public bool IsSelectedForWhatsApp { get; set; }
     public int Rank { get; set; }
+    public List<CatalogDisplayFieldViewModel> CustomFields { get; set; } = [];
+}
+
+public class CatalogDisplayFieldViewModel
+{
+    public string Key { get; set; } = string.Empty;
+    public string Label { get; set; } = string.Empty;
+    public string Value { get; set; } = string.Empty;
 }

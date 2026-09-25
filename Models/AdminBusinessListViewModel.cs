@@ -11,9 +11,8 @@ public class AdminBusinessListViewModel
     public List<Business> Businesses { get; set; } = [];
     public int? SelectedBusinessId { get; set; }
 
-    public IEnumerable<MarketingLead> WhatsAppLeads => FilterByBusiness(InterestedLeads.Where(x => x.SelectedPlan == MarketingLeadPlans.WhatsAppOnly));
-    public IEnumerable<MarketingLead> WhatsAppWebsiteLeads => FilterByBusiness(InterestedLeads.Where(x => x.SelectedPlan == MarketingLeadPlans.WhatsAppWebsite));
-    public IEnumerable<MarketingLead> WhatsAppWebsiteEnquiryLeads => FilterByBusiness(InterestedLeads.Where(x => x.SelectedPlan == MarketingLeadPlans.WhatsAppWebsiteEnquiry));
+    public IEnumerable<MarketingLead> WhatsAppSmsLeads => FilterByBusiness(InterestedLeads.Where(x => x.SelectedPlan == MarketingLeadPlans.WhatsAppSms));
+    public IEnumerable<MarketingLead> WhatsAppEnquiryFollowUpLeads => FilterByBusiness(InterestedLeads.Where(x => x.SelectedPlan == MarketingLeadPlans.WhatsAppEnquiryFollowUp));
     public IEnumerable<MarketingLead> UnassignedInterestedLeads => FilterByBusiness(InterestedLeads.Where(x => string.IsNullOrWhiteSpace(x.SelectedPlan)));
 
     private IEnumerable<MarketingLead> FilterByBusiness(IEnumerable<MarketingLead> leads)

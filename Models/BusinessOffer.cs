@@ -21,5 +21,5 @@ public class BusinessOffer
 
     public DateTime? StartsOn { get; set; }
     public DateTime? EndsOn { get; set; }
-    public bool IsPublished { get; set; }
+    public bool IsActive { get; set; } = true;
 }

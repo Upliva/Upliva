@@ -30,9 +30,13 @@ public class WhatsAppWebhookController(
             await db.BusinessWhatsAppSettings.AsNoTracking()
                 .AnyAsync(x => x.IsEnabled && x.WebhookVerifyToken == verifyToken, HttpContext.RequestAborted);
 
+        var configuredWebhookToken = string.IsNullOrWhiteSpace(_settings.WebhookVerifyToken)
+            ? null
+            : _settings.WebhookVerifyToken.Trim();
+
         if (mode == "subscribe" &&
             !string.IsNullOrWhiteSpace(verifyToken) &&
-            (verifyToken == _settings.WebhookVerifyToken || businessTokenMatches))
+            ((configuredWebhookToken is not null && verifyToken == configuredWebhookToken) || businessTokenMatches))
         {
             logger.LogInformation("WhatsApp webhook verification successful.");
             return Content(challenge ?? string.Empty);
@@ -83,6 +87,7 @@ public class WhatsAppWebhookController(
                     message.Text?.Body,
                     selectionId,
                     value?.Metadata?.PhoneNumberId,
+                    message.Id,
                     cancellationToken);
             }
 

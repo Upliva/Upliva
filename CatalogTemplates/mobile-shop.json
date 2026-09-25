@@ -1,0 +1,47 @@
+{
+  "Key": "mobile-shop",
+  "DisplayName": "Mobile Shop",
+  "ItemLabel": "Mobile product",
+  "AddButtonText": "Add mobile product",
+  "Fields": [
+    {
+      "Key": "storage",
+      "Label": "Storage",
+      "Type": "text",
+      "Placeholder": "e.g. 256 GB",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 30,
+      "Required": false
+    },
+    {
+      "Key": "ram",
+      "Label": "RAM",
+      "Type": "text",
+      "Placeholder": "e.g. 12 GB",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 40,
+      "Required": false
+    },
+    {
+      "Key": "color",
+      "Label": "Color",
+      "Type": "text",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 50,
+      "Required": false
+    },
+    {
+      "Key": "warranty",
+      "Label": "Warranty",
+      "Type": "text",
+      "Placeholder": "e.g. 1 year",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 60,
+      "Required": false
+    }
+  ]
+}

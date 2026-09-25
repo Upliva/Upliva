@@ -1,0 +1,42 @@
+{
+  "Key": "grocery",
+  "DisplayName": "Grocery",
+  "ItemLabel": "Grocery product",
+  "AddButtonText": "Add grocery item",
+  "Fields": [
+    {
+      "Key": "unit",
+      "Label": "Unit / pack size",
+      "Type": "text",
+      "Placeholder": "e.g. 1 kg",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 10,
+      "Required": false
+    },
+    {
+      "Key": "vegetarian",
+      "Label": "Food type",
+      "Type": "select",
+      "Options": [
+        "Vegetarian",
+        "Non-Vegetarian",
+        "Not applicable"
+      ],
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 30,
+      "Required": false
+    },
+    {
+      "Key": "expiry",
+      "Label": "Expiry / shelf life",
+      "Type": "text",
+      "Placeholder": "e.g. 6 months",
+      "ShowOnWhatsApp": false,
+      "ShowOnWebsite": true,
+      "SortOrder": 40,
+      "Required": false
+    }
+  ]
+}

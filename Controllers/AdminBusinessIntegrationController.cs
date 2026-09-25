@@ -13,7 +13,8 @@ public class AdminBusinessIntegrationController(
     IAuditLogService auditLogService,
     IWhatsAppService whatsAppService,
     IBusinessCacheService businessCache,
-    ILogger<AdminBusinessIntegrationController> logger) : Controller
+    ILogger<AdminBusinessIntegrationController> logger,
+    IConfiguration configuration) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Manage(int id, CancellationToken cancellationToken)
@@ -38,11 +39,25 @@ public class AdminBusinessIntegrationController(
             WhatsAppNumber = business.WhatsAppNumber,
             ServicePlan = business.ServicePlan,
             WabaId = settings?.WabaId ?? string.Empty,
-            PhoneNumberId = settings?.PhoneNumberId ?? string.Empty,
+            DisplayName = settings?.DisplayName ?? business.Name,
+            AboutText = settings?.AboutText ?? business.Description,
+            BusinessCategory = settings?.BusinessCategory ?? business.BusinessType,
+            WelcomeMessage = settings?.WelcomeMessage ?? $"Welcome to {business.Name}! 👋\n\nHow can we help you today?",
+            PhoneNumberId = !string.IsNullOrWhiteSpace(settings?.PhoneNumberId)
+                ? settings!.PhoneNumberId
+                : configuration["WhatsApp:PhoneNumberId"] ?? string.Empty,
+            // Never send the real access token back to the browser. A blank field means
+            // "keep the business token, otherwise use the platform User Secret/config token".
+            AccessToken = string.Empty,
             WebhookVerifyToken = settings?.WebhookVerifyToken ?? string.Empty,
-            GraphApiVersion = settings?.GraphApiVersion ?? "v26.0",
+            GraphApiVersion = !string.IsNullOrWhiteSpace(settings?.GraphApiVersion)
+                ? settings!.GraphApiVersion
+                : (configuration["WhatsApp:GraphApiVersion"] ?? "v26.0"),
             IsEnabled = settings?.IsEnabled ?? false,
-            FeaturedProductLimit = Math.Clamp(settings?.FeaturedProductLimit ?? 6, 1, 50)
+            FeaturedProductLimit = Math.Clamp(settings?.FeaturedProductLimit ?? 6, 1, 50),
+            PlatformWhatsAppConfigured =
+                (!string.IsNullOrWhiteSpace(configuration["WhatsApp:PhoneNumberId"]) || !string.IsNullOrWhiteSpace(settings?.PhoneNumberId)) &&
+                (!string.IsNullOrWhiteSpace(configuration["WhatsApp:AccessToken"]) || !string.IsNullOrWhiteSpace(settings?.AccessToken))
         };
 
         await LoadWhatsAppProductsAsync(model, cancellationToken);
@@ -68,16 +83,40 @@ public class AdminBusinessIntegrationController(
             return View(model);
         }
 
+        var platformPhoneNumberId = configuration["WhatsApp:PhoneNumberId"]?.Trim() ?? string.Empty;
+        var platformAccessToken = configuration["WhatsApp:AccessToken"]?.Trim() ?? string.Empty;
+        var platformWebhookToken = configuration["WhatsApp:WebhookVerifyToken"]?.Trim() ?? string.Empty;
+        var platformGraphApiVersion = configuration["WhatsApp:GraphApiVersion"]?.Trim() ?? "v26.0";
+
         if (model.IsEnabled && string.IsNullOrWhiteSpace(model.PhoneNumberId))
+            model.PhoneNumberId = platformPhoneNumberId;
+
+        if (string.IsNullOrWhiteSpace(model.GraphApiVersion))
+            model.GraphApiVersion = platformGraphApiVersion;
+
+        var existingSettingsForValidation = await db.BusinessWhatsAppSettings.AsNoTracking()
+            .FirstOrDefaultAsync(x => x.BusinessId == model.BusinessId, cancellationToken);
+
+        // The access token is a secret and may live only in User Secrets / environment
+        // configuration. It does not need to be entered in the admin form.
+        if (model.IsEnabled &&
+            string.IsNullOrWhiteSpace(model.AccessToken) &&
+            string.IsNullOrWhiteSpace(existingSettingsForValidation?.AccessToken) &&
+            string.IsNullOrWhiteSpace(platformAccessToken))
         {
-            ModelState.AddModelError(nameof(model.PhoneNumberId), "Phone Number ID is required when WhatsApp integration is enabled.");
+            ModelState.AddModelError(nameof(model.AccessToken), "Access Token is not configured. Add WhatsApp:AccessToken to User Secrets or environment configuration.");
             await LoadWhatsAppProductsAsync(model, cancellationToken, preserveSubmittedSelection: true);
             return View(model);
         }
 
-        if (model.IsEnabled && string.IsNullOrWhiteSpace(model.GraphApiVersion))
+        // Webhook verification is NOT required for outbound-message testing.
+        // It can be configured later when the public webhook endpoint is ready.
+        if (string.IsNullOrWhiteSpace(model.WebhookVerifyToken))
+            model.WebhookVerifyToken = existingSettingsForValidation?.WebhookVerifyToken ?? platformWebhookToken;
+
+        if (model.IsEnabled && string.IsNullOrWhiteSpace(model.PhoneNumberId))
         {
-            ModelState.AddModelError(nameof(model.GraphApiVersion), "Graph API version is required when WhatsApp integration is enabled.");
+            ModelState.AddModelError(nameof(model.PhoneNumberId), "Phone Number ID is not configured. Add WhatsApp:PhoneNumberId to User Secrets or enter it for this business.");
             await LoadWhatsAppProductsAsync(model, cancellationToken, preserveSubmittedSelection: true);
             return View(model);
         }
@@ -101,11 +140,20 @@ public class AdminBusinessIntegrationController(
         settings ??= new BusinessWhatsAppSettings { BusinessId = model.BusinessId };
 
         settings.WabaId = model.WabaId.Trim();
-        settings.PhoneNumberId = model.PhoneNumberId.Trim();
+        settings.DisplayName = model.DisplayName.Trim();
+        settings.AboutText = model.AboutText.Trim();
+        settings.BusinessCategory = model.BusinessCategory.Trim();
+        settings.WelcomeMessage = model.WelcomeMessage.Trim();
+        settings.PhoneNumberId = string.IsNullOrWhiteSpace(model.PhoneNumberId)
+            ? platformPhoneNumberId
+            : model.PhoneNumberId.Trim();
+        // Keep the real Meta token out of the business database when it is supplied
+        // through User Secrets/environment configuration. Only an explicitly entered
+        // business token is persisted here. The WhatsApp service falls back to config.
         if (!string.IsNullOrWhiteSpace(model.AccessToken))
             settings.AccessToken = model.AccessToken.Trim();
-        settings.WebhookVerifyToken = model.WebhookVerifyToken.Trim();
-        settings.GraphApiVersion = string.IsNullOrWhiteSpace(model.GraphApiVersion) ? "v26.0" : model.GraphApiVersion.Trim();
+        settings.WebhookVerifyToken = model.WebhookVerifyToken?.Trim() ?? string.Empty;
+        settings.GraphApiVersion = string.IsNullOrWhiteSpace(model.GraphApiVersion) ? platformGraphApiVersion : model.GraphApiVersion.Trim();
         settings.IsEnabled = model.IsEnabled;
         settings.FeaturedProductLimit = Math.Clamp(model.FeaturedProductLimit, 1, 50);
         if (isNew) db.BusinessWhatsAppSettings.Add(settings);
@@ -127,6 +175,24 @@ public class AdminBusinessIntegrationController(
         {
             ModelState.AddModelError(nameof(model.SelectedWhatsAppProductIds),
                 "One or more selected products do not belong to this business or are inactive.");
+            await LoadWhatsAppProductsAsync(model, cancellationToken, preserveSubmittedSelection: true);
+            return View(model);
+        }
+
+        // Validate submitted ranks server-side. The browser UI also constrains these values,
+        // but production code must not trust client-side validation.
+        foreach (var selectedId in selectedIds)
+        {
+            if (!model.WhatsAppProductRanks.TryGetValue(selectedId, out var submittedRank) || submittedRank < 1 || submittedRank > settings.FeaturedProductLimit)
+            {
+                ModelState.AddModelError(nameof(model.WhatsAppProductRanks),
+                    $"Every selected WhatsApp product must have a rank from 1 to {settings.FeaturedProductLimit}.");
+                break;
+            }
+        }
+
+        if (!ModelState.IsValid)
+        {
             await LoadWhatsAppProductsAsync(model, cancellationToken, preserveSubmittedSelection: true);
             return View(model);
         }
@@ -212,6 +278,30 @@ public class AdminBusinessIntegrationController(
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SendCatalog(int id, string testRecipientPhoneNumber, string catalogSendMode = "selected", CancellationToken cancellationToken = default)
+    {
+        var business = await db.Businesses.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        if (business is null) return NotFound();
+        if (business.Status != BusinessStatuses.Approved)
+        {
+            TempData["ToastType"] = "error";
+            TempData["ToastMessage"] = "Business must be approved before sending a WhatsApp catalog.";
+            return RedirectToAction(nameof(Manage), new { id });
+        }
+
+        var result = await whatsAppService.SendCatalogForBusinessAsync(
+            id,
+            testRecipientPhoneNumber,
+            catalogSendMode,
+            cancellationToken);
+
+        TempData["ToastType"] = result.Success ? "success" : "error";
+        TempData["ToastMessage"] = result.Message;
+        return RedirectToAction(nameof(Manage), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> TestWhatsApp(int id, CancellationToken cancellationToken)
     {
         var business = await db.Businesses.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
@@ -219,6 +309,19 @@ public class AdminBusinessIntegrationController(
         if (business.Status != BusinessStatuses.Approved) return BadRequest("Business must be approved first.");
 
         var result = await whatsAppService.TestConnectionForBusinessAsync(id, cancellationToken);
+        TempData["ToastType"] = result.Success ? "success" : "error";
+        TempData["ToastMessage"] = result.Message;
+        return RedirectToAction(nameof(Manage), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SendTestMessage(int id, string testRecipientPhoneNumber, CancellationToken cancellationToken)
+    {
+        var business = await db.Businesses.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        if (business is null) return NotFound();
+
+        var result = await whatsAppService.SendTestMessageForBusinessAsync(id, testRecipientPhoneNumber, cancellationToken);
         TempData["ToastType"] = result.Success ? "success" : "error";
         TempData["ToastMessage"] = result.Message;
         return RedirectToAction(nameof(Manage), new { id });

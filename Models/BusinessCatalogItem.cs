@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UplivaAI.Models;
 
@@ -40,6 +41,13 @@ public class BusinessCatalogItem
     [MaxLength(1000)]
     public string Description { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Business-type-specific catalog values. The structure is defined by a CatalogTemplates/*.json file.
+    /// Common fields remain strongly typed above; only the business-specific extension data lives here.
+    /// </summary>
+    [Column(TypeName = "nvarchar(max)")]
+    public string CustomAttributesJson { get; set; } = "{}";
+
     [MaxLength(80)]
     public string StockStatus { get; set; } = string.Empty;
 
@@ -48,12 +56,8 @@ public class BusinessCatalogItem
 
     /// <summary>
     /// When true, this product is included in the business's configurable WhatsApp featured showcase.
-    /// The same selected products are highlighted first on the public website.
     /// </summary>
     public bool IsWhatsAppTopPick { get; set; }
-
-    /// <summary>Controls visibility in the public business website catalog.</summary>
-    public bool ShowOnWebsite { get; set; } = true;
 
     public int SortOrder { get; set; }
     public bool IsActive { get; set; } = true;

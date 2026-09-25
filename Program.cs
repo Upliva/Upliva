@@ -8,6 +8,11 @@ using UplivaAI.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Explicitly load the existing User Secrets store so the current flat keys
+// such as "WhatsApp:PhoneNumberId" and "WhatsApp:AccessToken" are available
+// even when the launch profile/environment is not Development.
+builder.Configuration.AddUserSecrets<Program>(optional: true);
+
 builder.Logging.ClearProviders();
 builder.Logging.AddJsonConsole();
 builder.Logging.AddDebug();
@@ -30,11 +35,11 @@ builder.Services.AddAuthorization();
 builder.Services.AddScoped<IPasswordHasher<PlatformUser>, PasswordHasher<PlatformUser>>();
 builder.Services.AddScoped<IPlatformAuthService, PlatformAuthService>();
 builder.Services.AddScoped<IBusinessService, BusinessService>();
+builder.Services.AddSingleton<ICatalogTemplateService, CatalogTemplateService>();
+builder.Services.AddScoped<ICatalogImportService, CatalogImportService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IErrorLogService, ErrorLogService>();
-builder.Services.AddScoped<IBusinessBrochureService, BusinessBrochureService>();
 builder.Services.AddScoped<IMarketingEngagementService, MarketingEngagementService>();
-builder.Services.AddScoped<IBusinessUrlService, BusinessUrlService>();
 builder.Services.AddSingleton<IBusinessCacheService, BusinessCacheService>();
 
 builder.Services.AddDbContext<UplivaDbContext>(options =>
@@ -61,7 +66,6 @@ if (!app.Environment.IsDevelopment())
 
 app.UseMiddleware<CorrelationIdMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-app.UseMiddleware<CustomDomainMiddleware>();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
@@ -80,10 +84,11 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Database schema is managed exclusively through Entity Framework Core migrations.
-// After cloning this project or recreating the database, run:
-//   dotnet ef migrations add InitialCreate
-//   dotnet ef database update
+// Database schema is managed through Entity Framework Core migrations.
+// This WhatsApp-first refactor intentionally starts a new schema contract.
+// Run in Visual Studio Package Manager Console:
+//   Add-Migration WhatsAppFirstMvp -OutputDir Migrations
+//   Update-Database
 // The admin account is seeded from Admin:* User Secrets after the database exists.
 await PlatformAdminSeeder.SeedAsync(app.Services, builder.Configuration);
 

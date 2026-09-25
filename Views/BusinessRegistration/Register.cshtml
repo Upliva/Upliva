@@ -6,11 +6,11 @@
         <div class="registration-info">
             <span class="platform-kicker dark">START WITH UPLIVA</span>
             <h2>Let's grow your business.</h2>
-            <p class="registration-lead-copy">Share just three details. There is no password, catalog or lengthy business form at this stage.</p>
+            <p class="registration-lead-copy">Enter the three details required to register your business. The remaining business profile can be completed later.</p>
             <div class="registration-steps">
-                <div><span>01</span><strong>Tell us about you</strong><small>Name, business category and WhatsApp / phone.</small></div>
-                <div><span>02</span><strong>Our team connects</strong><small>We will contact you within 24 hours to understand your needs.</small></div>
-                <div><span>03</span><strong>Complete onboarding later</strong><small>After confirmation, we collect your catalog, images, PDF and website details.</small></div>
+                <div><span>01</span><strong>Tell us about you</strong><small>Any details you already know.</small></div>
+                <div><span>02</span><strong>Our team connects</strong><small>Our team can follow up when contact details are available.</small></div>
+                <div><span>03</span><strong>Complete onboarding later</strong><small>Business profile and catalog can be completed later.</small></div>
             </div>
         </div>
 
@@ -29,7 +29,7 @@
             <div class="lead-form-heading">
                 <span class="platform-kicker dark">BUSINESS ENQUIRY</span>
                 <h3>Tell us how we can help</h3>
-                <p>Share three details and we will save your enquiry. No account, password or business profile is created at this stage.</p>
+                <p>Business name, business type and WhatsApp number are required. Other details can be completed later.</p>
             </div>
 
             <form method="post">
@@ -37,7 +37,7 @@
                 <div class="lead-form-fields">
                     <div class="field full">
                         <label asp-for="Name"></label>
-                        <input asp-for="Name" placeholder="Rahul Sharma" autocomplete="name" autofocus />
+                        <input asp-for="Name" placeholder="HarHarMahadev" autocomplete="organization" autofocus />
                         <span asp-validation-for="Name"></span>
                     </div>
                     <div class="field full">
@@ -52,7 +52,7 @@
                     <div class="field full">
                         <label asp-for="WhatsAppNumber"></label>
                         <input asp-for="WhatsAppNumber" placeholder="9876543210" maxlength="10" autocomplete="tel" inputmode="numeric" pattern="[6-9][0-9]{9}" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" />
-                        <span class="field-hint">Enter 10 digits only. Example: 9876543210. We will add +91 automatically.</span>
+                        <span class="field-hint">Required. Enter a 10-digit Indian number; +91 is added automatically.</span>
                         <span asp-validation-for="WhatsAppNumber"></span>
                     </div>
                 </div>

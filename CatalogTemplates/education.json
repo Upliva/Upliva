@@ -1,0 +1,62 @@
+{
+  "Key": "education",
+  "DisplayName": "School / Education",
+  "ItemLabel": "Course / program",
+  "AddButtonText": "Add course / program",
+  "Fields": [
+    {
+      "Key": "courseType",
+      "Label": "Course type",
+      "Type": "text",
+      "Placeholder": "e.g. Class 10 coaching",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 10,
+      "Required": false
+    },
+    {
+      "Key": "duration",
+      "Label": "Duration",
+      "Type": "text",
+      "Placeholder": "e.g. 6 months",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 20,
+      "Required": false
+    },
+    {
+      "Key": "mode",
+      "Label": "Mode",
+      "Type": "select",
+      "Options": [
+        "Offline",
+        "Online",
+        "Hybrid"
+      ],
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 30,
+      "Required": false
+    },
+    {
+      "Key": "batchTiming",
+      "Label": "Batch timing",
+      "Type": "text",
+      "Placeholder": "e.g. 5 PM - 7 PM",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 40,
+      "Required": false
+    },
+    {
+      "Key": "ageGroup",
+      "Label": "Age / class group",
+      "Type": "text",
+      "Placeholder": "e.g. Classes 9-10",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 50,
+      "Required": false
+    }
+  ]
+}

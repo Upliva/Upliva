@@ -1,0 +1,35 @@
+{
+  "Key": "hardware",
+  "DisplayName": "Hardware",
+  "ItemLabel": "Hardware product",
+  "AddButtonText": "Add hardware item",
+  "Fields": [
+    {
+      "Key": "material",
+      "Label": "Material",
+      "Type": "text",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 20,
+      "Required": false
+    },
+    {
+      "Key": "size",
+      "Label": "Size / specification",
+      "Type": "text",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 30,
+      "Required": false
+    },
+    {
+      "Key": "warranty",
+      "Label": "Warranty",
+      "Type": "text",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 40,
+      "Required": false
+    }
+  ]
+}

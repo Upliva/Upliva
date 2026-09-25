@@ -9,5 +9,6 @@ public interface IWhatsAppFlowService
         string? text,
         string? selectionId,
         string? phoneNumberId,
+        string? externalMessageId,
         CancellationToken cancellationToken = default);
 }

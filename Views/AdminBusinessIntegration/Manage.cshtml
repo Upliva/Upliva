@@ -18,6 +18,7 @@
             <div class="workspace-page-actions">
                 <a class="workspace-btn workspace-btn-secondary" asp-controller="AdminDashboard" asp-action="Index">← Back to dashboard</a>
                 <a class="workspace-btn" asp-controller="BusinessContent" asp-action="Index" asp-route-id="@Model.BusinessId">Manage catalog</a>
+                <a class="workspace-btn" asp-controller="AdminWhatsAppMessages" asp-action="Index" asp-route-businessId="@Model.BusinessId">Message history</a>
             </div>
         </div>
 
@@ -36,12 +37,16 @@
                 <input type="hidden" asp-for="ServicePlan" />
                 <div asp-validation-summary="ModelOnly" class="validation"></div>
 
-                <h2>1. WhatsApp Business connection</h2>
+                <h2>1. WhatsApp Business profile & connection</h2>
                 <div class="form-grid">
+                    <div class="field"><label asp-for="DisplayName"></label><input asp-for="DisplayName" placeholder="Business name shown in WhatsApp" /></div>
+                    <div class="field"><label asp-for="BusinessCategory"></label><input asp-for="BusinessCategory" placeholder="e.g. Real Estate" /></div>
+                    <div class="field full"><label asp-for="AboutText"></label><textarea asp-for="AboutText" rows="2" placeholder="Short business description"></textarea></div>
+                    <div class="field full"><label asp-for="WelcomeMessage"></label><textarea asp-for="WelcomeMessage" rows="3" placeholder="Welcome message sent when a customer starts the chat"></textarea></div>
                     <div class="field"><label asp-for="WabaId"></label><input asp-for="WabaId" placeholder="Meta WABA ID" /></div>
                     <div class="field"><label asp-for="PhoneNumberId"></label><input asp-for="PhoneNumberId" placeholder="Meta Phone Number ID" /></div>
-                    <div class="field full"><label asp-for="AccessToken"></label><input asp-for="AccessToken" type="password" autocomplete="new-password" placeholder="Leave blank to keep current token" /></div>
-                    <div class="field"><label asp-for="WebhookVerifyToken"></label><input asp-for="WebhookVerifyToken" type="password" autocomplete="off" /></div>
+                    <div class="field full"><label asp-for="AccessToken"></label><input asp-for="AccessToken" type="password" autocomplete="new-password" placeholder="Leave blank to use WhatsApp:AccessToken from User Secrets" /><small style="display:block;margin-top:6px;color:#7a8580">For testing, keep this blank when the token is stored in User Secrets/environment configuration. The real token is never displayed.</small></div>
+                    <div class="field"><label asp-for="WebhookVerifyToken"></label><input asp-for="WebhookVerifyToken" type="password" autocomplete="off" placeholder="Optional for outbound message testing" /><small style="display:block;margin-top:6px;color:#7a8580">Not required for sending test messages. Configure it later when Meta webhook verification is needed.</small></div>
                     <div class="field"><label asp-for="GraphApiVersion"></label><input asp-for="GraphApiVersion" /></div>
                     <div class="field"><label asp-for="FeaturedProductLimit"></label><input asp-for="FeaturedProductLimit" type="number" min="1" max="50" /></div>
                     <div class="field full"><label><input asp-for="IsEnabled" /> Enable WhatsApp integration for this business</label></div>
@@ -130,19 +135,79 @@
                 </div>
             </form>
 
-            @if (Model.IsEnabled)
-            {
+            <div style="margin-top:12px;padding:11px 14px;border-radius:12px;border:1px solid @(Model.PlatformWhatsAppConfigured ? "#cfe8da" : "#f1d3d3");background:@(Model.PlatformWhatsAppConfigured ? "#f1fbf5" : "#fff5f5");color:@(Model.PlatformWhatsAppConfigured ? "#176044" : "#9b2c2c");font-size:13px">
+                    @if (Model.PlatformWhatsAppConfigured)
+                    {
+                        <strong>✓ Meta outbound credentials detected.</strong>
+                        <span>Phone Number ID and Access Token are available from your existing <code>WhatsApp:*</code> configuration.</span>
+                    }
+                    else
+                    {
+                        <strong>⚠ Meta outbound credentials not detected.</strong>
+                        <span>Add <code>WhatsApp:PhoneNumberId</code> and <code>WhatsApp:AccessToken</code> to your existing User Secrets/environment configuration.</span>
+                    }
+                </div>
+
                 <form asp-action="TestWhatsApp" method="post" style="margin-top:12px">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.BusinessId" />
                     <button class="workspace-btn" type="submit">Test WhatsApp connection</button>
                 </form>
-            }
+
+                <div style="margin-top:22px;border:1px solid #dce9e2;border-radius:18px;background:linear-gradient(135deg,#f7fcf9,#ffffff);padding:22px;box-shadow:0 8px 24px rgba(20,61,50,.06)">
+                    <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap">
+                        <div>
+                            <span style="display:inline-flex;padding:5px 9px;border-radius:999px;background:#e8f5ee;color:#176044;font-size:11px;font-weight:800;letter-spacing:.04em">OUTBOUND TEST</span>
+                            <h2 style="margin:9px 0 5px;font-size:25px">📲 Send catalog to my WhatsApp</h2>
+                            <p style="margin:0;color:#66736e;max-width:760px;font-size:14px;line-height:1.6">Your catalog and WhatsApp ranking are already saved. Enter your personal WhatsApp number below and UplivaAI will send the catalog using this business's Meta Phone Number ID and Access Token. The outbound test does not require the webhook or the integration enable flag.</p>
+                        </div>
+                        <div style="background:#153d32;color:#fff;border-radius:14px;padding:12px 16px;text-align:center;min-width:120px">
+                            <strong style="display:block;font-size:22px">@Model.SelectedWhatsAppProductIds.Count</strong>
+                            <span style="font-size:11px;opacity:.85">selected products</span>
+                        </div>
+                    </div>
+
+                    <form asp-action="SendTestMessage" method="post" style="margin-top:20px">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.BusinessId" />
+                        <input type="hidden" id="diagnosticRecipient" name="testRecipientPhoneNumber" value="@Model.TestRecipientPhoneNumber" />
+                        <button class="workspace-btn" type="submit">🧪 Send one test text first</button>
+                        <span style="font-size:12px;color:#6d7974;margin-left:8px">Use this first. It shows the exact Meta error instead of a generic failure.</span>
+                    </form>
+
+                    <form asp-action="SendCatalog" method="post" style="margin-top:20px">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.BusinessId" />
+                        <div style="display:grid;grid-template-columns:minmax(280px,1.2fr) minmax(260px,1fr);gap:14px;align-items:end">
+                            <div class="field" style="margin:0">
+                                <label for="testRecipientPhoneNumber">Your WhatsApp number</label>
+                                <input id="testRecipientPhoneNumber" name="testRecipientPhoneNumber" value="@Model.TestRecipientPhoneNumber" placeholder="919798555992" autocomplete="tel" required />
+                                <small style="display:block;margin-top:6px;color:#7a8580">Use country code, e.g. <strong>919798555992</strong>. Do not enter + or spaces.</small>
+                            </div>
+                            <div class="field" style="margin:0">
+                                <label for="catalogSendMode">What should be sent?</label>
+                                <select id="catalogSendMode" name="catalogSendMode">
+                                    <option value="selected">Selected WhatsApp products (@Model.SelectedWhatsAppProductIds.Count)</option>
+                                    <option value="all">All active catalog products (@Model.WhatsAppProducts.Count)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px">
+                            <button id="sendCatalogButton" class="platform-btn platform-btn-primary" type="submit">📲 Send catalog now</button>
+                            <span style="font-size:12px;color:#6d7974">For the outbound test, products are sent as text with all catalog details in saved rank/order. This avoids remote-image delivery issues; image sending can be tested separately.</span>
+                        </div>
+                    </form>
+
+                    <div style="margin-top:16px;padding:12px 14px;border-radius:10px;background:#fff8e8;border:1px solid #f1dfae;color:#6f5b22;font-size:12px;line-height:1.55">
+                        <strong>Testing tip:</strong> first send <strong>Hi</strong> from your personal WhatsApp number to the Meta test number, then click <strong>Send catalog now</strong>. This gives the test number an active customer conversation window for the free-form catalog messages.
+                    </div>
+                </div>
 
             <div style="margin-top:28px;padding:20px;background:#f7f5ef;border-radius:12px">
                 <strong>Webhook</strong>
                 <p style="margin:6px 0;color:#687872"><code>/webhooks/whatsapp</code></p>
-                <p style="margin:6px 0;color:#687872;font-size:13px">Meta/WABA onboarding and phone-number ownership still happen in Meta. This page stores the per-business connection and catalog showcase configuration used by UplivaAI.</p>
+                <p style="margin:6px 0;color:#687872;font-size:13px">Meta/WABA onboarding and phone-number ownership still happen in Meta. This page stores the per-business WhatsApp connection, profile message and catalog showcase configuration used by UplivaAI.</p>
             </div>
         </div>
     </div>
@@ -159,6 +224,13 @@
     const category = document.getElementById('whatsappCategory');
     const rows = [...document.querySelectorAll('.whatsapp-rank-row')];
     const groups = [...document.querySelectorAll('.whatsapp-category-group')];
+    const recipient = document.getElementById('testRecipientPhoneNumber');
+    const diagnosticRecipient = document.getElementById('diagnosticRecipient');
+    if (recipient && diagnosticRecipient) {
+        const syncDiagnosticRecipient = () => diagnosticRecipient.value = recipient.value;
+        recipient.addEventListener('input', syncDiagnosticRecipient);
+        syncDiagnosticRecipient();
+    }
 
     const refreshCountAndRanks = () => {
         const selected = rows.filter(row => row.querySelector('.whatsapp-product-checkbox')?.checked);
@@ -226,6 +298,15 @@
         button.disabled = true;
         button.textContent = 'Saving…';
     });
+
+    const sendCatalogButton = document.getElementById('sendCatalogButton');
+    const sendCatalogForm = sendCatalogButton?.closest('form[action$="SendCatalog"]');
+    if (sendCatalogForm && sendCatalogButton) {
+        sendCatalogForm.addEventListener('submit', () => {
+            sendCatalogButton.disabled = true;
+            sendCatalogButton.textContent = 'Sending catalog…';
+        });
+    }
 
     refreshCountAndRanks();
 })();

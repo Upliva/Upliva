@@ -1,0 +1,72 @@
+{
+  "Key": "pathology",
+  "DisplayName": "Pathology / Diagnostic",
+  "ItemLabel": "Test / service",
+  "AddButtonText": "Add test / service",
+  "Fields": [
+    {
+      "Key": "sampleType",
+      "Label": "Sample type",
+      "Type": "text",
+      "Placeholder": "e.g. Blood / Urine",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 10,
+      "Required": false
+    },
+    {
+      "Key": "reportTime",
+      "Label": "Report time",
+      "Type": "text",
+      "Placeholder": "e.g. Same day",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 20,
+      "Required": false
+    },
+    {
+      "Key": "homeCollection",
+      "Label": "Home collection",
+      "Type": "select",
+      "Options": [
+        "Available",
+        "Not available",
+        "Selected locations only"
+      ],
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 30,
+      "Required": false
+    },
+    {
+      "Key": "fasting",
+      "Label": "Fasting required",
+      "Type": "select",
+      "Options": [
+        "Yes",
+        "No",
+        "Depends on test"
+      ],
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 40,
+      "Required": false
+    },
+    {
+      "Key": "reportDelivery",
+      "Label": "Report delivery",
+      "Type": "select",
+      "Options": [
+        "WhatsApp",
+        "Email",
+        "Website",
+        "Counter pickup",
+        "Multiple options"
+      ],
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 50,
+      "Required": false
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "Key": "furniture",
+  "DisplayName": "Furniture",
+  "ItemLabel": "Furniture product",
+  "AddButtonText": "Add furniture item",
+  "Fields": [
+    {
+      "Key": "material",
+      "Label": "Material",
+      "Type": "text",
+      "Placeholder": "e.g. Teak wood",
+      "Required": false,
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 10
+    },
+    {
+      "Key": "color",
+      "Label": "Color",
+      "Type": "text",
+      "Placeholder": "e.g. Walnut Brown",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 20,
+      "Required": false
+    },
+    {
+      "Key": "dimensions",
+      "Label": "Dimensions",
+      "Type": "text",
+      "Placeholder": "e.g. 7 x 3 x 3 ft",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 30,
+      "Required": false
+    },
+    {
+      "Key": "seating",
+      "Label": "Seating / size",
+      "Type": "text",
+      "Placeholder": "e.g. 5 seater",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 40,
+      "Required": false
+    },
+    {
+      "Key": "warranty",
+      "Label": "Warranty",
+      "Type": "text",
+      "Placeholder": "e.g. 5 years",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 50,
+      "Required": false
+    },
+    {
+      "Key": "assembly",
+      "Label": "Assembly",
+      "Type": "select",
+      "Options": [
+        "Included",
+        "Available",
+        "Not included"
+      ],
+      "ShowOnWhatsApp": false,
+      "ShowOnWebsite": true,
+      "SortOrder": 60,
+      "Required": false
+    }
+  ]
+}

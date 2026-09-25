@@ -10,9 +10,9 @@ namespace UplivaAI.Controllers;
 public class AdminMarketingController(IMarketingEngagementService engagement, IBusinessService businessService) : Controller
 {
     [HttpGet]
-    public async Task<IActionResult> Index(string? q, int page = 1, CancellationToken cancellationToken = default)
+    public async Task<IActionResult> Index(string? q, int page = 1, int pageSize = 10, CancellationToken cancellationToken = default)
     {
-        return View(await engagement.GetStatsAsync(q, page, 10, cancellationToken));
+        return View(await engagement.GetStatsAsync(q, page, pageSize, cancellationToken));
     }
 
     [HttpGet]
@@ -31,7 +31,7 @@ public class AdminMarketingController(IMarketingEngagementService engagement, IB
         return View(new CreateBusinessFromLeadViewModel
         {
             LeadId = lead.Id,
-            BusinessName = string.Empty,
+            BusinessName = lead.Name,
             OwnerName = lead.Name,
             BusinessType = lead.BusinessType,
             WhatsAppNumber = lead.WhatsAppNumber,
@@ -43,7 +43,8 @@ public class AdminMarketingController(IMarketingEngagementService engagement, IB
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateBusiness(CreateBusinessFromLeadViewModel model, CancellationToken cancellationToken)
     {
-        if (!BusinessServicePlans.All.Contains(model.ServicePlan, StringComparer.Ordinal))
+        if (!string.IsNullOrWhiteSpace(model.ServicePlan) &&
+            !BusinessServicePlans.All.Contains(model.ServicePlan, StringComparer.Ordinal))
             ModelState.AddModelError(nameof(model.ServicePlan), "Select a valid Upliva plan.");
 
         if (!ModelState.IsValid)
@@ -53,7 +54,7 @@ public class AdminMarketingController(IMarketingEngagementService engagement, IB
         {
             // The selected plan is kept on the lead as the source of truth. The
             // service validates the lead again before creating the business.
-            var business = await businessService.CreateFromLeadAsync(model.LeadId, model.BusinessName, cancellationToken);
+            var business = await businessService.CreateFromLeadAsync(model.LeadId, model.BusinessName ?? string.Empty, cancellationToken);
             TempData["ToastType"] = "success";
             TempData["ToastMessage"] = $"{business.Name} was created from the interested lead and is now active on the admin dashboard.";
             return RedirectToAction("Index", "AdminDashboard");
@@ -74,6 +75,7 @@ public class AdminMarketingController(IMarketingEngagementService engagement, IB
         string? adminNotes,
         string? q,
         int page = 1,
+        int pageSize = 10,
         CancellationToken cancellationToken = default)
     {
         try
@@ -93,12 +95,12 @@ public class AdminMarketingController(IMarketingEngagementService engagement, IB
             TempData["ToastMessage"] = "Lead could not be found.";
         }
 
-        return RedirectToAction(nameof(Index), new { q, page });
+        return RedirectToAction(nameof(Index), new { q, page, pageSize });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteLead(long id, CancellationToken cancellationToken)
+    public async Task<IActionResult> DeleteLead(long id, string? q, int page = 1, int pageSize = 10, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -112,7 +114,7 @@ public class AdminMarketingController(IMarketingEngagementService engagement, IB
             TempData["ToastMessage"] = "Lead could not be found.";
         }
 
-        return RedirectToAction(nameof(Index));
+        return RedirectToAction(nameof(Index), new { q, page, pageSize });
     }
 
     [HttpGet]

@@ -1,0 +1,55 @@
+{
+  "Key": "transportation",
+  "DisplayName": "Transportation",
+  "ItemLabel": "Route / service",
+  "AddButtonText": "Add route / service",
+  "Fields": [
+    {
+      "Key": "from",
+      "Label": "From",
+      "Type": "text",
+      "Required": false,
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 10
+    },
+    {
+      "Key": "to",
+      "Label": "To",
+      "Type": "text",
+      "Required": false,
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 20
+    },
+    {
+      "Key": "vehicleType",
+      "Label": "Vehicle type",
+      "Type": "text",
+      "Placeholder": "e.g. Bus / Cab / Tempo",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 30,
+      "Required": false
+    },
+    {
+      "Key": "schedule",
+      "Label": "Schedule",
+      "Type": "text",
+      "Placeholder": "e.g. 7:30 AM daily",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 40,
+      "Required": false
+    },
+    {
+      "Key": "seats",
+      "Label": "Seats",
+      "Type": "number",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 50,
+      "Required": false
+    }
+  ]
+}

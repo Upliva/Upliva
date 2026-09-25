@@ -1,0 +1,75 @@
+{
+  "Key": "salon-beauty",
+  "DisplayName": "Salon & Beauty",
+  "ItemLabel": "Service",
+  "AddButtonText": "Add service",
+  "Fields": [
+    {
+      "Key": "serviceType",
+      "Label": "Service type",
+      "Type": "select",
+      "Options": [
+        "Hair",
+        "Skin",
+        "Makeup",
+        "Spa",
+        "Nails",
+        "Bridal",
+        "Other"
+      ],
+      "Required": false,
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 10
+    },
+    {
+      "Key": "duration",
+      "Label": "Duration",
+      "Type": "text",
+      "Placeholder": "e.g. 60 minutes",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 20,
+      "Required": false
+    },
+    {
+      "Key": "gender",
+      "Label": "For",
+      "Type": "select",
+      "Options": [
+        "Women",
+        "Men",
+        "Unisex",
+        "Kids"
+      ],
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 30,
+      "Required": false
+    },
+    {
+      "Key": "offerPrice",
+      "Label": "Offer price",
+      "Type": "text",
+      "Placeholder": "e.g. ₹999",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 40,
+      "Required": false
+    },
+    {
+      "Key": "appointment",
+      "Label": "Appointment",
+      "Type": "select",
+      "Options": [
+        "Walk-in",
+        "Appointment required",
+        "Both"
+      ],
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 50,
+      "Required": false
+    }
+  ]
+}

@@ -10,10 +10,22 @@ public class BusinessWhatsAppSettings
     [MaxLength(100)]
     public string WabaId { get; set; } = string.Empty;
 
+    [MaxLength(150)]
+    public string DisplayName { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string AboutText { get; set; } = string.Empty;
+
+    [MaxLength(100)]
+    public string BusinessCategory { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string WelcomeMessage { get; set; } = string.Empty;
+
     [MaxLength(100)]
     public string PhoneNumberId { get; set; } = string.Empty;
 
-    // Store production secrets outside source control. This field is encrypted/secret-managed in the production roadmap.
+    // Production deployments should encrypt this value at rest or move it to a secret manager.
     public string AccessToken { get; set; } = string.Empty;
 
     [MaxLength(100)]

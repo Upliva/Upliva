@@ -22,39 +22,40 @@ public class MarketingEngagementService(UplivaDbContext db) : IMarketingEngageme
         string source,
         CancellationToken cancellationToken = default)
     {
-        var normalizedPhone = new string((whatsappNumber ?? string.Empty).Where(char.IsDigit).ToArray());
+        var normalizedPhone = BusinessInputRules.NormalizeWhatsApp(whatsappNumber);
 
-        if (normalizedPhone.Length < 10 || normalizedPhone.Length > 15)
-            throw new ArgumentException("Please provide a valid WhatsApp / phone number.");
+        if (!BusinessInputRules.IsOptionalWhatsAppValid(whatsappNumber))
+            throw new ArgumentException("If you provide WhatsApp, enter a valid 10-digit Indian number.");
+
+        name = BusinessInputRules.Clean(name);
+        businessType = BusinessInputRules.Clean(businessType);
 
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Please provide your name.");
-
+            throw new ArgumentException("Business name is required.");
         if (string.IsNullOrWhiteSpace(businessType))
-            throw new ArgumentException("Please select your business category.");
+            throw new ArgumentException("Business type is required.");
+        if (string.IsNullOrWhiteSpace(normalizedPhone))
+            throw new ArgumentException("WhatsApp number is required.");
 
-        // Prevent accidental repeated submissions while an existing lead is still active.
-        // A person can still be re-captured after the old lead has been deleted.
-        var activeStatuses = new[]
+        // Registration requires the three business identity fields. When WhatsApp is supplied,
+        // however, it must never create a duplicate active lead or business.
+        if (!string.IsNullOrWhiteSpace(normalizedPhone))
         {
-            MarketingLeadStatuses.Interested
-        };
+            var phoneVariants = BusinessInputRules.GetWhatsAppVariants(normalizedPhone);
+            var duplicate = await db.ChatbotLeads
+                .AsNoTracking()
+                .AnyAsync(x => phoneVariants.Contains(x.WhatsAppNumber), cancellationToken);
 
-        var duplicate = await db.ChatbotLeads
-            .AsNoTracking()
-            .AnyAsync(x => x.WhatsAppNumber == normalizedPhone
-                && activeStatuses.Contains(x.Status)
-                && x.ConvertedBusinessId == null, cancellationToken);
+            if (duplicate)
+                throw new ArgumentException("This WhatsApp number is already registered. A WhatsApp number can belong to only one business.");
 
-        if (duplicate)
-            throw new ArgumentException("We already have your details. Our business team will contact you shortly.");
+            var existingBusiness = await db.Businesses
+                .AsNoTracking()
+                .AnyAsync(x => phoneVariants.Contains(x.WhatsAppNumber) && !string.IsNullOrWhiteSpace(x.WhatsAppNumber), cancellationToken);
 
-        var existingBusiness = await db.Businesses
-            .AsNoTracking()
-            .AnyAsync(x => x.WhatsAppNumber == normalizedPhone && !string.IsNullOrWhiteSpace(x.WhatsAppNumber), cancellationToken);
-
-        if (existingBusiness)
-            throw new ArgumentException("This WhatsApp number is already linked to an Upliva business.");
+            if (existingBusiness)
+                throw new ArgumentException("This WhatsApp number is already linked to an Upliva business.");
+        }
 
         var lead = new MarketingLead
         {
@@ -112,17 +113,17 @@ public class MarketingEngagementService(UplivaDbContext db) : IMarketingEngageme
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);
+        await HydrateBusinessDisplayNamesAsync(recentLeads, cancellationToken);
 
         return new MarketingLeadStatsViewModel
         {
             TotalBusinesses = await db.Businesses.CountAsync(cancellationToken),
-            PublishedBusinesses = await db.Businesses.CountAsync(x => x.IsPublished, cancellationToken),
+            ActiveBusinesses = await db.Businesses.CountAsync(x => x.Status == BusinessStatuses.Approved, cancellationToken),
             TotalLeads = await db.ChatbotLeads.LongCountAsync(cancellationToken),
             LeadsToday = await db.ChatbotLeads.LongCountAsync(x => x.CreatedAtUtc >= today, cancellationToken),
             InterestedLeads = await db.ChatbotLeads.LongCountAsync(x => x.Status == MarketingLeadStatuses.Interested, cancellationToken),
-            WhatsAppOnlyLeads = await db.ChatbotLeads.LongCountAsync(x => x.SelectedPlan == MarketingLeadPlans.WhatsAppOnly, cancellationToken),
-            WhatsAppWebsiteLeads = await db.ChatbotLeads.LongCountAsync(x => x.SelectedPlan == MarketingLeadPlans.WhatsAppWebsite, cancellationToken),
-            WhatsAppWebsiteEnquiryLeads = await db.ChatbotLeads.LongCountAsync(x => x.SelectedPlan == MarketingLeadPlans.WhatsAppWebsiteEnquiry, cancellationToken),
+            WhatsAppSmsLeads = await db.ChatbotLeads.LongCountAsync(x => x.SelectedPlan == MarketingLeadPlans.WhatsAppSms, cancellationToken),
+            WhatsAppEnquiryFollowUpLeads = await db.ChatbotLeads.LongCountAsync(x => x.SelectedPlan == MarketingLeadPlans.WhatsAppEnquiryFollowUp, cancellationToken),
             TotalVisits = await db.PlatformVisits.LongCountAsync(cancellationToken),
             UniqueVisitors = await db.PlatformVisits.Select(x => x.VisitorId).Distinct().LongCountAsync(cancellationToken),
             RecentLeads = recentLeads,
@@ -133,20 +134,49 @@ public class MarketingEngagementService(UplivaDbContext db) : IMarketingEngageme
         };
     }
 
-    public Task<List<MarketingLead>> GetRecentLeadsAsync(int take = 100, CancellationToken cancellationToken = default) =>
-        db.ChatbotLeads.AsNoTracking()
+    public async Task<List<MarketingLead>> GetRecentLeadsAsync(int take = 100, CancellationToken cancellationToken = default)
+    {
+        var leads = await db.ChatbotLeads.AsNoTracking()
             .OrderByDescending(x => x.CreatedAtUtc)
             .Take(Math.Clamp(take, 1, 5000))
             .ToListAsync(cancellationToken);
+        await HydrateBusinessDisplayNamesAsync(leads, cancellationToken);
+        return leads;
+    }
 
-    public Task<List<MarketingLead>> GetInterestedLeadsAsync(CancellationToken cancellationToken = default) =>
-        db.ChatbotLeads.AsNoTracking()
+    public async Task<List<MarketingLead>> GetInterestedLeadsAsync(CancellationToken cancellationToken = default)
+    {
+        var leads = await db.ChatbotLeads.AsNoTracking()
             // Keep converted Interested leads visible on the first dashboard.
             // The row becomes the entry point to WhatsApp Business and Catalog
             // after the real Business record has been created.
             .Where(x => x.Status == MarketingLeadStatuses.Interested)
             .OrderByDescending(x => x.CreatedAtUtc)
             .ToListAsync(cancellationToken);
+        await HydrateBusinessDisplayNamesAsync(leads, cancellationToken);
+        return leads;
+    }
+
+    private async Task HydrateBusinessDisplayNamesAsync(List<MarketingLead> leads, CancellationToken cancellationToken)
+    {
+        var ids = leads.Where(x => x.ConvertedBusinessId.HasValue)
+            .Select(x => x.ConvertedBusinessId!.Value)
+            .Distinct()
+            .ToList();
+        if (ids.Count == 0) return;
+
+        var names = await db.Businesses.AsNoTracking()
+            .Where(x => ids.Contains(x.Id))
+            .ToDictionaryAsync(x => x.Id, x => x.Name, cancellationToken);
+
+        foreach (var lead in leads)
+        {
+            lead.DisplayName = lead.ConvertedBusinessId.HasValue &&
+                               names.TryGetValue(lead.ConvertedBusinessId.Value, out var name)
+                ? name
+                : lead.Name;
+        }
+    }
 
     public async Task UpdateLeadAsync(
         long leadId,

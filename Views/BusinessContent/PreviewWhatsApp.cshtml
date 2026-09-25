@@ -82,6 +82,18 @@
                                             {
                                                 <div style="font-size:11px;color:#5d6864;margin-top:5px;line-height:1.4">@Model.FocusProduct.ShortDescription</div>
                                             }
+                                            @if (Model.FocusProduct.CustomFields.Count > 0)
+                                            {
+                                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px 8px;margin-top:8px;padding-top:8px;border-top:1px solid #edf0ee">
+                                                    @foreach (var field in Model.FocusProduct.CustomFields.Take(6))
+                                                    {
+                                                        <div style="min-width:0">
+                                                            <div style="font-size:9px;color:#8a948f;text-transform:uppercase">@field.Label</div>
+                                                            <div style="font-size:10px;color:#36433e;white-space:pre-line">@field.Value</div>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
                                         </div>
                                         <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid #e9ecea">
                                             <div style="text-align:center;padding:8px;color:#075e54;font-size:11px;font-weight:600;border-right:1px solid #e9ecea">💬 Enquire</div>
@@ -178,6 +190,18 @@
                                         @if (!string.IsNullOrWhiteSpace(product.ShortDescription))
                                         {
                                             <p style="font-size:12px;color:#687284;line-height:1.45;margin:8px 0 0">@product.ShortDescription</p>
+                                        }
+                                        @if (product.CustomFields.Count > 0)
+                                        {
+                                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px;padding-top:10px;border-top:1px solid #edf0ee">
+                                                @foreach (var field in product.CustomFields.Take(6))
+                                                {
+                                                    <div>
+                                                        <div style="font-size:10px;color:#87928d">@field.Label</div>
+                                                        <div style="font-size:12px;color:#26332e;white-space:pre-line">@field.Value</div>
+                                                    </div>
+                                                }
+                                            </div>
                                         }
                                     </div>
                                 </div>

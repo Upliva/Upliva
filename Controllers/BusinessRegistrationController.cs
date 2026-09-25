@@ -36,17 +36,23 @@ public class BusinessRegistrationController(
     {
         model.Name = model.Name?.Trim() ?? string.Empty;
         model.BusinessType = model.BusinessType?.Trim() ?? string.Empty;
+
+        if (string.IsNullOrWhiteSpace(model.Name))
+            ModelState.AddModelError(nameof(model.Name), "Business name is required.");
+        if (string.IsNullOrWhiteSpace(model.BusinessType))
+            ModelState.AddModelError(nameof(model.BusinessType), "Business type is required.");
         var enteredPhone = new string((model.WhatsAppNumber ?? string.Empty).Where(char.IsDigit).ToArray());
 
-        if (!BusinessRegistrationInputHelper.IsValidIndianLeadWhatsAppNumber(enteredPhone))
+        if (!BusinessInputRules.IsOptionalWhatsAppValid(enteredPhone) || string.IsNullOrWhiteSpace(enteredPhone))
         {
             ModelState.AddModelError(nameof(model.WhatsAppNumber),
-                "Please enter your 10-digit Indian WhatsApp / mobile number.");
+                "WhatsApp number is required and must be a valid 10-digit Indian number.");
         }
         else
         {
-            // Visitors enter only 10 digits. Store 91xxxxxxxxxx internally for WhatsApp.
-            model.WhatsAppNumber = BusinessRegistrationInputHelper.NormalizeIndianLeadWhatsAppNumber(enteredPhone);
+            model.WhatsAppNumber = string.IsNullOrWhiteSpace(enteredPhone)
+                ? string.Empty
+                : BusinessInputRules.NormalizeWhatsApp(enteredPhone);
         }
 
         if (!ModelState.IsValid)
@@ -59,9 +65,9 @@ public class BusinessRegistrationController(
                 : string.Empty;
 
             await marketingEngagement.CaptureLeadAsync(
-                model.Name,
-                model.BusinessType,
-                model.WhatsAppNumber,
+                model.Name ?? string.Empty,
+                model.BusinessType ?? string.Empty,
+                model.WhatsAppNumber ?? string.Empty,
                 visitorId,
                 "BusinessRegistration",
                 cancellationToken);

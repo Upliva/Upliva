@@ -4,17 +4,18 @@ namespace UplivaAI.Models;
 
 public static class BusinessServicePlans
 {
-    public const string WhatsAppOnly = MarketingLeadPlans.WhatsAppOnly;
-    public const string WhatsAppWebsite = MarketingLeadPlans.WhatsAppWebsite;
-    public const string WhatsAppWebsiteEnquiry = MarketingLeadPlans.WhatsAppWebsiteEnquiry;
+    public const string WhatsAppSms = MarketingLeadPlans.WhatsAppSms;
+    public const string WhatsAppEnquiryFollowUp = MarketingLeadPlans.WhatsAppEnquiryFollowUp;
 
     public static IReadOnlyList<string> All { get; } = new[]
     {
-        WhatsAppOnly, WhatsAppWebsite, WhatsAppWebsiteEnquiry
+        WhatsAppSms,
+        WhatsAppEnquiryFollowUp
     };
 
     public static string GetDisplayName(string? plan) => MarketingLeadPlans.GetDisplayName(plan);
 }
+
 
 public static class BusinessStatuses
 {
@@ -24,6 +25,10 @@ public static class BusinessStatuses
     public const string Suspended = "Suspended";
 }
 
+/// <summary>
+/// Operational business record for the current WhatsApp-first MVP.
+/// Website/custom-domain fields are intentionally not part of this schema yet.
+/// </summary>
 public class Business
 {
     public int Id { get; set; }
@@ -37,13 +42,14 @@ public class Business
     [Required, MaxLength(80)]
     public string BusinessType { get; set; } = string.Empty;
 
+    [Required, MaxLength(80)]
+    public string CatalogTemplateKey { get; set; } = "generic";
+
     [Required, MaxLength(40)]
     public string Status { get; set; } = BusinessStatuses.Pending;
 
     [MaxLength(40)]
     public string ServicePlan { get; set; } = string.Empty;
-
-    public bool IsPublished { get; set; }
 
     [MaxLength(150)]
     public string OwnerName { get; set; } = string.Empty;
@@ -84,16 +90,6 @@ public class Business
     [MaxLength(500)]
     public string LogoUrl { get; set; } = string.Empty;
 
-    [MaxLength(500)]
-    public string HeroImageUrl { get; set; } = string.Empty;
-
-    [MaxLength(253)]
-    public string? CustomDomain { get; set; }
-
-    public bool IsCustomDomainEnabled { get; set; }
-    public bool IsCustomDomainVerified { get; set; }
-
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime? ApprovedAtUtc { get; set; }
-    public DateTime? PublishedAtUtc { get; set; }
 }

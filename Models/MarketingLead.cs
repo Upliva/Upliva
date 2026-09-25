@@ -1,4 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UplivaAI.Models;
 
@@ -27,25 +29,23 @@ public static class MarketingLeadStatuses
 /// </summary>
 public static class MarketingLeadPlans
 {
-    public const string WhatsAppOnly = "WhatsAppOnly";
-    public const string WhatsAppWebsite = "WhatsAppWebsite";
-    public const string WhatsAppWebsiteEnquiry = "WhatsAppWebsiteEnquiry";
+    public const string WhatsAppSms = "WhatsAppSms";
+    public const string WhatsAppEnquiryFollowUp = "WhatsAppEnquiryFollowUp";
 
     public static IReadOnlyList<string> All { get; } = new[]
     {
-        WhatsAppOnly,
-        WhatsAppWebsite,
-        WhatsAppWebsiteEnquiry
+        WhatsAppSms,
+        WhatsAppEnquiryFollowUp
     };
 
     public static string GetDisplayName(string? plan) => plan switch
     {
-        WhatsAppOnly => "WhatsApp only",
-        WhatsAppWebsite => "WhatsApp + Website",
-        WhatsAppWebsiteEnquiry => "WhatsApp + Website + Business Enquiry",
+        WhatsAppSms => "WhatsApp + SMS",
+        WhatsAppEnquiryFollowUp => "WhatsApp + Business Enquiries + Follow-up",
         _ => "Not selected"
     };
 }
+
 
 /// <summary>
 /// A prospective business owner captured before a real Business account is created.
@@ -88,4 +88,8 @@ public class MarketingLead
     public DateTime? ContactedAtUtc { get; set; }
     public DateTime? ConfirmedAtUtc { get; set; }
     public DateTime? ConvertedAtUtc { get; set; }
+
+    /// <summary>Business name from the linked Business record when this lead has been converted.</summary>
+    [NotMapped]
+    public string DisplayName { get; set; } = string.Empty;
 }

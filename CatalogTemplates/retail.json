@@ -1,0 +1,45 @@
+{
+  "Key": "retail",
+  "DisplayName": "Retail",
+  "ItemLabel": "Retail product",
+  "AddButtonText": "Add retail item",
+  "Fields": [
+    {
+      "Key": "size",
+      "Label": "Size",
+      "Type": "text",
+      "Placeholder": "e.g. Medium / 1 L / 10 kg",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 20,
+      "Required": false
+    },
+    {
+      "Key": "color",
+      "Label": "Color",
+      "Type": "text",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 30,
+      "Required": false
+    },
+    {
+      "Key": "material",
+      "Label": "Material",
+      "Type": "text",
+      "ShowOnWhatsApp": false,
+      "ShowOnWebsite": true,
+      "SortOrder": 40,
+      "Required": false
+    },
+    {
+      "Key": "warranty",
+      "Label": "Warranty",
+      "Type": "text",
+      "ShowOnWhatsApp": false,
+      "ShowOnWebsite": true,
+      "SortOrder": 50,
+      "Required": false
+    }
+  ]
+}

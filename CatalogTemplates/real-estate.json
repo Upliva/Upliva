@@ -1,0 +1,130 @@
+{
+  "Key": "real-estate",
+  "DisplayName": "Real Estate",
+  "ItemLabel": "Property",
+  "AddButtonText": "Add property",
+  "Fields": [
+    {
+      "Key": "propertyType",
+      "Label": "Property type",
+      "Type": "select",
+      "Required": false,
+      "Options": [
+        "Apartment",
+        "Villa",
+        "Independent House",
+        "Plot",
+        "Office",
+        "Shop",
+        "Warehouse",
+        "Other"
+      ],
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 10
+    },
+    {
+      "Key": "bhk",
+      "Label": "BHK",
+      "Type": "number",
+      "Placeholder": "e.g. 3",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 20,
+      "Required": false
+    },
+    {
+      "Key": "area",
+      "Label": "Area",
+      "Type": "text",
+      "Placeholder": "e.g. 1650 sq.ft",
+      "Required": false,
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 30
+    },
+    {
+      "Key": "location",
+      "Label": "Location",
+      "Type": "text",
+      "Placeholder": "e.g. Lalpur, Ranchi",
+      "Required": false,
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 40
+    },
+    {
+      "Key": "bedrooms",
+      "Label": "Bedrooms",
+      "Type": "number",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 50,
+      "Required": false
+    },
+    {
+      "Key": "bathrooms",
+      "Label": "Bathrooms",
+      "Type": "number",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 60,
+      "Required": false
+    },
+    {
+      "Key": "parking",
+      "Label": "Parking",
+      "Type": "text",
+      "Placeholder": "e.g. 2 cars",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 70,
+      "Required": false
+    },
+    {
+      "Key": "furnishing",
+      "Label": "Furnishing",
+      "Type": "select",
+      "Options": [
+        "Fully Furnished",
+        "Semi Furnished",
+        "Unfurnished",
+        "Other"
+      ],
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 80,
+      "Required": false
+    },
+    {
+      "Key": "floor",
+      "Label": "Floor",
+      "Type": "text",
+      "Placeholder": "e.g. 8th of 12",
+      "ShowOnWhatsApp": false,
+      "ShowOnWebsite": true,
+      "SortOrder": 90,
+      "Required": false
+    },
+    {
+      "Key": "facing",
+      "Label": "Facing",
+      "Type": "text",
+      "Placeholder": "e.g. East",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 100,
+      "Required": false
+    },
+    {
+      "Key": "possession",
+      "Label": "Possession",
+      "Type": "text",
+      "Placeholder": "e.g. Ready to move",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 110,
+      "Required": false
+    }
+  ]
+}

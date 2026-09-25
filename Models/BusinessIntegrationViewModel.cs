@@ -10,8 +10,24 @@ public class BusinessIntegrationViewModel
     public string WhatsAppNumber { get; set; } = string.Empty;
     public string ServicePlan { get; set; } = string.Empty;
 
+    // Runtime-only status. Shows whether the outbound Meta credentials were found
+    // from the existing WhatsApp:* User Secrets/environment configuration.
+    public bool PlatformWhatsAppConfigured { get; set; }
+
     [Display(Name = "WABA ID"), MaxLength(100)]
     public string WabaId { get; set; } = string.Empty;
+
+    [Display(Name = "WhatsApp display name"), MaxLength(150)]
+    public string DisplayName { get; set; } = string.Empty;
+
+    [Display(Name = "Business about"), MaxLength(500)]
+    public string AboutText { get; set; } = string.Empty;
+
+    [Display(Name = "WhatsApp business category"), MaxLength(100)]
+    public string BusinessCategory { get; set; } = string.Empty;
+
+    [Display(Name = "Welcome message"), MaxLength(500)]
+    public string WelcomeMessage { get; set; } = string.Empty;
 
     [Display(Name = "Phone Number ID"), MaxLength(100)]
     public string PhoneNumberId { get; set; } = string.Empty;
@@ -35,4 +51,12 @@ public class BusinessIntegrationViewModel
     public List<int> SelectedWhatsAppProductIds { get; set; } = new();
     public Dictionary<int, int> WhatsAppProductRanks { get; set; } = new();
     public List<WhatsAppFeaturedProductViewModel> WhatsAppProducts { get; set; } = new();
+
+    // Runtime-only fields used by the admin outbound WhatsApp test panel.
+    // They are intentionally not persisted to BusinessWhatsAppSettings.
+    [Display(Name = "Test recipient WhatsApp number")]
+    public string TestRecipientPhoneNumber { get; set; } = string.Empty;
+
+    [Display(Name = "Catalog send mode")]
+    public string CatalogSendMode { get; set; } = "selected";
 }

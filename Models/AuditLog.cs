@@ -6,16 +6,12 @@ public static class AuditActions
 {
     public const string BusinessApproved = "BusinessApproved";
     public const string BusinessRejected = "BusinessRejected";
-    public const string BusinessPublished = "BusinessPublished";
-    public const string BusinessUnpublished = "BusinessUnpublished";
     public const string BusinessProfileChanged = "BusinessProfileChanged";
-    public const string WebsiteContentChanged = "WebsiteContentChanged";
     public const string CatalogAdded = "CatalogAdded";
     public const string CatalogUpdated = "CatalogUpdated";
     public const string WhatsAppShowcaseChanged = "WhatsAppShowcaseChanged";
     public const string CatalogDeleted = "CatalogDeleted";
-    public const string OfferAdded = "OfferAdded";
-    public const string OfferPublished = "OfferPublished";
+    public const string WhatsAppOfferAdded = "WhatsAppOfferAdded";
 }
 
 public class AuditLog

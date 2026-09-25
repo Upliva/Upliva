@@ -3,7 +3,7 @@ namespace UplivaAI.Models;
 public class MarketingLeadStatsViewModel
 {
     public int TotalBusinesses { get; set; }
-    public int PublishedBusinesses { get; set; }
+    public int ActiveBusinesses { get; set; }
     public long TotalLeads { get; set; }
     public long LeadsToday { get; set; }
     public long NewLeads { get; set; }
@@ -11,9 +11,8 @@ public class MarketingLeadStatsViewModel
     public long InterestedLeads { get; set; }
     public long ConfirmedLeads { get; set; }
     public long ConvertedLeads { get; set; }
-    public long WhatsAppOnlyLeads { get; set; }
-    public long WhatsAppWebsiteLeads { get; set; }
-    public long WhatsAppWebsiteEnquiryLeads { get; set; }
+    public long WhatsAppSmsLeads { get; set; }
+    public long WhatsAppEnquiryFollowUpLeads { get; set; }
     public long TotalVisits { get; set; }
     public long UniqueVisitors { get; set; }
     public List<MarketingLead> RecentLeads { get; set; } = [];

@@ -1,0 +1,58 @@
+{
+  "Key": "hospitality",
+  "DisplayName": "Banquet / Hotel / Resort",
+  "ItemLabel": "Room / service",
+  "AddButtonText": "Add room / service",
+  "Fields": [
+    {
+      "Key": "roomType",
+      "Label": "Room / venue type",
+      "Type": "text",
+      "Placeholder": "e.g. Deluxe Room",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 10,
+      "Required": false
+    },
+    {
+      "Key": "capacity",
+      "Label": "Capacity",
+      "Type": "text",
+      "Placeholder": "e.g. 100 guests",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 20,
+      "Required": false
+    },
+    {
+      "Key": "amenities",
+      "Label": "Amenities",
+      "Type": "textarea",
+      "Placeholder": "Wi-Fi, parking, breakfast, pool...",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 30,
+      "Required": false
+    },
+    {
+      "Key": "checkIn",
+      "Label": "Check-in",
+      "Type": "text",
+      "Placeholder": "e.g. 12 PM",
+      "ShowOnWhatsApp": false,
+      "ShowOnWebsite": true,
+      "SortOrder": 40,
+      "Required": false
+    },
+    {
+      "Key": "checkOut",
+      "Label": "Check-out",
+      "Type": "text",
+      "Placeholder": "e.g. 11 AM",
+      "ShowOnWhatsApp": false,
+      "ShowOnWebsite": true,
+      "SortOrder": 50,
+      "Required": false
+    }
+  ]
+}

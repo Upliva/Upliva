@@ -429,6 +429,7 @@ h2 { font-family:"Playfair Display",serif; font-weight:500; font-size:clamp(36px
 .admin-nav .platform-brand span { width:32px; height:32px; }
 .admin-nav > span { font-size:11px; }
 .admin-page { padding:55px 0 90px; }
+.admin-page-wide .container { width:min(1560px, calc(100% - 48px)); }
 .admin-head { display:flex; justify-content:space-between; align-items:start; gap:25px; margin-bottom:35px; }
 .admin-head h1 { font-family:"Manrope",sans-serif; font-size:50px; font-weight:800; margin:10px 0; letter-spacing:-2px; }
 .admin-head p { color:#687386; }
@@ -440,9 +441,10 @@ h2 { font-family:"Playfair Display",serif; font-weight:500; font-size:clamp(36px
 .admin-stats span { color:#718096; font-size:11px; margin-top:4px; }
 .admin-table-wrap { overflow:auto; background:#fff; border:1px solid #e1e6ed; border-radius:15px; }
 .admin-table { width:100%; border-collapse:collapse; min-width:900px; }
-.admin-table th,.admin-table td { padding:15px 16px; text-align:left; border-bottom:1px solid #edf0f4; font-size:12px; vertical-align:top; }
-.admin-table th { background:#f8f9fb; color:#617083; font-size:10px; text-transform:uppercase; letter-spacing:1px; }
-.admin-table td small { display:block; color:#8792a1; margin-top:3px; }
+.admin-table th,.admin-table td { padding:18px 20px; text-align:left; border-bottom:1px solid #edf0f4; font-size:13.5px; line-height:1.5; vertical-align:top; }
+.admin-table th { background:#f8f9fb; color:#617083; font-size:11px; text-transform:uppercase; letter-spacing:1px; }
+.admin-table td small { display:block; color:#8792a1; margin-top:4px; font-size:11.5px; }
+.lead-pipeline-table th:last-child, .lead-pipeline-table td:last-child { min-width:300px; }
 .admin-actions { display:flex; gap:6px; flex-wrap:wrap; }
 .admin-actions button,.admin-actions a,.content-row button { border:1px solid #d2dae5; background:#fff; border-radius:7px; padding:7px 9px; font-size:10px; cursor:pointer; }
 /* Business/admin workspace navigation: high-contrast actions on the light workspace surface. */
@@ -797,3 +799,22 @@ h2 { font-family:"Playfair Display",serif; font-weight:500; font-size:clamp(36px
 .admin-plan-card-full .admin-plan-card-head p{font-size:13px}
 .admin-plan-actions{display:flex;flex-wrap:wrap;gap:8px;min-width:280px}
 @media(max-width:760px){.admin-dashboard-toolbar{align-items:stretch}.business-selector-form,.business-selector-form .field{width:100%;min-width:0}.admin-dashboard-summary{width:100%}.admin-dashboard-summary>div{flex:1}.admin-plan-card-full{padding:14px}.admin-plan-card-full .admin-plan-card-head h2{font-size:20px}}
+
+
+/* Catalog edit success confirmation. The successful POST redirects back to the
+   catalog list, which closes the edit panel; this banner makes the result explicit. */
+.catalog-save-success {
+    display:flex; align-items:center; gap:12px; margin:0 0 18px; padding:14px 16px;
+    border:1px solid #b9e2c8; border-left:4px solid #159447; border-radius:12px;
+    background:#f2fbf5; color:#1d4b2d; box-shadow:0 4px 16px rgba(20,60,35,.06);
+}
+.catalog-save-success-icon {
+    width:30px; height:30px; border-radius:50%; display:grid; place-items:center;
+    background:#159447; color:#fff; font-weight:700; flex:0 0 auto;
+}
+.catalog-save-success div { display:flex; flex-direction:column; gap:3px; flex:1; }
+.catalog-save-success strong { font-size:14px; }
+.catalog-save-success span:not(.catalog-save-success-icon) { font-size:13px; color:#587061; }
+.catalog-save-success button { border:0; background:transparent; font-size:22px; cursor:pointer; color:#617066; }
+.business-selector-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.inline-business-delete { display:inline-flex; margin:0; }

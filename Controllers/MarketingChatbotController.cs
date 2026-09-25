@@ -17,20 +17,22 @@ public class MarketingChatbotController(IMarketingEngagementService engagement) 
                 .SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
                 .FirstOrDefault(e => !string.IsNullOrWhiteSpace(e))
-                ?? "Please complete the three questions.";
+                ?? "Please check the entered details.";
             return BadRequest(new { success = false, message });
         }
 
         var enteredPhone = new string((model.WhatsAppNumber ?? string.Empty).Where(char.IsDigit).ToArray());
-        if (!BusinessRegistrationInputHelper.IsValidIndianLeadWhatsAppNumber(enteredPhone))
-            return BadRequest(new { success = false, message = "Please enter your 10-digit Indian WhatsApp / mobile number." });
+        if (!BusinessInputRules.IsOptionalWhatsAppValid(enteredPhone) || string.IsNullOrWhiteSpace(enteredPhone))
+            return BadRequest(new { success = false, message = "WhatsApp number is required and must be a valid 10-digit Indian number." });
 
-        model.WhatsAppNumber = BusinessRegistrationInputHelper.NormalizeIndianLeadWhatsAppNumber(enteredPhone);
+        model.WhatsAppNumber = string.IsNullOrWhiteSpace(enteredPhone)
+            ? string.Empty
+            : BusinessInputRules.NormalizeWhatsApp(enteredPhone);
 
         try
         {
             var visitorId = Request.Cookies.TryGetValue("UplivaAI.VisitorId", out var value) ? value ?? string.Empty : string.Empty;
-            await engagement.CaptureLeadAsync(model.Name, model.BusinessType, model.WhatsAppNumber, visitorId, cancellationToken);
+            await engagement.CaptureLeadAsync(model.Name ?? string.Empty, model.BusinessType ?? string.Empty, model.WhatsAppNumber ?? string.Empty, visitorId, cancellationToken);
             return Ok(new { success = true, message = "Your information was received successfully. Our business team will reach out to you within 24 hours. For support and assistance, connect with us at uplivasupport@gmail.com." });
         }
         catch (ArgumentException ex)
@@ -42,12 +44,12 @@ public class MarketingChatbotController(IMarketingEngagementService engagement) 
 
 public class MarketingChatbotLeadRequest
 {
-    [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.MaxLength(150)]
-    public string Name { get; set; } = string.Empty;
+    [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.MaxLength(180)]
+    public string? Name { get; set; }
 
     [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.MaxLength(80)]
-    public string BusinessType { get; set; } = string.Empty;
+    public string? BusinessType { get; set; }
 
-    [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.MaxLength(10)]
-    public string WhatsAppNumber { get; set; } = string.Empty;
+    [System.ComponentModel.DataAnnotations.Required, System.ComponentModel.DataAnnotations.MaxLength(20)]
+    public string? WhatsAppNumber { get; set; }
 }

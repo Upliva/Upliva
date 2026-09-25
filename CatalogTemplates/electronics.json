@@ -1,0 +1,36 @@
+{
+  "Key": "electronics",
+  "DisplayName": "Electronics Store",
+  "ItemLabel": "Electronics product",
+  "AddButtonText": "Add electronics item",
+  "Fields": [
+    {
+      "Key": "specification",
+      "Label": "Key specification",
+      "Type": "text",
+      "Placeholder": "e.g. 55 inch 4K UHD",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 30,
+      "Required": false
+    },
+    {
+      "Key": "warranty",
+      "Label": "Warranty",
+      "Type": "text",
+      "ShowOnWhatsApp": true,
+      "ShowOnWebsite": true,
+      "SortOrder": 40,
+      "Required": false
+    },
+    {
+      "Key": "power",
+      "Label": "Power / energy rating",
+      "Type": "text",
+      "ShowOnWhatsApp": false,
+      "ShowOnWebsite": true,
+      "SortOrder": 50,
+      "Required": false
+    }
+  ]
+}

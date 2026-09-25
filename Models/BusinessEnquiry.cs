@@ -22,5 +22,13 @@ public class BusinessEnquiry
     [MaxLength(40)]
     public string Status { get; set; } = "New";
 
+    [MaxLength(30)]
+    public string Source { get; set; } = "WhatsApp";
+
+    [MaxLength(150)]
+    public string WhatsAppMessageId { get; set; } = string.Empty;
+
+    public int? CatalogItemId { get; set; }
+
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 }

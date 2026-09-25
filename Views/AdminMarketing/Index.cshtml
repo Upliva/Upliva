@@ -1,11 +1,11 @@
 @model MarketingLeadStatsViewModel
-@{ ViewData["Title"] = "Business Leads & Website Visits"; Layout = "_AdminLayout"; }
-<section class="admin-page">
+@{ ViewData["Title"] = "Business Leads & WhatsApp Sales"; Layout = "_AdminLayout"; }
+<section class="admin-page admin-page-wide">
     <div class="container">
         <div class="admin-head">
             <div>
                 <span class="platform-kicker dark">MARKETING &amp; SALES PIPELINE</span>
-                <h1>Business leads &amp; website visits</h1>
+                <h1>Business leads &amp; WhatsApp sales</h1>
                 <p>Capture interest first. Call the prospect yourself, record the outcome and select the plan only after the customer confirms.</p>
             </div>
             <a class="admin-primary-link" asp-action="ExportLeadsCsv">Export CSV</a>
@@ -17,9 +17,8 @@
             <div><strong>@Model.TotalLeads</strong><span>Total leads</span></div>
             <div><strong>@Model.LeadsToday</strong><span>Leads today</span></div>
             <div><strong>@Model.InterestedLeads</strong><span>Interested</span></div>
-            <div><strong>@Model.WhatsAppOnlyLeads</strong><span>WhatsApp plan</span></div>
-            <div><strong>@Model.WhatsAppWebsiteLeads</strong><span>WhatsApp + Website</span></div>
-            <div><strong>@Model.WhatsAppWebsiteEnquiryLeads</strong><span>WhatsApp + Website + Enquiry</span></div>
+            <div><strong>@Model.WhatsAppSmsLeads</strong><span>WhatsApp + SMS</span></div>
+            <div><strong>@Model.WhatsAppEnquiryFollowUpLeads</strong><span>WhatsApp + Enquiry + Follow-up</span></div>
         </div>
 
         <form method="get" asp-action="Index" class="lead-search-bar">
@@ -27,6 +26,16 @@
                 <label for="leadSearch">Search leads</label>
                 <input id="leadSearch" name="q" value="@Model.SearchTerm" placeholder="Search by name, business category or WhatsApp number" autocomplete="off" />
             </div>
+            <div class="lead-pagesize-field">
+                <label for="leadPageSize">Rows per page</label>
+                <select id="leadPageSize" name="pageSize" onchange="this.form.submit()">
+                    @foreach (var size in new[] { 10, 25, 50 })
+                    {
+                        <option value="@size" selected="@(Model.PageSize == size ? "selected" : null)">@size</option>
+                    }
+                </select>
+            </div>
+            <input type="hidden" name="page" value="1" />
             <button type="submit" class="workspace-btn workspace-btn-secondary">Search</button>
             @if (!string.IsNullOrWhiteSpace(Model.SearchTerm))
             {
@@ -58,7 +67,7 @@
                     foreach (var lead in Model.RecentLeads)
                     {
                         <tr>
-                            <td><strong>@lead.Name</strong><small class="lead-source">@lead.Source</small></td>
+                            <td><strong>@(string.IsNullOrWhiteSpace(lead.DisplayName) ? lead.Name : lead.DisplayName)</strong><small class="lead-source">@lead.Source</small></td>
                             <td>@lead.BusinessType</td>
                             <td><a href="tel:+@lead.WhatsAppNumber">@((lead.WhatsAppNumber.Length == 12 && lead.WhatsAppNumber.StartsWith("91", StringComparison.Ordinal)) ? $"+91 {lead.WhatsAppNumber[2..]}" : lead.WhatsAppNumber)</a></td>
                             <td><span class="lead-status lead-status-@lead.Status.ToLowerInvariant().Replace(" ", "-")">@lead.Status</span></td>
@@ -73,6 +82,7 @@
                                         <input type="hidden" name="id" value="@lead.Id" />
                                         <input type="hidden" name="q" value="@Model.SearchTerm" />
                                         <input type="hidden" name="page" value="@Model.Page" />
+                                        <input type="hidden" name="pageSize" value="@Model.PageSize" />
                                         <select name="status" aria-label="Update status for @lead.Name">
                                             @foreach (var status in MarketingLeadStatuses.All)
                                             {
@@ -89,9 +99,17 @@
                                         <input name="adminNotes" value="@lead.AdminNotes" maxlength="1000" placeholder="Call notes" aria-label="Internal notes for @lead.Name" />
                                         <button type="submit" class="workspace-btn workspace-btn-secondary">Save</button>
                                     </form>
+                                    @if (lead.ConvertedBusinessId.HasValue)
+                                    {
+                                        <a class="workspace-btn workspace-btn-primary" asp-controller="BusinessManagement" asp-action="Edit" asp-route-id="@lead.ConvertedBusinessId.Value">Edit business</a>
+                                        <a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessContent" asp-action="Index" asp-route-id="@lead.ConvertedBusinessId.Value">Catalog</a>
+                                    }
                                     <form asp-action="DeleteLead" method="post" onsubmit="return confirm('Delete this lead permanently? This cannot be undone.');">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@lead.Id" />
+                                        <input type="hidden" name="q" value="@Model.SearchTerm" />
+                                        <input type="hidden" name="page" value="@Model.Page" />
+                                        <input type="hidden" name="pageSize" value="@Model.PageSize" />
                                         <button type="submit" class="workspace-btn workspace-btn-danger">Delete lead</button>
                                     </form>
                                 </div>
@@ -108,19 +126,19 @@
             <div class="lead-pagination" aria-label="Lead pagination">
                 @if (Model.Page > 1)
                 {
-                    <a asp-action="Index" asp-route-q="@Model.SearchTerm" asp-route-page="@(Model.Page - 1)" class="workspace-btn workspace-btn-secondary">← Previous</a>
+                    <a asp-action="Index" asp-route-q="@Model.SearchTerm" asp-route-page="@(Model.Page - 1)" asp-route-pageSize="@Model.PageSize" class="workspace-btn workspace-btn-secondary">← Previous</a>
                 }
                 <span>Page @Model.Page of @Model.TotalPages · @Model.TotalFilteredLeads matching leads</span>
                 @if (Model.Page < Model.TotalPages)
                 {
-                    <a asp-action="Index" asp-route-q="@Model.SearchTerm" asp-route-page="@(Model.Page + 1)" class="workspace-btn workspace-btn-secondary">Next →</a>
+                    <a asp-action="Index" asp-route-q="@Model.SearchTerm" asp-route-page="@(Model.Page + 1)" asp-route-pageSize="@Model.PageSize" class="workspace-btn workspace-btn-secondary">Next →</a>
                 }
             </div>
         }
 
         <div class="admin-note-card">
             <strong>Recommended initial process</strong>
-            <span>Website/chatbot → Name + Business Category + WhatsApp/phone → ChatbotLeads → Upliva team calls the person → mark Interested or Not Interested → if Interested, select WhatsApp, WhatsApp + Website, or WhatsApp + Website + Business Enquiry → the lead appears immediately in its plan category on the admin dashboard → create the Business → it becomes active immediately. If the person is not interested, delete the lead. No IP address is stored.</span>
+            <span>Marketing page/chatbot → Name + Business Category + WhatsApp/phone → ChatbotLeads → Upliva team calls the person → mark Interested or Not Interested → if Interested, select the current WhatsApp plan → the lead appears immediately in its plan category on the admin dashboard → create the Business → it becomes active immediately. If the person is not interested, delete the lead. No IP address is stored.</span>
         </div>
     </div>
 </section>

@@ -6,23 +6,23 @@ public class CreateBusinessFromLeadViewModel
 {
     public long LeadId { get; set; }
 
-    [Required, MaxLength(180)]
+    [MaxLength(180)]
     [Display(Name = "Business name")]
-    public string BusinessName { get; set; } = string.Empty;
+    public string? BusinessName { get; set; }
 
-    [Required, MaxLength(150)]
+    [MaxLength(150)]
     [Display(Name = "Owner name")]
-    public string OwnerName { get; set; } = string.Empty;
+    public string? OwnerName { get; set; }
 
-    [Required, MaxLength(80)]
+    [MaxLength(80)]
     [Display(Name = "Business category")]
-    public string BusinessType { get; set; } = string.Empty;
+    public string? BusinessType { get; set; }
 
-    [Required, MaxLength(30)]
+    [MaxLength(30)]
     [Display(Name = "WhatsApp / phone")]
-    public string WhatsAppNumber { get; set; } = string.Empty;
+    public string? WhatsAppNumber { get; set; }
 
-    [Required, MaxLength(40)]
+    [MaxLength(40)]
     [Display(Name = "Upliva plan")]
-    public string ServicePlan { get; set; } = string.Empty;
+    public string? ServicePlan { get; set; }
 }

@@ -23,7 +23,7 @@
             {
                 <tr>
                     <td>
-                        <strong>@lead.Name</strong>
+                        <strong>@(string.IsNullOrWhiteSpace(lead.DisplayName) ? lead.Name : lead.DisplayName)</strong>
                         <small>@lead.Source</small>
                     </td>
                     <td>@lead.BusinessType</td>
@@ -39,7 +39,11 @@
                             @if (lead.ConvertedBusinessId.HasValue)
                             {
                                 <a class="workspace-btn workspace-btn-primary" asp-controller="AdminBusinessIntegration" asp-action="Manage" asp-route-id="@lead.ConvertedBusinessId.Value">WhatsApp Business</a>
-                                <a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessContent" asp-action="Index" asp-route-id="@lead.ConvertedBusinessId.Value">Add / Manage Catalog</a>
+                                <a class="workspace-btn workspace-btn-primary" asp-controller="BusinessManagement" asp-action="Edit" asp-route-id="@lead.ConvertedBusinessId.Value">Edit business</a>
+                                <a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessContent" asp-action="Index" asp-route-id="@lead.ConvertedBusinessId.Value">Catalog</a>
+                                <a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessContent" asp-action="ImportCatalog" asp-route-id="@lead.ConvertedBusinessId.Value">Import CSV / JSON</a>
+                                <a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessEnquiry" asp-action="Index" asp-route-id="@lead.ConvertedBusinessId.Value">Enquiries</a>
+                                <a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessFollowUp" asp-action="Index" asp-route-id="@lead.ConvertedBusinessId.Value">Follow-ups</a>
                             }
                             else
                             {

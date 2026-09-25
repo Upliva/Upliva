@@ -42,7 +42,36 @@ body.login-modal-open{overflow:hidden}.upliva-login-modal{position:fixed;inset:0
 .upliva-chatbot-head button{border:0;background:rgba(255,255,255,.12);color:#fff;width:31px;height:31px;border-radius:50%;font-size:20px;cursor:pointer}.upliva-chatbot-body{padding:18px}.upliva-chatbot-message{font-size:10px;line-height:1.65;color:#5e6c66;background:#f4f8f5;border-radius:14px;padding:12px;margin-bottom:14px}.upliva-chatbot-form{display:grid;gap:8px}.upliva-chatbot-form label{font-size:9px;font-weight:800;color:#42524b}.upliva-chatbot-form input,.upliva-chatbot-form select{width:100%;height:44px;margin-top:6px;border:1px solid #d6e1db;border-radius:11px;padding:0 11px;font:500 11px "DM Sans",sans-serif;color:#172b24;background:#fff}.upliva-chatbot-next{height:44px;border:0;border-radius:11px;background:#063b2f;color:#fff;font:800 10px Manrope;cursor:pointer;margin-top:4px}.upliva-chatbot-next:disabled{opacity:.65;cursor:wait}.upliva-chatbot-progress{text-align:center;color:#87938e;font-size:8px;margin-top:9px}.upliva-chatbot-result{margin-top:12px;border-radius:12px;padding:11px;font-size:9px;line-height:1.5}.upliva-chatbot-result.success{background:#eaf8f1;color:#17664f}.upliva-chatbot-result.error{background:#fff3f3;color:#9b3c3c}@media(max-width:720px){.upliva-chatbot-launch{right:14px;bottom:14px}.upliva-chatbot{padding:14px}.upliva-chatbot-card{width:100%}}
 
 /* Lead pipeline inline editing */
-.lead-pipeline-table .lead-plan-display{display:inline-block;min-width:125px;line-height:1.4}.lead-actions-stack{display:flex;flex-wrap:wrap;align-items:flex-start;gap:8px;min-width:520px}.lead-edit-label{width:100%;font-size:8px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#078d64;margin-bottom:1px}.lead-update-form{display:flex;flex-wrap:wrap;gap:7px;align-items:center}.lead-update-form select,.lead-update-form input{height:36px;border:1px solid #d6e1db;border-radius:9px;padding:0 9px;background:#fff;color:#172b24;font-size:11px}.lead-update-form select:focus,.lead-update-form input:focus{outline:none;border-color:#08b879;box-shadow:0 0 0 3px rgba(8,184,121,.08)}.lead-update-form input{width:130px}.lead-update-form select:first-of-type{width:118px}.lead-update-form select:nth-of-type(2){width:220px}.lead-actions-stack form:last-child{margin-top:0}
+.lead-pipeline-table .lead-plan-display{display:inline-block;min-width:125px;line-height:1.4}
+.lead-actions-stack{display:flex;flex-direction:column;align-items:stretch;gap:10px;width:100%;max-width:300px}
+.lead-edit-label{font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:#078d64;margin-bottom:1px}
+.lead-update-form{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lead-update-form select,.lead-update-form input{height:38px;border:1px solid #d6e1db;border-radius:9px;padding:0 10px;background:#fff;color:#172b24;font-size:12px;width:100%}
+.lead-update-form select:focus,.lead-update-form input:focus{outline:none;border-color:#08b879;box-shadow:0 0 0 3px rgba(8,184,121,.08)}
+.lead-update-form input[name="adminNotes"]{grid-column:1 / -1}
+.lead-update-form button{grid-column:1 / -1}
+.lead-actions-stack form:last-child{margin-top:0}
 
+.lead-search-bar{display:flex;align-items:end;gap:14px;flex-wrap:wrap;margin:0 0 20px;padding:18px;background:#fff;border:1px solid #e1e7e4;border-radius:14px}
+.lead-search-field{flex:1 1 380px}
+.lead-search-field label,.lead-pagesize-field label{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:#607064;margin-bottom:6px}
+.lead-search-field input{width:100%;height:44px;border:1px solid #d6e1db;border-radius:9px;padding:0 14px;background:#fff;color:#172b24;font-size:14px}
+.lead-search-field input:focus{outline:none;border-color:#08b879;box-shadow:0 0 0 3px rgba(8,184,121,.08)}
+.lead-pagesize-field{flex:0 0 130px}
+.lead-pagesize-field select{width:100%;height:44px;border:1px solid #d6e1db;border-radius:9px;padding:0 12px;background:#fff;color:#172b24;font-size:13px}
+.lead-pagination{display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap;margin:22px 0;color:#64736a;font-size:13px}
+.workspace-btn-primary{background:#07583f!important;color:#fff!important;border-color:#07583f!important}
+.lead-actions-stack .workspace-btn{white-space:nowrap}
+@media(max-width:640px){.lead-search-bar{flex-direction:column;align-items:stretch}.lead-pagesize-field{flex:1 1 auto}}
 
-.lead-search-bar{display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin:0 0 16px;padding:14px;background:#fff;border:1px solid #e1e7e4;border-radius:14px}.lead-search-field{flex:1 1 360px}.lead-search-field label{display:block;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.7px;color:#607064;margin-bottom:6px}.lead-search-field input{width:100%;height:40px;border:1px solid #d6e1db;border-radius:9px;padding:0 12px;background:#fff;color:#172b24;font-size:13px}.lead-search-field input:focus{outline:none;border-color:#08b879;box-shadow:0 0 0 3px rgba(8,184,121,.08)}.lead-pagination{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;margin:18px 0;color:#64736a;font-size:12px}.workspace-btn-primary{background:#07583f!important;color:#fff!important;border-color:#07583f!important}.lead-actions-stack .workspace-btn{white-space:nowrap}
+/* UplivaAI original scenario visuals */
+.upliva-scenario-showcase{margin:56px 0 34px;padding:30px;border:1px solid rgba(20,61,50,.10);border-radius:30px;background:linear-gradient(135deg,#fbfdfb,#f3f8f5);box-shadow:0 24px 70px rgba(17,47,39,.08)}
+.upliva-scenario-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:24px}
+.upliva-scenario-card{overflow:hidden;border:1px solid #dfe9e4;border-radius:22px;background:#fff;box-shadow:0 14px 38px rgba(22,49,42,.07);transition:transform .25s ease,box-shadow .25s ease}
+.upliva-scenario-card:hover{transform:translateY(-5px);box-shadow:0 22px 48px rgba(22,49,42,.12)}
+.upliva-scenario-card img{display:block;width:100%;aspect-ratio:900/620;object-fit:cover}
+.upliva-scenario-card>div{padding:18px 19px 20px}
+.upliva-scenario-card span{font-size:9px;letter-spacing:2px;font-weight:900;color:#60736c}
+.upliva-scenario-card h3{margin:7px 0 7px;font-size:18px;color:#153d32}
+.upliva-scenario-card p{margin:0;color:#687872;font-size:12px;line-height:1.65}
+@media(max-width:980px){.upliva-scenario-grid{grid-template-columns:1fr}.upliva-scenario-showcase{padding:20px}}

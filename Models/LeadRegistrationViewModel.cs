@@ -9,18 +9,13 @@ namespace UplivaAI.Models;
 /// </summary>
 public sealed class LeadRegistrationViewModel
 {
-    [Required(ErrorMessage = "Please enter your name.")]
-    [MaxLength(150)]
-    [Display(Name = "Your name")]
-    public string Name { get; set; } = string.Empty;
-
-    [Required(ErrorMessage = "Please select your business category.")]
-    [MaxLength(80)]
+    [Required, MaxLength(180)]
+    [Display(Name = "Business name")]
+    public string? Name { get; set; }
+    [Required, MaxLength(80)]
     [Display(Name = "Business category")]
-    public string BusinessType { get; set; } = string.Empty;
-
-    [Required(ErrorMessage = "Please enter your WhatsApp / phone number.")]
-    [MaxLength(10)]
+    public string? BusinessType { get; set; }
+    [Required, MaxLength(10)]
     [Display(Name = "WhatsApp / mobile number")]
-    public string WhatsAppNumber { get; set; } = string.Empty;
+    public string? WhatsAppNumber { get; set; }
 }

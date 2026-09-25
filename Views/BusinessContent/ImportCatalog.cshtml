@@ -1,0 +1,76 @@
+@model CatalogImportViewModel
+@{
+    ViewData["Title"] = "Import Catalog";
+    Layout = "_AdminLayout";
+}
+<section class="admin-page">
+    <div class="container admin-narrow" style="max-width:1100px">
+        <div class="admin-head">
+            <div>
+                <span class="platform-kicker dark">CATALOG TEST CENTER</span>
+                <h1>Import catalog data</h1>
+                <p>@Model.BusinessName · @Model.TemplateDisplayName. Upload a CSV or JSON file and UplivaAI will map common fields and dynamic template fields automatically.</p>
+            </div>
+            <a class="workspace-btn workspace-btn-secondary" asp-action="Index" asp-route-id="@Model.BusinessId">← Back to catalog</a>
+        </div>
+
+        <div class="admin-note-card">
+            <strong>Testing path</strong>
+            <span>Download template → fill multiple products → upload → validate → import → return to catalog → select WhatsApp products → preview. Product Name is the only required catalog value.</span>
+        </div>
+
+        @if (Model.Errors.Count > 0)
+        {
+            <div class="validation" style="margin:16px 0;padding:14px;border:1px solid #f0caca;border-radius:10px;background:#fff7f7">
+                <strong>Please correct these items before importing:</strong>
+                <ul>@foreach (var error in Model.Errors) { <li>@error</li> }</ul>
+            </div>
+        }
+
+        <div class="business-form" style="max-width:none">
+            <form asp-action="ImportCatalog" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="BusinessId" />
+                <div class="form-grid">
+                    <div class="field full">
+                        <label asp-for="File">Catalog file</label>
+                        <input asp-for="File" type="file" accept=".csv,.json,text/csv,application/json" />
+                        <small style="display:block;color:#687284;margin-top:7px">Supported: CSV and JSON · Maximum 10 MB · Common headers and dynamic field keys/labels are mapped automatically.</small>
+                    </div>
+                </div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+                    <button type="submit" class="platform-btn platform-btn-primary">Validate &amp; Import</button>
+                    <a class="workspace-btn workspace-btn-secondary" asp-action="DownloadCatalogTemplate" asp-route-id="@Model.BusinessId">⬇ Download CSV template</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="admin-note-card" style="margin-top:18px">
+            <strong>Dynamic fields and dropdown options</strong>
+            <span>Template: <b>@Model.TemplateKey</b>. All fields are optional. For dropdown fields, the imported value must match one of the configured options.</span>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:12px">
+                @foreach (var field in (IEnumerable<CatalogFieldDefinition>)(ViewBag.CatalogFields ?? Array.Empty<CatalogFieldDefinition>()))
+                {
+                    <div style="padding:10px;border:1px solid #e4ebe7;border-radius:10px;background:#fff">
+                        <strong>@field.Label</strong> <small>(@field.Key)</small>
+                        <div style="font-size:12px;color:#687284;margin-top:4px">Type: @field.Type · Optional</div>
+                        @if (field.Options.Count > 0)
+                        {
+                            <div style="font-size:11px;color:#536074;margin-top:5px">Options: @string.Join(" · ", field.Options)</div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        @if (Model.PreviewRows.Count > 0)
+        {
+            <div class="admin-table-wrap" style="margin-top:18px">
+                <table class="admin-table">
+                    <thead><tr><th>Row</th><th>Product Name</th><th>Category</th><th>Price</th><th>Status</th></tr></thead>
+                    <tbody>@foreach (var row in Model.PreviewRows) { <tr><td>@row.RowNumber</td><td><strong>@row.ProductName</strong></td><td>@row.Category</td><td>@row.PriceText</td><td>@row.Status</td></tr> }</tbody>
+                </table>
+            </div>
+        }
+    </div>
+</section>

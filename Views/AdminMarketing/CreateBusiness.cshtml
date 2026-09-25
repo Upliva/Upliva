@@ -6,7 +6,7 @@
             <div>
                 <span class="platform-kicker dark">CONFIRMED LEAD</span>
                 <h1>Create business</h1>
-                <p>Create the real business record only after your team has spoken with the interested customer. Catalog and website content can be added next.</p>
+                <p>Create the business from the confirmed lead. Business name, business type and WhatsApp number come from the lead and are required.</p>
             </div>
             <a class="workspace-btn workspace-btn-secondary" asp-action="Index">← Back to leads</a>
         </div>
@@ -18,7 +18,7 @@
             <div class="form-grid">
                 <div class="field full">
                     <label asp-for="BusinessName"></label>
-                    <input asp-for="BusinessName" placeholder="e.g. GreenView Realty & Developers" autofocus />
+                    <input asp-for="BusinessName" placeholder="Business name" autofocus />
                     <span asp-validation-for="BusinessName" class="validation"></span>
                 </div>
                 <div class="field">
@@ -42,8 +42,8 @@
             </div>
 
             <div class="admin-note-card">
-                <strong>Next step after creation</strong>
-                <span>This creates the Business record only; no owner login is created yet. Next, use <b>Add / manage catalog</b> to add products. Images can use public URLs now and move to Azure Blob Storage later. PDF brochures can be uploaded from Website Content. Website and customer-enquiry features can be enabled according to the selected plan.</span>
+                <strong>Registration rule</strong>
+                <span>Business name, business type and WhatsApp number are required. Other business profile fields can be completed later from Edit Business. No password is collected at this stage.</span>
             </div>
 
             <div style="display:flex;gap:10px;margin-top:18px;flex-wrap:wrap">
