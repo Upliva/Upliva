@@ -4,27 +4,31 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - UplivaAI</title>
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/upliva-theme.css" asp-append-version="true" />
+    <link rel="icon" type="image/svg+xml" href="~/images/upliva/upliva-logo.svg" />
 </head>
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    string NavClass(string controller) => controller == currentController ? "workspace-top-link is-active" : "workspace-top-link";
+}
 <body class="admin-body">
     <header class="admin-header">
         <div class="container admin-nav">
-            <a class="platform-brand" asp-controller="Home" asp-action="Index" aria-label="UplivaAI home">
-                <span>U</span><strong>UPLIVAAI</strong>
-            </a>
+            <a class="upliva-brand" asp-controller="Home" asp-action="Index" aria-label="UplivaAI home"><img src="~/images/upliva/upliva-logo.svg" alt="UplivaAI" /></a>
             <div class="workspace-top-actions" aria-label="Workspace navigation">
                 @if (User.IsInRole(PlatformRoles.Admin))
                 {
-                    <a class="workspace-top-link" asp-controller="AdminDashboard" asp-action="Index">Dashboard</a>
-                    <a class="workspace-top-link" asp-controller="AdminMarketing" asp-action="Index">Leads & visits</a>
-                    <a class="workspace-top-link" asp-controller="AdminErrorLogs" asp-action="Index">Error logs</a>
+                    <a class="@NavClass("AdminDashboard")" asp-controller="AdminDashboard" asp-action="Index">Dashboard</a>
+                    <a class="@NavClass("AdminMarketing")" asp-controller="AdminMarketing" asp-action="Index">Leads & visits</a>
+                    <a class="@NavClass("AdminErrorLogs")" asp-controller="AdminErrorLogs" asp-action="Index">Error logs</a>
                 }
                 else if (User.IsInRole(PlatformRoles.BusinessOwner))
                 {
-                    <a class="workspace-top-link" asp-controller="BusinessDashboard" asp-action="Index">Dashboard</a>
+                    <a class="@NavClass("BusinessDashboard")" asp-controller="BusinessDashboard" asp-action="Index">Dashboard</a>
                 }
                 <form asp-controller="Account" asp-action="Logout" method="post">
                     @Html.AntiForgeryToken()

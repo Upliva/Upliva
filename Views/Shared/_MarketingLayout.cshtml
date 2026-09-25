@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@(ViewData["BrowserTitle"] ?? $"{ViewData["Title"]} - UplivaAI")</title>
     <meta name="description" content="UplivaAI helps local businesses turn WhatsApp conversations into enquiries with a professional website and AI-assisted productivity." />
-    <meta name="theme-color" content="#f7f5ef" />
+    <meta name="theme-color" content="#f7f7f3" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/marketing.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/upliva-theme.css" asp-append-version="true" />
     <link rel="icon" type="image/svg+xml" href="~/images/upliva/upliva-logo.svg" />
     @await RenderSectionAsync("Head", required: false)
 </head>
@@ -19,12 +20,11 @@
     <div class="container upliva-nav">
         <a class="upliva-brand" asp-controller="Home" asp-action="Index" aria-label="UplivaAI home"><img src="~/images/upliva/upliva-logo.svg" alt="UplivaAI" /></a>
         <nav aria-label="Primary navigation">
-            <a href="@Url.Action("Index", "Home")#why">Why UplivaAI</a>
-            <a href="@Url.Action("Index", "Home")#how-it-works">How it works</a>
-            <a href="@Url.Action("Index", "Home")#what-you-get">What you get</a>
-            <a href="@Url.Action("Index", "Home")#pricing">Pricing</a>
-            <a class="upliva-login-link" href="#login" data-login-open>Login</a>
-            <a class="upliva-nav-cta" href="/register">Get Started ↗</a>
+            <a href="@Url.Action("Index", "Home")#use-cases">Use cases</a>
+            <a href="@Url.Action("Index", "Home")#plans">Plans</a>
+            <a href="@Url.Action("Index", "Home")#get-started">Get started</a>
+            <a class="upliva-login-link" href="#login" data-login-open>Log in</a>
+            <a class="upliva-nav-cta" href="/register">Register free</a>
         </nav>
     </div>
 </header>
@@ -34,8 +34,9 @@
     <div class="upliva-login-backdrop" data-login-close></div>
     <section class="upliva-login-dialog" role="dialog" aria-modal="true" aria-labelledby="uplivaLoginTitle">
         <button type="button" class="upliva-login-close" aria-label="Close login" data-login-close>×</button>
-        <div class="upliva-login-dialog-kicker">SECURE ACCESS</div>
-        <h2 id="uplivaLoginTitle">Welcome back.</h2>
+        <div class="upliva-login-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+        <div class="upliva-login-dialog-kicker">Secure access</div>
+        <h2 id="uplivaLoginTitle">Welcome back</h2>
         <p>Sign in to manage your UplivaAI business account.</p>
         <form action="/login" method="post" class="upliva-login-form">
             @Html.AntiForgeryToken()
@@ -45,10 +46,10 @@
                 <div class="upliva-login-error">@ViewData["LoginError"]</div>
             }
             <label for="uplivaLoginEmail">Email or WhatsApp number</label>
-            <input id="uplivaLoginEmail" name="Email" type="text" autocomplete="username" placeholder="Email or WhatsApp number" required />
+            <input id="uplivaLoginEmail" name="Email" type="text" autocomplete="username" placeholder="you@business.com or 98765 43210" required />
             <label for="uplivaLoginPassword">Password</label>
             <div class="upliva-password-wrap">
-                <input id="uplivaLoginPassword" name="Password" type="password" autocomplete="current-password" required />
+                <input id="uplivaLoginPassword" name="Password" type="password" autocomplete="current-password" placeholder="Enter your password" required />
                 <button type="button" class="upliva-password-toggle" aria-label="Show password">Show</button>
             </div>
             <button type="submit" class="upliva-login-submit">Sign in <span>→</span></button>
@@ -60,7 +61,7 @@
     <div class="container compact-footer-inner">
         <a class="upliva-brand footer-brand" asp-controller="Home" asp-action="Index"><img src="~/images/upliva/upliva-logo.svg" alt="UplivaAI" /></a>
         <p>WhatsApp + Website + AI productivity for businesses.</p>
-        <div><a asp-controller="BusinessRegistration" asp-action="Register">Register Business</a><a href="#login" data-login-open>Login</a></div>
+        <div><a asp-controller="BusinessRegistration" asp-action="Register">Register your business</a><a href="#login" data-login-open>Log in</a><a href="mailto:uplivasupport@gmail.com">Support</a></div>
     </div>
     <div class="container upliva-copyright"><span>© @DateTime.Now.Year UplivaAI.</span><span class="upliva-powered-by">Powered by <a asp-controller="Home" asp-action="Index">UplivaAI</a></span><span>WhatsApp/Meta charges, where applicable, are separate.</span></div>
 </footer>

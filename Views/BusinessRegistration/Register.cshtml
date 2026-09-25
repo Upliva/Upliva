@@ -19,7 +19,7 @@
             {
                 <div class="validation" role="alert">
                     <strong>Please check the details below.</strong>
-                    <ul style="margin:6px 0 0 18px;padding:0;">
+                    <ul class="validation-list">
                         @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors).Where(e => !string.IsNullOrWhiteSpace(e.ErrorMessage)))
                         { <li>@error.ErrorMessage</li> }
                     </ul>
@@ -27,7 +27,7 @@
             }
 
             <div class="lead-form-heading">
-                <span class="platform-kicker dark">BUSINESS ENQUIRY</span>
+                <span class="platform-kicker dark">Takes under a minute</span>
                 <h3>Tell us how we can help</h3>
                 <p>Business name, business type and WhatsApp number are required. Other details can be completed later.</p>
             </div>
@@ -37,7 +37,7 @@
                 <div class="lead-form-fields">
                     <div class="field full">
                         <label asp-for="Name"></label>
-                        <input asp-for="Name" placeholder="HarHarMahadev" autocomplete="organization" autofocus />
+                        <input asp-for="Name" placeholder="e.g. Sharma Furniture" autocomplete="organization" autofocus />
                         <span asp-validation-for="Name"></span>
                     </div>
                     <div class="field full">
