@@ -6,12 +6,12 @@
     Layout = "_AdminLayout";
 }
 <section class="admin-page">
-    <div class="container" style="max-width:1500px">
+    <div class="container ws-container-wide">
         <div class="admin-head">
             <div><span class="platform-kicker dark">WHATSAPP MESSAGES</span><h1>@business.Name</h1><p>Inbound customer messages and outbound UplivaAI responses.</p></div>
             <div class="workspace-page-actions"><a class="workspace-btn workspace-btn-secondary" asp-controller="AdminBusinessIntegration" asp-action="Manage" asp-route-id="@business.Id">← WhatsApp Business</a></div>
         </div>
-        <form method="get" class="lead-search-bar" style="margin-bottom:18px">
+        <form method="get" class="lead-search-bar">
             <input type="hidden" name="businessId" value="@business.Id" />
             <div class="lead-search-field"><label for="q">Search messages</label><input id="q" name="q" value="@search" placeholder="Phone, customer name or message" /></div>
             <button class="workspace-btn workspace-btn-secondary" type="submit">Search</button>
@@ -25,9 +25,9 @@
                     <tr>
                         <td>@message.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</td>
                         <td><strong>@message.Direction</strong></td>
-                        <td>@(string.IsNullOrWhiteSpace(message.CustomerName) ? "Customer" : message.CustomerName)<small style="display:block;color:#7a8790">@message.CustomerPhoneNumber</small></td>
+                        <td>@(string.IsNullOrWhiteSpace(message.CustomerName) ? "Customer" : message.CustomerName)<small>@message.CustomerPhoneNumber</small></td>
                         <td>@message.MessageType</td>
-                        <td style="max-width:520px;white-space:pre-wrap">@message.MessageText</td>
+                        <td class="ws-pre">@message.MessageText</td>
                         <td>@message.DeliveryStatus</td>
                     </tr>
                 }

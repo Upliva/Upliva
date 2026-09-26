@@ -10,7 +10,7 @@
             </div>
             <div class="admin-head-actions workspace-actions">
                 <a class="workspace-btn workspace-btn-primary" asp-controller="BusinessContent" asp-action="Index">Catalog</a>
-                <a class="workspace-btn" asp-controller="AdminBusinessIntegration" asp-action="Manage" asp-route-id="@Model.Id">WhatsApp setup</a>
+                <a class="workspace-btn workspace-btn-secondary" asp-controller="AdminBusinessIntegration" asp-action="Manage" asp-route-id="@Model.Id">WhatsApp setup</a>
                 <a class="workspace-btn" asp-controller="BusinessEnquiry" asp-action="Index">Enquiries</a>
                 <a class="workspace-btn" asp-controller="BusinessFollowUp" asp-action="Index">Follow-ups</a>
             </div>
@@ -19,7 +19,7 @@
         <div class="admin-stats">
             <div><strong>@ViewBag.CatalogCount</strong><span>Catalog items</span></div>
             <div><strong>@ViewBag.WhatsAppSelectedCount</strong><span>WhatsApp products</span></div>
-            <div><a asp-controller="BusinessEnquiry" asp-action="Index" style="text-decoration:none;color:inherit"><strong>@ViewBag.EnquiryCount</strong><span>Enquiries</span></a></div>
+            <div><a class="admin-stat-link" asp-controller="BusinessEnquiry" asp-action="Index"><strong>@ViewBag.EnquiryCount</strong><span>Enquiries</span></a></div>
             <div><strong>@ViewBag.MessageCount</strong><span>Messages</span></div>
             <div><strong>@ViewBag.FollowUpCount</strong><span>Open follow-ups</span></div>
         </div>

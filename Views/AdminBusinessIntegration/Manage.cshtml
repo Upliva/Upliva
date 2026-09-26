@@ -8,26 +8,21 @@
 }
 
 <section class="admin-page">
-    <div class="container" style="max-width:1500px">
+    <div class="container ws-container-wide">
         <div class="admin-head">
             <div>
-                <span class="platform-kicker dark">WHATSAPP BUSINESS</span>
+                <span class="platform-kicker dark">WhatsApp setup</span>
                 <h1>@Model.BusinessName</h1>
                 <p>@Model.BusinessType · @Model.WhatsAppNumber · @BusinessServicePlans.GetDisplayName(Model.ServicePlan)</p>
             </div>
             <div class="workspace-page-actions">
-                <a class="workspace-btn workspace-btn-secondary" asp-controller="AdminDashboard" asp-action="Index">← Back to dashboard</a>
-                <a class="workspace-btn" asp-controller="BusinessContent" asp-action="Index" asp-route-id="@Model.BusinessId">Manage catalog</a>
-                <a class="workspace-btn" asp-controller="AdminWhatsAppMessages" asp-action="Index" asp-route-businessId="@Model.BusinessId">Message history</a>
+                <a class="workspace-btn workspace-btn-secondary" asp-controller="AdminDashboard" asp-action="Index">← Dashboard</a>
+                <a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessContent" asp-action="Index" asp-route-id="@Model.BusinessId">Manage catalog</a>
+                <a class="workspace-btn workspace-btn-secondary" asp-controller="AdminWhatsAppMessages" asp-action="Index" asp-route-businessId="@Model.BusinessId">Message history</a>
             </div>
         </div>
 
-        <div class="admin-note-card">
-            <strong>WhatsApp catalog showcase</strong>
-            <span>Maintain the master catalog separately. Here you select the items that should be shown on WhatsApp and arrange their display ranking.</span>
-        </div>
-
-        <div class="business-form" style="max-width:none;margin-top:18px">
+        <div class="business-form">
             <form asp-action="Manage" method="post" id="whatsappBusinessForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="BusinessId" />
@@ -37,7 +32,13 @@
                 <input type="hidden" asp-for="ServicePlan" />
                 <div asp-validation-summary="ModelOnly" class="validation"></div>
 
-                <h2>1. WhatsApp Business profile & connection</h2>
+                <div class="ws-panel-head">
+                    <div>
+                        <span class="platform-kicker dark">Step 1</span>
+                        <h2>Profile &amp; connection</h2>
+                        <p class="ws-panel-sub">How the business appears on WhatsApp, and the Meta IDs used to send messages.</p>
+                    </div>
+                </div>
                 <div class="form-grid">
                     <div class="field"><label asp-for="DisplayName"></label><input asp-for="DisplayName" placeholder="Business name shown in WhatsApp" /></div>
                     <div class="field"><label asp-for="BusinessCategory"></label><input asp-for="BusinessCategory" placeholder="e.g. Real Estate" /></div>
@@ -45,37 +46,38 @@
                     <div class="field full"><label asp-for="WelcomeMessage"></label><textarea asp-for="WelcomeMessage" rows="3" placeholder="Welcome message sent when a customer starts the chat"></textarea></div>
                     <div class="field"><label asp-for="WabaId"></label><input asp-for="WabaId" placeholder="Meta WABA ID" /></div>
                     <div class="field"><label asp-for="PhoneNumberId"></label><input asp-for="PhoneNumberId" placeholder="Meta Phone Number ID" /></div>
-                    <div class="field full"><label asp-for="AccessToken"></label><input asp-for="AccessToken" type="password" autocomplete="new-password" placeholder="Leave blank to use WhatsApp:AccessToken from User Secrets" /><small style="display:block;margin-top:6px;color:#7a8580">For testing, keep this blank when the token is stored in User Secrets/environment configuration. The real token is never displayed.</small></div>
-                    <div class="field"><label asp-for="WebhookVerifyToken"></label><input asp-for="WebhookVerifyToken" type="password" autocomplete="off" placeholder="Optional for outbound message testing" /><small style="display:block;margin-top:6px;color:#7a8580">Not required for sending test messages. Configure it later when Meta webhook verification is needed.</small></div>
+                    <div class="field full"><label asp-for="AccessToken"></label><input asp-for="AccessToken" type="password" autocomplete="new-password" placeholder="Leave blank to use WhatsApp:AccessToken from User Secrets" /><small class="ws-help">For testing, keep this blank when the token is stored in User Secrets/environment configuration. The real token is never displayed.</small></div>
+                    <div class="field"><label asp-for="WebhookVerifyToken"></label><input asp-for="WebhookVerifyToken" type="password" autocomplete="off" placeholder="Optional for outbound message testing" /><small class="ws-help">Not required for sending test messages. Configure it later when Meta webhook verification is needed.</small></div>
                     <div class="field"><label asp-for="GraphApiVersion"></label><input asp-for="GraphApiVersion" /></div>
                     <div class="field"><label asp-for="FeaturedProductLimit"></label><input asp-for="FeaturedProductLimit" type="number" min="1" max="50" /></div>
-                    <div class="field full"><label><input asp-for="IsEnabled" /> Enable WhatsApp integration for this business</label></div>
+                    <div class="field full"><label class="ws-checkbox"><input asp-for="IsEnabled" /> Enable WhatsApp integration for this business</label></div>
                 </div>
 
-                <hr style="margin:32px 0" />
+                <hr class="ws-divider" />
 
-                <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap">
+                <div class="ws-panel-head">
                     <div>
-                        <h2 style="margin-bottom:5px">2. WhatsApp catalog</h2>
-                        <p class="form-help" style="margin-bottom:0">Check an item to include it. Rank 1 is shown first. Categories are created automatically from your catalog.</p>
+                        <span class="platform-kicker dark">Step 2</span>
+                        <h2>WhatsApp catalog</h2>
+                        <p class="ws-panel-sub">Tick an item to include it. Rank 1 is shown first. Categories come from your catalog automatically.</p>
                     </div>
                     <span class="top-pick-badge"><span id="selectedCount">@Model.SelectedWhatsAppProductIds.Count</span> / @Model.FeaturedProductLimit selected</span>
                 </div>
 
                 @if (Model.WhatsAppProducts.Count == 0)
                 {
-                    <div style="padding:25px;margin-top:18px;background:#f7f5ef;border:1px solid #e7e0d4;border-radius:12px;color:#687284">
+                    <div class="ws-empty">
                         No catalog items yet. <a asp-controller="BusinessContent" asp-action="Index" asp-route-id="@Model.BusinessId">Add the first catalog item →</a>
                     </div>
                 }
                 else
                 {
-                    <div style="display:grid;grid-template-columns:minmax(260px,2fr) minmax(220px,1fr);gap:10px;margin:18px 0">
-                        <div class="field" style="margin:0">
+                    <div class="ws-filter-bar two-col">
+                        <div class="field">
                             <label for="whatsappSearch">Search catalog</label>
                             <input id="whatsappSearch" placeholder="Search property, product or SKU" />
                         </div>
-                        <div class="field" style="margin:0">
+                        <div class="field">
                             <label for="whatsappCategory">Category</label>
                             <select id="whatsappCategory">
                                 <option value="">All categories</option>
@@ -90,33 +92,33 @@
                     <div id="whatsappCatalogGroups">
                     @foreach (var group in groupedProducts)
                     {
-                        <section class="whatsapp-category-group" data-category="@group.Key" style="margin-top:20px;border:1px solid #e3ebe6;border-radius:14px;overflow:hidden;background:#fff">
-                            <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;background:#f7faf8;border-bottom:1px solid #e3ebe6">
+                        <section class="whatsapp-category-group ws-group" data-category="@group.Key">
+                            <div class="ws-group-head">
                                 <div>
-                                    <strong style="font-size:16px;color:#153d32">@group.Key</strong>
-                                    <span style="display:block;color:#77838e;font-size:12px;margin-top:3px">@group.Count() catalog item(s)</span>
+                                    <strong>@group.Key</strong>
+                                    <span>@group.Count() catalog item(s)</span>
                                 </div>
-                                <button type="button" class="workspace-btn workspace-btn-secondary select-category-btn" data-category="@group.Key">Select visible</button>
+                                <button type="button" class="workspace-btn workspace-btn-secondary workspace-btn-sm select-category-btn" data-category="@group.Key">Select visible</button>
                             </div>
 
                             <div class="whatsapp-product-list">
                             @foreach (var product in group.OrderBy(x => x.Rank > 0 ? x.Rank : int.MaxValue).ThenBy(x => x.Name))
                             {
-                                <div class="whatsapp-rank-row" data-product-id="@product.Id" data-category="@group.Key" data-search="@($"{product.Name} {product.SKU} {product.Category}".ToLowerInvariant())" style="display:grid;grid-template-columns:auto 72px minmax(220px,1fr) 100px 80px;gap:14px;align-items:center;padding:14px 16px;border-bottom:1px solid #edf0ed">
-                                    <input class="whatsapp-product-checkbox" type="checkbox" name="SelectedWhatsAppProductIds" value="@product.Id" @(product.IsSelected ? "checked" : "") style="width:auto" />
+                                <div class="whatsapp-rank-row ws-rank-row" data-product-id="@product.Id" data-category="@group.Key" data-search="@($"{product.Name} {product.SKU} {product.Category}".ToLowerInvariant())">
+                                    <input class="whatsapp-product-checkbox" type="checkbox" name="SelectedWhatsAppProductIds" value="@product.Id" @(product.IsSelected ? "checked" : "") aria-label="Include @product.Name on WhatsApp" />
                                     @if (!string.IsNullOrWhiteSpace(product.ImageUrl))
                                     {
-                                        <img src="@product.ImageUrl" alt="@product.Name" loading="lazy" style="width:62px;height:50px;object-fit:cover;border-radius:9px;border:1px solid #e1e7e3" onerror="this.style.display='none';" />
+                                        <img class="ws-thumb" src="@product.ImageUrl" alt="@product.Name" loading="lazy" onerror="this.style.display='none';" />
                                     }
                                     else
                                     {
-                                        <div style="width:62px;height:50px;border-radius:9px;background:#f1f5f2;display:flex;align-items:center;justify-content:center;font-size:10px;color:#819087">No image</div>
+                                        <div class="ws-thumb-empty">No image</div>
                                     }
                                     <span>
-                                        <strong>@product.Name</strong>
-                                        <span style="display:block;font-size:12px;color:#687284;margin-top:3px">@product.Category @(!string.IsNullOrWhiteSpace(product.SKU) ? "· SKU " + product.SKU : "")</span>
+                                        <span class="ws-item-name">@product.Name</span>
+                                        <span class="ws-item-meta">@product.Category @(!string.IsNullOrWhiteSpace(product.SKU) ? "· SKU " + product.SKU : "")</span>
                                     </span>
-                                    <span style="font-size:13px;color:#536074">@product.PriceText</span>
+                                    <span class="ws-price">@product.PriceText</span>
                                     <input class="whatsapp-rank-input" type="number" min="1" max="50" name="WhatsAppProductRanks[@product.Id]" value="@(product.Rank > 0 ? product.Rank : "")" placeholder="#" @(product.IsSelected ? "" : "disabled") aria-label="Rank for @product.Name" />
                                 </div>
                             }
@@ -124,91 +126,89 @@
                         </section>
                     }
                     </div>
-
-                    <div style="background:#f7faf8;border:1px solid #e1ece5;border-radius:12px;padding:14px;margin-top:14px;color:#536074;font-size:12px">
-                        <strong>WhatsApp rule:</strong> only checked products are included. UplivaAI normalizes the selected ranks to 1..N before saving, so the WhatsApp showcase always has a clean order.
-                    </div>
                 }
 
-                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:24px">
-                    <button id="saveWhatsAppButton" class="platform-btn platform-btn-primary" type="submit">Save WhatsApp Business &amp; catalog ranking →</button>
+                <div class="ws-form-actions">
+                    <button id="saveWhatsAppButton" class="platform-btn platform-btn-primary" type="submit">Save WhatsApp setup</button>
+                    <span class="ws-muted">Only ticked products are included. Ranks are renumbered 1…N on save, so the order is always clean.</span>
+                </div>
+            </form>
+        </div>
+
+        <div class="ws-card-accent">
+            <div class="ws-panel-head">
+                <div>
+                    <span class="top-pick-badge">Outbound test</span>
+                    <h2>Send the catalog to your WhatsApp</h2>
+                    <p class="ws-panel-sub">Uses this business's Meta Phone Number ID and Access Token. The webhook and the enable switch aren't needed for this test.</p>
+                </div>
+                <div class="ws-stat-tile">
+                    <strong>@Model.SelectedWhatsAppProductIds.Count</strong>
+                    <span>selected products</span>
+                </div>
+            </div>
+
+            @if (Model.PlatformWhatsAppConfigured)
+            {
+                <div class="ws-callout ws-callout-success ws-mt-0">
+                    <strong>✓ Meta outbound credentials detected.</strong>
+                    <span>Phone Number ID and Access Token are available from your existing <code>WhatsApp:*</code> configuration.</span>
+                </div>
+            }
+            else
+            {
+                <div class="ws-callout ws-callout-danger ws-mt-0">
+                    <strong>Meta outbound credentials not detected.</strong>
+                    <span>Add <code>WhatsApp:PhoneNumberId</code> and <code>WhatsApp:AccessToken</code> to your existing User Secrets/environment configuration.</span>
+                </div>
+            }
+
+            <form asp-action="SendCatalog" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.BusinessId" />
+                <div class="ws-send-grid">
+                    <div class="field">
+                        <label for="testRecipientPhoneNumber">Your WhatsApp number</label>
+                        <input id="testRecipientPhoneNumber" name="testRecipientPhoneNumber" value="@Model.TestRecipientPhoneNumber" placeholder="919798555992" autocomplete="tel" required />
+                        <small class="ws-help">Country code first, e.g. <strong>919798555992</strong>. No + or spaces.</small>
+                    </div>
+                    <div class="field">
+                        <label for="catalogSendMode">What should be sent?</label>
+                        <select id="catalogSendMode" name="catalogSendMode">
+                            <option value="selected">Selected WhatsApp products (@Model.SelectedWhatsAppProductIds.Count)</option>
+                            <option value="all">All active catalog products (@Model.WhatsAppProducts.Count)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="ws-subform">
+                    <button id="sendCatalogButton" class="platform-btn platform-btn-primary" type="submit">Send catalog now</button>
+                    <span class="ws-muted">Products are sent as text in saved rank order. This avoids remote-image delivery issues; images can be tested separately.</span>
                 </div>
             </form>
 
-            <div style="margin-top:12px;padding:11px 14px;border-radius:12px;border:1px solid @(Model.PlatformWhatsAppConfigured ? "#cfe8da" : "#f1d3d3");background:@(Model.PlatformWhatsAppConfigured ? "#f1fbf5" : "#fff5f5");color:@(Model.PlatformWhatsAppConfigured ? "#176044" : "#9b2c2c");font-size:13px">
-                    @if (Model.PlatformWhatsAppConfigured)
-                    {
-                        <strong>✓ Meta outbound credentials detected.</strong>
-                        <span>Phone Number ID and Access Token are available from your existing <code>WhatsApp:*</code> configuration.</span>
-                    }
-                    else
-                    {
-                        <strong>⚠ Meta outbound credentials not detected.</strong>
-                        <span>Add <code>WhatsApp:PhoneNumberId</code> and <code>WhatsApp:AccessToken</code> to your existing User Secrets/environment configuration.</span>
-                    }
-                </div>
-
-                <form asp-action="TestWhatsApp" method="post" style="margin-top:12px">
+            <div class="ws-subform">
+                <form asp-action="SendTestMessage" method="post">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="id" value="@Model.BusinessId" />
-                    <button class="workspace-btn" type="submit">Test WhatsApp connection</button>
+                    <input type="hidden" id="diagnosticRecipient" name="testRecipientPhoneNumber" value="@Model.TestRecipientPhoneNumber" />
+                    <button class="workspace-btn workspace-btn-secondary" type="submit">Send one test text first</button>
                 </form>
-
-                <div style="margin-top:22px;border:1px solid #dce9e2;border-radius:18px;background:linear-gradient(135deg,#f7fcf9,#ffffff);padding:22px;box-shadow:0 8px 24px rgba(20,61,50,.06)">
-                    <div style="display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap">
-                        <div>
-                            <span style="display:inline-flex;padding:5px 9px;border-radius:999px;background:#e8f5ee;color:#176044;font-size:11px;font-weight:800;letter-spacing:.04em">OUTBOUND TEST</span>
-                            <h2 style="margin:9px 0 5px;font-size:25px">📲 Send catalog to my WhatsApp</h2>
-                            <p style="margin:0;color:#66736e;max-width:760px;font-size:14px;line-height:1.6">Your catalog and WhatsApp ranking are already saved. Enter your personal WhatsApp number below and UplivaAI will send the catalog using this business's Meta Phone Number ID and Access Token. The outbound test does not require the webhook or the integration enable flag.</p>
-                        </div>
-                        <div style="background:#153d32;color:#fff;border-radius:14px;padding:12px 16px;text-align:center;min-width:120px">
-                            <strong style="display:block;font-size:22px">@Model.SelectedWhatsAppProductIds.Count</strong>
-                            <span style="font-size:11px;opacity:.85">selected products</span>
-                        </div>
-                    </div>
-
-                    <form asp-action="SendTestMessage" method="post" style="margin-top:20px">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="id" value="@Model.BusinessId" />
-                        <input type="hidden" id="diagnosticRecipient" name="testRecipientPhoneNumber" value="@Model.TestRecipientPhoneNumber" />
-                        <button class="workspace-btn" type="submit">🧪 Send one test text first</button>
-                        <span style="font-size:12px;color:#6d7974;margin-left:8px">Use this first. It shows the exact Meta error instead of a generic failure.</span>
-                    </form>
-
-                    <form asp-action="SendCatalog" method="post" style="margin-top:20px">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="id" value="@Model.BusinessId" />
-                        <div style="display:grid;grid-template-columns:minmax(280px,1.2fr) minmax(260px,1fr);gap:14px;align-items:end">
-                            <div class="field" style="margin:0">
-                                <label for="testRecipientPhoneNumber">Your WhatsApp number</label>
-                                <input id="testRecipientPhoneNumber" name="testRecipientPhoneNumber" value="@Model.TestRecipientPhoneNumber" placeholder="919798555992" autocomplete="tel" required />
-                                <small style="display:block;margin-top:6px;color:#7a8580">Use country code, e.g. <strong>919798555992</strong>. Do not enter + or spaces.</small>
-                            </div>
-                            <div class="field" style="margin:0">
-                                <label for="catalogSendMode">What should be sent?</label>
-                                <select id="catalogSendMode" name="catalogSendMode">
-                                    <option value="selected">Selected WhatsApp products (@Model.SelectedWhatsAppProductIds.Count)</option>
-                                    <option value="all">All active catalog products (@Model.WhatsAppProducts.Count)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:16px">
-                            <button id="sendCatalogButton" class="platform-btn platform-btn-primary" type="submit">📲 Send catalog now</button>
-                            <span style="font-size:12px;color:#6d7974">For the outbound test, products are sent as text with all catalog details in saved rank/order. This avoids remote-image delivery issues; image sending can be tested separately.</span>
-                        </div>
-                    </form>
-
-                    <div style="margin-top:16px;padding:12px 14px;border-radius:10px;background:#fff8e8;border:1px solid #f1dfae;color:#6f5b22;font-size:12px;line-height:1.55">
-                        <strong>Testing tip:</strong> first send <strong>Hi</strong> from your personal WhatsApp number to the Meta test number, then click <strong>Send catalog now</strong>. This gives the test number an active customer conversation window for the free-form catalog messages.
-                    </div>
-                </div>
-
-            <div style="margin-top:28px;padding:20px;background:#f7f5ef;border-radius:12px">
-                <strong>Webhook</strong>
-                <p style="margin:6px 0;color:#687872"><code>/webhooks/whatsapp</code></p>
-                <p style="margin:6px 0;color:#687872;font-size:13px">Meta/WABA onboarding and phone-number ownership still happen in Meta. This page stores the per-business WhatsApp connection, profile message and catalog showcase configuration used by UplivaAI.</p>
+                <form asp-action="TestWhatsApp" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.BusinessId" />
+                    <button class="workspace-btn workspace-btn-secondary" type="submit">Test WhatsApp connection</button>
+                </form>
+                <span class="ws-muted">Having trouble? The test text shows the exact Meta error instead of a generic failure.</span>
             </div>
+
+            <div class="ws-callout ws-callout-warning">
+                <strong>Testing tip:</strong> first send <strong>Hi</strong> from your personal WhatsApp number to the Meta test number, then click <strong>Send catalog now</strong>. This opens a customer conversation window for the free-form catalog messages.
+            </div>
+        </div>
+
+        <div class="ws-callout ws-callout-neutral">
+            <strong>Webhook:</strong> <code>/webhooks/whatsapp</code><br />
+            Meta/WABA onboarding and phone-number ownership still happen in Meta. This page stores the per-business WhatsApp connection, profile message and catalog showcase configuration used by UplivaAI.
         </div>
     </div>
 </section>

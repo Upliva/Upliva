@@ -4,7 +4,7 @@
     Layout = "_AdminLayout";
 }
 <section class="admin-page">
-    <div class="container" style="max-width:1180px">
+    <div class="container ws-container-md">
         <div class="admin-head">
             <div>
                 <span class="platform-kicker dark">BUSINESS MANAGEMENT</span>
@@ -18,14 +18,14 @@
             </div>
         </div>
 
-        <div class="admin-note-card" style="margin-bottom:18px">
+        <div class="admin-note-card ws-mt-0 ws-mb-24">
             <strong>System information</strong>
             <span>Status: <b>@Model.Status</b> · Slug: <b>@Model.Slug</b> · Catalog template: <b>@Model.CatalogTemplateKey</b> · Created: @Model.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</span>
         </div>
 
         <div asp-validation-summary="ModelOnly" class="validation"></div>
 
-        <div class="business-form" style="max-width:none">
+        <div class="business-form">
             <form asp-action="Edit" method="post">
                 @Html.AntiForgeryToken()
                 <input type="hidden" asp-for="Id" />
@@ -121,7 +121,7 @@
                     </div>
                 </div>
 
-                <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:18px">
+                <div class="ws-form-actions">
                     <button class="platform-btn platform-btn-primary" type="submit" id="saveBusinessButton">Save business changes</button>
                     <a class="workspace-btn workspace-btn-secondary" asp-controller="AdminMarketing" asp-action="Index">Cancel</a>
                 </div>
