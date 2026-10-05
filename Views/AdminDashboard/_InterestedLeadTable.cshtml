@@ -7,7 +7,7 @@
                 <th>Business / Owner</th>
                 <th>Type</th>
                 <th>WhatsApp</th>
-                <th>Status</th>
+                <th>Status</th><th>Registration</th>
                 <th>Notes</th>
                 <th>Action</th>
             </tr>
@@ -15,7 +15,7 @@
         <tbody>
         @if (!Model.Any())
         {
-            <tr><td colspan="6" class="admin-empty-cell">No Interested leads in this category.</td></tr>
+            <tr><td colspan="7" class="admin-empty-cell">No Interested leads in this category.</td></tr>
         }
         else
         {
@@ -32,7 +32,7 @@
                             @((lead.WhatsAppNumber.Length == 12 && lead.WhatsAppNumber.StartsWith("91", StringComparison.Ordinal)) ? $"+91 {lead.WhatsAppNumber[2..]}" : lead.WhatsAppNumber)
                         </a>
                     </td>
-                    <td><span class="lead-status lead-status-interested">Interested</span></td>
+                    <td><span class="lead-status lead-status-interested">Interested</span></td><td>@lead.RegistrationStatus</td>
                     <td class="lead-notes-cell">@(string.IsNullOrWhiteSpace(lead.AdminNotes) ? "—" : lead.AdminNotes)</td>
                     <td>
                         <div class="admin-actions admin-plan-actions">
@@ -47,7 +47,7 @@
                             }
                             else
                             {
-                                <a class="workspace-btn workspace-btn-primary" asp-controller="AdminMarketing" asp-action="CreateBusiness" asp-route-leadId="@lead.Id">Create Business</a>
+                                <a class="workspace-btn workspace-btn-primary" asp-controller="AdminMarketing" asp-action="CreateBusiness" asp-route-leadId="@lead.Id">Confirm & Create</a><form asp-controller="AdminMarketing" asp-action="RejectRegistration" method="post" style="display:inline">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@lead.Id" /><button class="workspace-btn workspace-btn-secondary" type="submit">Reject</button></form>
                             }
                         </div>
                     </td>

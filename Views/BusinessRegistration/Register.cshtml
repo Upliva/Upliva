@@ -50,6 +50,11 @@
                         <span asp-validation-for="BusinessType"></span>
                     </div>
                     <div class="field full">
+                        <label asp-for="Email"></label>
+                        <input asp-for="Email" placeholder="you@example.com (optional)" autocomplete="email" />
+                        <span asp-validation-for="Email"></span>
+                    </div>
+                    <div class="field full">
                         <label asp-for="WhatsAppNumber"></label>
                         <input asp-for="WhatsAppNumber" placeholder="9876543210" maxlength="10" autocomplete="tel" inputmode="numeric" pattern="[6-9][0-9]{9}" oninput="this.value=this.value.replace(/\D/g,'').slice(0,10)" />
                         <span class="field-hint">Required. Enter a 10-digit Indian number; +91 is added automatically.</span>

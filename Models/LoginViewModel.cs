@@ -4,7 +4,7 @@ namespace UplivaAI.Models;
 
 public class LoginViewModel
 {
-    [Required, Display(Name = "Email or WhatsApp number")]
+    [Required, Display(Name = "Mobile number or email")]
     public string Email { get; set; } = string.Empty;
 
     [Required, DataType(DataType.Password)]

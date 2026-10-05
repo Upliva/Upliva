@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.RateLimiting;
+using Azure.Storage.Blobs;
+using System.Threading.RateLimiting;
 using UplivaAI.Data;
 using UplivaAI.Models;
 using UplivaAI.Services;
@@ -12,12 +15,48 @@ var builder = WebApplication.CreateBuilder(args);
 // such as "WhatsApp:PhoneNumberId" and "WhatsApp:AccessToken" are available
 // even when the launch profile/environment is not Development.
 builder.Configuration.AddUserSecrets<Program>(optional: true);
+// Azure Storage credentials belong in User Secrets / environment configuration, never source control.
 
 builder.Logging.ClearProviders();
 builder.Logging.AddJsonConsole();
 builder.Logging.AddDebug();
 
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("public-enquiry", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(5),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+    options.AddPolicy("login", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(5),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+    options.AddPolicy("call-click", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 20,
+                Window = TimeSpan.FromMinutes(5),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+});
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache(options => options.SizeLimit = 10_000);
 
@@ -25,6 +64,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie(options =>
     {
         options.Cookie.Name = ".UplivaAI.Auth";
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.IsEssential = true;
         options.LoginPath = "/login";
         options.AccessDeniedPath = "/login";
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
@@ -41,6 +84,14 @@ builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 builder.Services.AddScoped<IErrorLogService, ErrorLogService>();
 builder.Services.AddScoped<IMarketingEngagementService, MarketingEngagementService>();
 builder.Services.AddSingleton<IBusinessCacheService, BusinessCacheService>();
+builder.Services.Configure<AzureStorageOptions>(builder.Configuration.GetSection("AzureStorage"));
+builder.Services.AddScoped<IBlobStorageService, AzureBlobStorageService>();
+builder.Services.Configure<NotificationOptions>(builder.Configuration.GetSection("Notifications"));
+builder.Services.AddScoped<IEmailService, SmtpEmailService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
+builder.Services.AddScoped<IIntegrationLogService, IntegrationLogService>();
+builder.Services.AddHostedService<NotificationRetryWorker>();
+builder.Services.AddHostedService<LogRetentionWorker>();
 
 builder.Services.AddDbContext<UplivaDbContext>(options =>
     options.UseSqlServer(
@@ -49,8 +100,15 @@ builder.Services.AddDbContext<UplivaDbContext>(options =>
 
 builder.Services.Configure<WhatsAppSettings>(
     builder.Configuration.GetSection("WhatsApp"));
+builder.Services.Configure<GupshupSettings>(
+    builder.Configuration.GetSection("WhatsApp:Gupshup"));
 
 builder.Services.AddHttpClient<IWhatsAppService, WhatsAppService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddHttpClient<IGupshupWhatsAppService, GupshupWhatsAppService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
 });
@@ -70,7 +128,9 @@ app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseRouting();
+app.UseRateLimiter();
 app.UseAuthentication();
+app.UseMiddleware<PasswordChangeRequiredMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
@@ -98,6 +158,38 @@ if (app.Environment.IsDevelopment() &&
 {
     app.Logger.LogWarning("UplivaAI admin account is not configured. Set Admin:Email and Admin:Password with dotnet user-secrets, then restart the application.");
 }
+
+app.MapGet("/health", async (UplivaDbContext db, IConfiguration configuration, CancellationToken cancellationToken) =>
+{
+    var sqlOk = false;
+    try { sqlOk = await db.Database.CanConnectAsync(cancellationToken); } catch { }
+
+    var azureConfigured = !string.IsNullOrWhiteSpace(configuration["AzureStorage:ConnectionString"]);
+    var azureOk = false;
+    if (azureConfigured)
+    {
+        try
+        {
+            var client = new BlobServiceClient(configuration["AzureStorage:ConnectionString"]);
+            azureOk = await client.GetBlobContainerClient(configuration["AzureStorage:ContainerName"] ?? "upliva-media").ExistsAsync(cancellationToken);
+        }
+        catch { }
+    }
+
+    var gupshupConfigured = !string.IsNullOrWhiteSpace(configuration["WhatsApp:PhoneNumberId"]) &&
+                            !string.IsNullOrWhiteSpace(configuration["WhatsApp:AccessToken"]);
+
+    // Gupshup is optional in Phase 1, so it does not make the core platform unhealthy.
+    var healthy = sqlOk && azureOk;
+    return Results.Json(new
+    {
+        status = healthy ? "Healthy" : "Degraded",
+        sql = sqlOk ? "Healthy" : "Unhealthy",
+        azureBlob = azureOk ? "Healthy" : azureConfigured ? "Unhealthy" : "NotConfigured",
+        gupshup = gupshupConfigured ? "Configured" : "NotConfigured",
+        utc = DateTime.UtcNow
+    }, statusCode: healthy ? StatusCodes.Status200OK : StatusCodes.Status503ServiceUnavailable);
+});
 
 app.MapGet("/privacy", () => Results.Content("""
 <!DOCTYPE html>

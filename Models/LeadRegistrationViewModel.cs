@@ -18,4 +18,7 @@ public sealed class LeadRegistrationViewModel
     [Required, MaxLength(10)]
     [Display(Name = "WhatsApp / mobile number")]
     public string? WhatsAppNumber { get; set; }
+    [EmailAddress, MaxLength(200)]
+    [Display(Name = "Email (optional)")]
+    public string? Email { get; set; }
 }

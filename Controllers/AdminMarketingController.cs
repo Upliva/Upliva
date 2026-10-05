@@ -54,16 +54,34 @@ public class AdminMarketingController(IMarketingEngagementService engagement, IB
         {
             // The selected plan is kept on the lead as the source of truth. The
             // service validates the lead again before creating the business.
-            var business = await businessService.CreateFromLeadAsync(model.LeadId, model.BusinessName ?? string.Empty, cancellationToken);
-            TempData["ToastType"] = "success";
-            TempData["ToastMessage"] = $"{business.Name} was created from the interested lead and is now active on the admin dashboard.";
-            return RedirectToAction("Index", "AdminDashboard");
+            var result = await businessService.CreateFromLeadAsync(model.LeadId, model.BusinessName ?? string.Empty, cancellationToken);
+            return View("BusinessCredentials", result);
         }
         catch (InvalidOperationException ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             return View(model);
         }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RejectRegistration(long id, string? q, int page = 1, int pageSize = 10, CancellationToken cancellationToken = default)
+    {
+        var lead = await engagement.GetRecentLeadsAsync(5000, cancellationToken);
+        var item = lead.FirstOrDefault(x => x.Id == id);
+        if (item is null) return NotFound();
+        if (item.ConvertedBusinessId.HasValue)
+        {
+            TempData["ToastType"] = "error";
+            TempData["ToastMessage"] = "A converted business cannot be rejected from the registration queue.";
+            return RedirectToAction(nameof(Index), new { q, page, pageSize });
+        }
+
+        await engagement.SetRegistrationStatusAsync(id, RegistrationLeadStatuses.Rejected, cancellationToken);
+        TempData["ToastType"] = "success";
+        TempData["ToastMessage"] = "Registration rejected.";
+        return RedirectToAction(nameof(Index), new { q, page, pageSize });
     }
 
     [HttpPost]
@@ -122,7 +140,7 @@ public class AdminMarketingController(IMarketingEngagementService engagement, IB
     {
         var leads = await engagement.GetRecentLeadsAsync(5000, cancellationToken);
         var sb = new StringBuilder();
-        sb.AppendLine("Name,BusinessType,WhatsAppNumber,Status,SelectedPlan,AdminNotes,Source,CreatedAtUtc,ContactedAtUtc,ConfirmedAtUtc,ConvertedAtUtc");
+        sb.AppendLine("Name,BusinessType,WhatsAppNumber,Email,Status,RegistrationStatus,SelectedPlan,AdminNotes,Source,CreatedAtUtc,ContactedAtUtc,ConfirmedAtUtc,ConvertedAtUtc");
 
         foreach (var lead in leads)
         {
@@ -130,7 +148,9 @@ public class AdminMarketingController(IMarketingEngagementService engagement, IB
                 Csv(lead.Name),
                 Csv(lead.BusinessType),
                 Csv(lead.WhatsAppNumber),
+                Csv(lead.Email),
                 Csv(lead.Status),
+                Csv(lead.RegistrationStatus),
                 Csv(MarketingLeadPlans.GetDisplayName(lead.SelectedPlan)),
                 Csv(lead.AdminNotes),
                 Csv(lead.Source),

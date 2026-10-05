@@ -35,6 +35,9 @@ public class BusinessCatalogItem
     [MaxLength(500)]
     public string ImageUrl { get; set; } = string.Empty;
 
+    [MaxLength(500)]
+    public string ImageBlobName { get; set; } = string.Empty;
+
     [MaxLength(300)]
     public string ShortDescription { get; set; } = string.Empty;
 

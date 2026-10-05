@@ -15,6 +15,7 @@ public class BusinessContentController(
     IAuditLogService auditLogService,
     IBusinessCacheService businessCache,
     ICatalogTemplateService catalogTemplateService,
+    IBlobStorageService blobStorageService,
     ICatalogImportService catalogImportService) : Controller
 {
     [HttpGet]
@@ -54,6 +55,23 @@ public class BusinessContentController(
             return View(nameof(Index), catalogModel);
         }
 
+        if (catalogModel.ImageFile is not null)
+        {
+            try
+            {
+                var upload = await blobStorageService.UploadBusinessImageAsync(business.Id, "catalog", catalogModel.ImageFile, cancellationToken);
+                catalogModel.ImageUrl = upload.PublicPath;
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError(nameof(catalogModel.ImageFile), ex.Message);
+                await LoadCatalogAsync(business, null, null, cancellationToken);
+                ViewBag.CatalogTemplate = template;
+                catalogModel.BusinessId = businessId.Value;
+                return View(nameof(Index), catalogModel);
+            }
+        }
+
         var item = new BusinessCatalogItem
         {
             BusinessId = businessId.Value,
@@ -66,6 +84,7 @@ public class BusinessContentController(
             OriginalPriceText = (catalogModel.OriginalPriceText ?? string.Empty).Trim(),
             DiscountText = (catalogModel.DiscountText ?? string.Empty).Trim(),
             ImageUrl = (catalogModel.ImageUrl ?? string.Empty).Trim(),
+            ImageBlobName = ExtractBlobName(catalogModel.ImageUrl),
             ShortDescription = (catalogModel.ShortDescription ?? string.Empty).Trim(),
             Description = (catalogModel.Description ?? string.Empty).Trim(),
             CustomAttributesJson = JsonSerializer.Serialize(attributes),
@@ -152,7 +171,28 @@ public class BusinessContentController(
         existing.PriceText = (model.PriceText ?? string.Empty).Trim();
         existing.OriginalPriceText = (model.OriginalPriceText ?? string.Empty).Trim();
         existing.DiscountText = (model.DiscountText ?? string.Empty).Trim();
+        var previousBlob = existing.ImageBlobName;
         existing.ImageUrl = (model.ImageUrl ?? string.Empty).Trim();
+        existing.ImageBlobName = ExtractBlobName(existing.ImageUrl);
+
+        var uploadedFile = Request.Form.Files.GetFile("ImageFile");
+        if (uploadedFile is not null && uploadedFile.Length > 0)
+        {
+            try
+            {
+                var upload = await blobStorageService.UploadBusinessImageAsync(business.Id, "catalog", uploadedFile, cancellationToken);
+                existing.ImageUrl = upload.PublicPath;
+                existing.ImageBlobName = upload.BlobName;
+            }
+            catch (ArgumentException ex)
+            {
+                ModelState.AddModelError("ImageFile", ex.Message);
+                await LoadCatalogAsync(business, null, null, cancellationToken);
+                ViewBag.IsEditingCatalog = true;
+                ViewBag.CatalogTemplate = template;
+                return View(nameof(Index), model);
+            }
+        }
         existing.ShortDescription = (model.ShortDescription ?? string.Empty).Trim();
         existing.Description = (model.Description ?? string.Empty).Trim();
         existing.CustomAttributesJson = JsonSerializer.Serialize(model.CustomAttributes);
@@ -177,6 +217,9 @@ public class BusinessContentController(
             ViewBag.CatalogTemplate = template;
             return View(nameof(Index), model);
         }
+
+        if (!string.IsNullOrWhiteSpace(previousBlob) && !string.Equals(previousBlob, existing.ImageBlobName, StringComparison.Ordinal))
+            await blobStorageService.DeleteAsync(previousBlob, cancellationToken);
 
         businessCache.InvalidateBusiness(business.Id);
         await auditLogService.WriteAsync(
@@ -307,6 +350,9 @@ public class BusinessContentController(
 
         var businessId = ResolveBusinessId(item.BusinessId);
         if (businessId is null || !await CanManageCatalogAsync(businessId.Value, cancellationToken)) return Forbid();
+
+        if (!string.IsNullOrWhiteSpace(item.ImageBlobName))
+            await blobStorageService.DeleteAsync(item.ImageBlobName, cancellationToken);
 
         db.BusinessCatalogItems.Remove(item);
         await db.SaveChangesAsync(cancellationToken);
@@ -596,6 +642,15 @@ public class BusinessContentController(
             return new Dictionary<string, string>(values, StringComparer.OrdinalIgnoreCase);
         }
         catch { return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase); }
+    }
+
+    private static string ExtractBlobName(string? imageUrl)
+    {
+        const string prefix = "/media/";
+        var value = imageUrl?.Trim() ?? string.Empty;
+        return value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+            ? value[prefix.Length..]
+            : string.Empty;
     }
 
     private static void ValidateLength(string value, int maxLength, string label, List<string> errors)

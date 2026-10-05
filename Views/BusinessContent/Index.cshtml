@@ -107,7 +107,7 @@
                 </select>
                 <span class="ws-muted">Switch to import to load many products at once.</span>
             </div>
-            <form action="@Url.Action(isEditing ? "UpdateCatalog" : "AddCatalog", "BusinessContent")" method="post" id="catalogItemForm">
+            <form action="@Url.Action(isEditing ? "UpdateCatalog" : "AddCatalog", "BusinessContent")" method="post" enctype="multipart/form-data" id="catalogItemForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="Id" value="@Model.Id" /><input type="hidden" name="BusinessId" value="@business.Id" />
                 <div class="form-grid">
@@ -142,7 +142,15 @@
                         </div>
                     }
 
-                    <div class="field full"><label asp-for="ImageUrl"></label><input asp-for="ImageUrl" id="imageUrl" placeholder="https://example.com/product-image.jpg" /><span asp-validation-for="ImageUrl" class="validation"></span><div id="imagePreview" class="ws-image-preview" style="display:none;margin-top:10px"><img id="imagePreviewImage" src="" alt="Catalog preview" /></div></div>
+                    <div class="field full">
+                        <label asp-for="ImageFile"></label>
+                        <input asp-for="ImageFile" accept="image/jpeg,image/png,image/webp" />
+                        <span asp-validation-for="ImageFile" class="validation"></span>
+                        <span class="field-hint">Upload JPG, PNG or WEBP up to 5 MB. Images are stored in Azure Blob Storage.</span>
+                        @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+                        { <div class="ws-image-preview" style="margin-top:10px"><img src="@Model.ImageUrl" alt="Catalog preview" /></div> }
+                    </div>
+                    <div class="field full"><label asp-for="ImageUrl"></label><input asp-for="ImageUrl" id="imageUrl" placeholder="https://example.com/product-image.jpg" /><span asp-validation-for="ImageUrl" class="validation"></span><span class="field-hint">Optional legacy/external image URL. Uploading a file is recommended.</span><div id="imagePreview" class="ws-image-preview" style="display:none;margin-top:10px"><img id="imagePreviewImage" src="" alt="Catalog preview" /></div></div>
                     <div class="field full"><label asp-for="ShortDescription"></label><input asp-for="ShortDescription" placeholder="Short line shown with the WhatsApp product" /></div>
                     <div class="field full"><label asp-for="Description"></label><textarea asp-for="Description" rows="5" placeholder="Product/service details"></textarea></div>
                     <div class="field"><label asp-for="OriginalPriceText"></label><input asp-for="OriginalPriceText" placeholder="Optional" /></div>

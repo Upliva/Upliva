@@ -8,7 +8,8 @@ public class BusinessService(
     UplivaDbContext db,
     IAuditLogService auditLogService,
     IBusinessCacheService businessCache,
-    ICatalogTemplateService catalogTemplateService) : IBusinessService
+    ICatalogTemplateService catalogTemplateService,
+    IPlatformAuthService platformAuthService) : IBusinessService
 {
     public Task<Business?> GetByIdAsync(int id, CancellationToken cancellationToken = default) =>
         db.Businesses.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
@@ -46,10 +47,11 @@ public class BusinessService(
             "{\"status\":\"created\"}", cancellationToken);
     }
 
-    public async Task<Business> CreateFromLeadAsync(long leadId, string businessName, CancellationToken cancellationToken = default)
+    public async Task<BusinessProvisioningResult> CreateFromLeadAsync(long leadId, string businessName, CancellationToken cancellationToken = default)
     {
         var strategy = db.Database.CreateExecutionStrategy();
         Business? createdBusiness = null;
+        string? createdOwnerPassword = null;
 
         await strategy.ExecuteAsync(async () =>
         {
@@ -97,6 +99,7 @@ public class BusinessService(
                 Status = BusinessStatuses.Approved,
                 ApprovedAtUtc = DateTime.UtcNow,
                 OwnerName = BusinessInputRules.Clean(lead.Name),
+                Email = BusinessInputRules.Clean(lead.Email),
                 PhoneNumber = normalizedPhone,
                 WhatsAppNumber = normalizedPhone,
                 Country = "India",
@@ -119,9 +122,14 @@ public class BusinessService(
                 IsEnabled = false
             });
 
+            var temporaryPassword = GenerateTemporaryPassword();
+            createdOwnerPassword = temporaryPassword;
+            await platformAuthService.CreateBusinessOwnerAsync(business, temporaryPassword, cancellationToken);
+
             lead.Name = business.Name;
             lead.BusinessType = business.BusinessType;
             lead.WhatsAppNumber = business.WhatsAppNumber;
+            lead.RegistrationStatus = RegistrationLeadStatuses.Confirmed;
             lead.ConvertedBusinessId = business.Id;
             lead.ConfirmedAtUtc ??= DateTime.UtcNow;
             lead.ConvertedAtUtc = DateTime.UtcNow;
@@ -139,7 +147,15 @@ public class BusinessService(
             "BusinessCreatedFromLead", "Business", createdBusiness.Id.ToString(), createdBusiness.Id,
             System.Text.Json.JsonSerializer.Serialize(new { leadId, plan = createdBusiness.ServicePlan, businessType = createdBusiness.BusinessType, catalogTemplate = createdBusiness.CatalogTemplateKey }), cancellationToken);
 
-        return createdBusiness;
+        var createdOwner = await db.PlatformUsers.AsNoTracking().FirstAsync(x => x.BusinessId == createdBusiness.Id && x.Role == PlatformRoles.BusinessOwner, cancellationToken);
+        return new BusinessProvisioningResult(createdBusiness, createdOwner.PhoneNumber, createdOwnerPassword ?? string.Empty);
+    }
+
+    private static string GenerateTemporaryPassword()
+    {
+        const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#";
+        var bytes = System.Security.Cryptography.RandomNumberGenerator.GetBytes(12);
+        return new string(bytes.Select(b => chars[b % chars.Length]).ToArray());
     }
 
     public async Task ApproveAsync(int id, CancellationToken cancellationToken = default)

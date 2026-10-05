@@ -11,8 +11,9 @@ public class MarketingEngagementService(UplivaDbContext db) : IMarketingEngageme
         string businessType,
         string whatsappNumber,
         string visitorId,
-        CancellationToken cancellationToken = default) =>
-        CaptureLeadAsync(name, businessType, whatsappNumber, visitorId, "UplivaChatbot", cancellationToken);
+        CancellationToken cancellationToken = default,
+        string? email = null) =>
+        CaptureLeadAsync(name, businessType, whatsappNumber, visitorId, "UplivaChatbot", cancellationToken, email);
 
     public async Task CaptureLeadAsync(
         string name,
@@ -20,7 +21,8 @@ public class MarketingEngagementService(UplivaDbContext db) : IMarketingEngageme
         string whatsappNumber,
         string visitorId,
         string source,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default,
+        string? email = null)
     {
         var normalizedPhone = BusinessInputRules.NormalizeWhatsApp(whatsappNumber);
 
@@ -29,6 +31,9 @@ public class MarketingEngagementService(UplivaDbContext db) : IMarketingEngageme
 
         name = BusinessInputRules.Clean(name);
         businessType = BusinessInputRules.Clean(businessType);
+        email = email?.Trim() ?? string.Empty;
+        if (!string.IsNullOrWhiteSpace(email) && !new System.ComponentModel.DataAnnotations.EmailAddressAttribute().IsValid(email))
+            throw new ArgumentException("Enter a valid email address or leave it blank.");
 
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Business name is required.");
@@ -44,7 +49,9 @@ public class MarketingEngagementService(UplivaDbContext db) : IMarketingEngageme
             var phoneVariants = BusinessInputRules.GetWhatsAppVariants(normalizedPhone);
             var duplicate = await db.ChatbotLeads
                 .AsNoTracking()
-                .AnyAsync(x => phoneVariants.Contains(x.WhatsAppNumber), cancellationToken);
+                .AnyAsync(x => phoneVariants.Contains(x.WhatsAppNumber) &&
+                               x.RegistrationStatus != RegistrationLeadStatuses.Rejected &&
+                               !x.ConvertedBusinessId.HasValue, cancellationToken);
 
             if (duplicate)
                 throw new ArgumentException("This WhatsApp number is already registered. A WhatsApp number can belong to only one business.");
@@ -62,9 +69,11 @@ public class MarketingEngagementService(UplivaDbContext db) : IMarketingEngageme
             Name = name.Trim(),
             BusinessType = businessType.Trim(),
             WhatsAppNumber = normalizedPhone,
+            Email = email,
             VisitorId = visitorId ?? string.Empty,
             Source = string.IsNullOrWhiteSpace(source) ? "UplivaChatbot" : source.Trim(),
             Status = MarketingLeadStatuses.Interested,
+            RegistrationStatus = RegistrationLeadStatuses.Pending,
             SelectedPlan = string.Empty,
             AdminNotes = string.Empty,
             CreatedAtUtc = DateTime.UtcNow
@@ -212,6 +221,25 @@ public class MarketingEngagementService(UplivaDbContext db) : IMarketingEngageme
         lead.SelectedPlan = selectedPlan;
         lead.AdminNotes = adminNotes;
 
+        await db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task SetRegistrationStatusAsync(long leadId, string status, CancellationToken cancellationToken = default)
+    {
+        if (!RegistrationLeadStatuses.All.Contains(status, StringComparer.Ordinal))
+            throw new ArgumentException("Invalid registration status.");
+
+        var lead = await db.ChatbotLeads.FirstOrDefaultAsync(x => x.Id == leadId, cancellationToken);
+        if (lead is null) throw new KeyNotFoundException("Registration lead not found.");
+        if (lead.ConvertedBusinessId.HasValue && status == RegistrationLeadStatuses.Rejected)
+            throw new InvalidOperationException("A converted business cannot be rejected.");
+
+        lead.RegistrationStatus = status;
+        if (status == RegistrationLeadStatuses.Rejected)
+        {
+            lead.Status = MarketingLeadStatuses.NotInterested;
+            lead.ConfirmedAtUtc = null;
+        }
         await db.SaveChangesAsync(cancellationToken);
     }
 

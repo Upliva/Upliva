@@ -25,11 +25,14 @@
                     <a class="@NavClass("AdminDashboard")" asp-controller="AdminDashboard" asp-action="Index">Dashboard</a>
                     <a class="@NavClass("AdminMarketing")" asp-controller="AdminMarketing" asp-action="Index">Leads & visits</a>
                     <a class="@NavClass("AdminErrorLogs")" asp-controller="AdminErrorLogs" asp-action="Index">Error logs</a>
+                    <a class="@NavClass("AdminOperations")" asp-controller="AdminOperations" asp-action="Index">Operations</a>
+                    <a class="@NavClass("AdminWhatsAppTemplates")" asp-controller="AdminWhatsAppTemplates" asp-action="Index">WA templates</a>
                 }
                 else if (User.IsInRole(PlatformRoles.BusinessOwner))
                 {
                     <a class="@NavClass("BusinessDashboard")" asp-controller="BusinessDashboard" asp-action="Index">Dashboard</a>
                 }
+                <a class="workspace-top-link" asp-controller="Account" asp-action="ChangePassword">Change password</a>
                 <form asp-controller="Account" asp-action="Logout" method="post">
                     @Html.AntiForgeryToken()
                     <button class="workspace-top-link workspace-top-logout" type="submit">Logout</button>

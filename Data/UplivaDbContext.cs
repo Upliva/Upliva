@@ -17,18 +17,32 @@ public class UplivaDbContext(DbContextOptions<UplivaDbContext> options) : DbCont
     public DbSet<ErrorLog> ErrorLogs => Set<ErrorLog>();
     public DbSet<MarketingLead> ChatbotLeads => Set<MarketingLead>();
     public DbSet<PlatformVisit> PlatformVisits => Set<PlatformVisit>();
+    public DbSet<WhatsAppTemplateConfiguration> WhatsAppTemplateConfigurations => Set<WhatsAppTemplateConfiguration>();
+    public DbSet<CallEvent> CallEvents => Set<CallEvent>();
+    public DbSet<NotificationLog> NotificationLogs => Set<NotificationLog>();
+    public DbSet<IntegrationLog> IntegrationLogs => Set<IntegrationLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<BusinessCatalogItem>().Property(x => x.Rating).HasPrecision(3, 2);
         modelBuilder.Entity<Business>().HasIndex(x => x.Slug).IsUnique();
         modelBuilder.Entity<PlatformUser>().HasIndex(x => x.Email).IsUnique();
+        modelBuilder.Entity<PlatformUser>().HasIndex(x => new { x.PhoneNumber, x.Role }).IsUnique().HasFilter("[PhoneNumber] IS NOT NULL AND [PhoneNumber] <> ''");
         modelBuilder.Entity<BusinessWhatsAppSettings>().HasIndex(x => x.BusinessId).IsUnique();
         modelBuilder.Entity<BusinessWhatsAppSettings>().HasIndex(x => x.PhoneNumberId).IsUnique();
         modelBuilder.Entity<AuditLog>().HasIndex(x => new { x.BusinessId, x.CreatedAtUtc });
         modelBuilder.Entity<AuditLog>().HasIndex(x => x.CorrelationId);
         modelBuilder.Entity<Business>().HasIndex(x => x.WhatsAppNumber).IsUnique().HasFilter("[WhatsAppNumber] IS NOT NULL AND [WhatsAppNumber] <> ''");
         modelBuilder.Entity<BusinessCatalogItem>().Property(x => x.CustomAttributesJson).HasColumnType("nvarchar(max)");
+        modelBuilder.Entity<BusinessCatalogItem>().HasIndex(x => new { x.BusinessId, x.ImageBlobName });
+        modelBuilder.Entity<WhatsAppTemplateConfiguration>().HasIndex(x => x.ProviderTemplateName).IsUnique();
+        modelBuilder.Entity<WhatsAppTemplateConfiguration>().HasIndex(x => x.IsDefault);
+        modelBuilder.Entity<CallEvent>().HasIndex(x => new { x.BusinessId, x.CreatedAtUtc });
+        modelBuilder.Entity<CallEvent>().HasIndex(x => x.CorrelationId);
+        modelBuilder.Entity<NotificationLog>().HasIndex(x => new { x.Status, x.NextAttemptAtUtc });
+        modelBuilder.Entity<NotificationLog>().HasIndex(x => new { x.BusinessId, x.CreatedAtUtc });
+        modelBuilder.Entity<IntegrationLog>().HasIndex(x => new { x.BusinessId, x.CreatedAtUtc });
+        modelBuilder.Entity<IntegrationLog>().HasIndex(x => x.CorrelationId);
         modelBuilder.Entity<BusinessCatalogItem>().HasIndex(x => x.BusinessId);
         modelBuilder.Entity<BusinessCatalogItem>().HasIndex(x => new { x.BusinessId, x.IsActive, x.IsWhatsAppTopPick, x.SortOrder });
         modelBuilder.Entity<BusinessOffer>().HasIndex(x => new { x.BusinessId, x.IsActive });
@@ -47,6 +61,7 @@ public class UplivaDbContext(DbContextOptions<UplivaDbContext> options) : DbCont
             .IsUnique()
             .HasFilter("[WhatsAppNumber] IS NOT NULL AND [WhatsAppNumber] <> '' AND [Status] = 'Interested' AND [ConvertedBusinessId] IS NULL");
         modelBuilder.Entity<MarketingLead>().HasIndex(x => x.Status);
+        modelBuilder.Entity<MarketingLead>().HasIndex(x => x.RegistrationStatus);
         modelBuilder.Entity<PlatformVisit>().HasIndex(x => x.CreatedAtUtc);
         modelBuilder.Entity<PlatformVisit>().HasIndex(x => x.VisitorId);
         modelBuilder.Entity<BusinessFollowUp>().HasIndex(x => new { x.BusinessId, x.Status, x.DueAtUtc });

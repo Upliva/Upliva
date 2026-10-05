@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace UplivaAI.Models;
 
@@ -59,9 +60,14 @@ public class BusinessEditViewModel
     [MaxLength(2000)]
     public string? Description { get; set; }
 
-    [MaxLength(500), Url]
+    [MaxLength(500)]
     [Display(Name = "Logo URL")]
     public string? LogoUrl { get; set; }
+
+    public IFormFile? LogoFile { get; set; }
+    public IFormFile? BannerFile { get; set; }
+    public string LogoBlobName { get; set; } = string.Empty;
+    public string BannerBlobName { get; set; } = string.Empty;
 
     // Read-only/system information shown on the edit page.
     public string Slug { get; set; } = string.Empty;

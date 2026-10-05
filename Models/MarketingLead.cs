@@ -4,6 +4,15 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UplivaAI.Models;
 
+public static class RegistrationLeadStatuses
+{
+    public const string Pending = "Pending";
+    public const string Confirmed = "Confirmed";
+    public const string Rejected = "Rejected";
+
+    public static IReadOnlyList<string> All { get; } = new[] { Pending, Confirmed, Rejected };
+}
+
 public static class MarketingLeadStatuses
 {
     // Initial-phase lead outcome options shown to the admin.
@@ -64,11 +73,18 @@ public class MarketingLead
     [Required, MaxLength(30)]
     public string WhatsAppNumber { get; set; } = string.Empty;
 
+    [EmailAddress, MaxLength(200)]
+    public string Email { get; set; } = string.Empty;
+
     [Required, MaxLength(50)]
     public string Source { get; set; } = "MarketingChatbot";
 
     [Required, MaxLength(30)]
     public string Status { get; set; } = MarketingLeadStatuses.Interested;
+
+    /// <summary>Business registration lifecycle. Status is retained for legacy marketing reporting.</summary>
+    [Required, MaxLength(30)]
+    public string RegistrationStatus { get; set; } = RegistrationLeadStatuses.Pending;
 
     /// <summary>Plan selected after the phone conversation. Empty until the team confirms it.</summary>
     [MaxLength(40)]

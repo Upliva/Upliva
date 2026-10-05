@@ -14,7 +14,8 @@ public class BusinessManagementController(
     UplivaDbContext db,
     IAuditLogService auditLogService,
     IBusinessCacheService businessCache,
-    ICatalogTemplateService catalogTemplateService) : Controller
+    ICatalogTemplateService catalogTemplateService,
+    IBlobStorageService blobStorageService) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Edit(int id, CancellationToken cancellationToken)
@@ -40,30 +41,47 @@ public class BusinessManagementController(
 
         // The edit screen intentionally does not allow changing system fields such as
         // Id, Slug, Status or approval timestamps. They remain controlled by the platform.
+        // Business owners manage content/profile only; business type, plan, WhatsApp number and login phone
+        // remain platform-controlled so future integrations cannot be changed accidentally.
+        var isAdmin = User.IsInRole(PlatformRoles.Admin);
+        if (!isAdmin)
+        {
+            model.BusinessType = business.BusinessType;
+            model.ServicePlan = business.ServicePlan;
+            model.WhatsAppNumber = business.WhatsAppNumber;
+            model.PhoneNumber = business.PhoneNumber;
+        }
+
         var requestedType = BusinessInputRules.ResolveBusinessType(model.BusinessType);
         var requestedPlan = BusinessInputRules.ResolvePlan(model.ServicePlan);
 
-        if (!BusinessTypeOptions.All.Contains(requestedType, StringComparer.OrdinalIgnoreCase))
-            ModelState.AddModelError(nameof(model.BusinessType), "Select a valid business type.");
+        if (isAdmin)
+        {
+            if (!BusinessTypeOptions.All.Contains(requestedType, StringComparer.OrdinalIgnoreCase))
+                ModelState.AddModelError(nameof(model.BusinessType), "Select a valid business type.");
 
-        if (!string.IsNullOrWhiteSpace(requestedPlan) &&
-            !BusinessServicePlans.All.Contains(requestedPlan, StringComparer.Ordinal))
-            ModelState.AddModelError(nameof(model.ServicePlan), "Select a valid Upliva plan.");
+            if (!string.IsNullOrWhiteSpace(requestedPlan) &&
+                !BusinessServicePlans.All.Contains(requestedPlan, StringComparer.Ordinal))
+                ModelState.AddModelError(nameof(model.ServicePlan), "Select a valid Upliva plan.");
+        }
 
         var requestedWhatsApp = BusinessInputRules.NormalizeWhatsApp(model.WhatsAppNumber);
-        if (!BusinessInputRules.IsOptionalWhatsAppValid(model.WhatsAppNumber))
-            ModelState.AddModelError(nameof(model.WhatsAppNumber), "If supplied, WhatsApp must be a valid 10-digit Indian number.");
-        else if (!string.IsNullOrWhiteSpace(requestedWhatsApp))
+        if (isAdmin)
         {
-            var phoneVariants = BusinessInputRules.GetWhatsAppVariants(requestedWhatsApp);
-            var duplicateWhatsApp = await db.Businesses.AnyAsync(
-                x => x.Id != business.Id &&
-                     phoneVariants.Contains(x.WhatsAppNumber) &&
-                     !string.IsNullOrWhiteSpace(x.WhatsAppNumber),
-                cancellationToken);
+            if (!BusinessInputRules.IsOptionalWhatsAppValid(model.WhatsAppNumber))
+                ModelState.AddModelError(nameof(model.WhatsAppNumber), "If supplied, WhatsApp must be a valid 10-digit Indian number.");
+            else if (!string.IsNullOrWhiteSpace(requestedWhatsApp))
+            {
+                var phoneVariants = BusinessInputRules.GetWhatsAppVariants(requestedWhatsApp);
+                var duplicateWhatsApp = await db.Businesses.AnyAsync(
+                    x => x.Id != business.Id &&
+                         phoneVariants.Contains(x.WhatsAppNumber) &&
+                         !string.IsNullOrWhiteSpace(x.WhatsAppNumber),
+                    cancellationToken);
 
-            if (duplicateWhatsApp)
-                ModelState.AddModelError(nameof(model.WhatsAppNumber), "Another business already uses this WhatsApp number.");
+                if (duplicateWhatsApp)
+                    ModelState.AddModelError(nameof(model.WhatsAppNumber), "Another business already uses this WhatsApp number.");
+            }
         }
 
         if (!ModelState.IsValid)
@@ -116,6 +134,25 @@ public class BusinessManagementController(
         // change is required because the template key is already stored on Business.
         business.CatalogTemplateKey = catalogTemplateService.GetTemplate(requestedType).Key;
 
+        if (model.LogoFile is not null)
+        {
+            var upload = await blobStorageService.UploadBusinessImageAsync(business.Id, "profile", model.LogoFile, cancellationToken);
+            var oldBlob = business.LogoBlobName;
+            business.LogoBlobName = upload.BlobName;
+            business.LogoUrl = upload.PublicPath;
+            if (!string.IsNullOrWhiteSpace(oldBlob))
+                await blobStorageService.DeleteAsync(oldBlob, cancellationToken);
+        }
+
+        if (model.BannerFile is not null)
+        {
+            var upload = await blobStorageService.UploadBusinessImageAsync(business.Id, "banner", model.BannerFile, cancellationToken);
+            var oldBlob = business.BannerBlobName;
+            business.BannerBlobName = upload.BlobName;
+            if (!string.IsNullOrWhiteSpace(oldBlob))
+                await blobStorageService.DeleteAsync(oldBlob, cancellationToken);
+        }
+
         // A converted Interested lead and its Business represent the same customer record.
         // Keep the lead snapshot synchronized so the lead table never shows a stale business name/type/WhatsApp.
         var linkedLead = await db.ChatbotLeads
@@ -125,6 +162,7 @@ public class BusinessManagementController(
             linkedLead.Name = business.Name;
             linkedLead.BusinessType = business.BusinessType;
             linkedLead.WhatsAppNumber = business.WhatsAppNumber;
+            linkedLead.Email = business.Email;
         }
 
         await db.SaveChangesAsync(cancellationToken);
@@ -195,6 +233,8 @@ public class BusinessManagementController(
         Tagline = business.Tagline,
         Description = business.Description,
         LogoUrl = business.LogoUrl,
+        LogoBlobName = business.LogoBlobName,
+        BannerBlobName = business.BannerBlobName,
         Slug = business.Slug,
         Status = business.Status,
         CatalogTemplateKey = business.CatalogTemplateKey,

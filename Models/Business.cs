@@ -90,6 +90,12 @@ public class Business
     [MaxLength(500)]
     public string LogoUrl { get; set; } = string.Empty;
 
+    [MaxLength(500)]
+    public string LogoBlobName { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string BannerBlobName { get; set; } = string.Empty;
+
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime? ApprovedAtUtc { get; set; }
 }

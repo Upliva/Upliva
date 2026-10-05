@@ -18,7 +18,15 @@ public class BusinessEnquiryController(UplivaDbContext db) : Controller
         var business = await db.Businesses.AsNoTracking().FirstOrDefaultAsync(x => x.Id == businessId, cancellationToken);
         if (business is null) return NotFound();
         var enquiries = await db.BusinessEnquiries.AsNoTracking().Where(x => x.BusinessId == businessId).OrderByDescending(x => x.CreatedAtUtc).ToListAsync(cancellationToken);
+        var callClicks = await db.CallEvents.AsNoTracking().Where(x => x.BusinessId == businessId).OrderByDescending(x => x.CreatedAtUtc).Take(100).ToListAsync(cancellationToken);
+        var defaultWhatsAppTemplate = await db.WhatsAppTemplateConfigurations.AsNoTracking()
+            .Where(x => x.IsActive)
+            .OrderByDescending(x => x.IsDefault)
+            .ThenBy(x => x.Name)
+            .FirstOrDefaultAsync(cancellationToken);
         ViewBag.Business = business;
+        ViewBag.CallClicks = callClicks;
+        ViewBag.DefaultWhatsAppTemplate = defaultWhatsAppTemplate;
         return View(enquiries);
     }
 

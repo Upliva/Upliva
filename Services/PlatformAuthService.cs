@@ -15,9 +15,10 @@ public class PlatformAuthService(
         var normalizedEmail = identifier.ToLowerInvariant();
         var normalizedPhone = BusinessRegistrationInputHelper.NormalizePhone(identifier);
 
+        var phoneVariants = BusinessInputRules.GetWhatsAppVariants(normalizedPhone);
         return await db.PlatformUsers.FirstOrDefaultAsync(
             x => x.Email == normalizedEmail ||
-                 (!string.IsNullOrWhiteSpace(normalizedPhone) && x.PhoneNumber == normalizedPhone), cancellationToken);
+                 (phoneVariants.Count > 0 && phoneVariants.Contains(x.PhoneNumber)), cancellationToken);
     }
 
     public async Task<PlatformUser?> ValidateCredentialsAsync(
@@ -38,6 +39,19 @@ public class PlatformAuthService(
 
         var result = passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password);
         return result == PasswordVerificationResult.Failed ? null : user;
+    }
+
+    public Task<PlatformUser?> FindByIdAsync(int id, CancellationToken cancellationToken = default) =>
+        db.PlatformUsers.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+
+    public bool VerifyPassword(PlatformUser user, string password) =>
+        passwordHasher.VerifyHashedPassword(user, user.PasswordHash, password) != PasswordVerificationResult.Failed;
+
+    public async Task ChangePasswordAsync(PlatformUser user, string newPassword, CancellationToken cancellationToken = default)
+    {
+        user.PasswordHash = passwordHasher.HashPassword(user, newPassword);
+        user.MustChangePassword = false;
+        await db.SaveChangesAsync(cancellationToken);
     }
 
     public async Task<PlatformUser> CreateBusinessOwnerAsync(
@@ -63,4 +77,33 @@ public class PlatformAuthService(
         await db.SaveChangesAsync(cancellationToken);
         return user;
     }
+    public async Task<PlatformUser> CreateBusinessOwnerAsync(
+        Business business,
+        string temporaryPassword,
+        CancellationToken cancellationToken = default)
+    {
+        var phone = BusinessRegistrationInputHelper.NormalizePhone(business.PhoneNumber);
+        if (string.IsNullOrWhiteSpace(phone))
+            throw new InvalidOperationException("A business owner mobile number is required before the owner account can be created.");
+
+        var existing = await db.PlatformUsers.FirstOrDefaultAsync(x => x.PhoneNumber == phone && x.Role == PlatformRoles.BusinessOwner, cancellationToken);
+        if (existing is not null)
+        {
+            if (existing.BusinessId != business.Id)
+                throw new InvalidOperationException("This mobile number is already assigned to another business owner account.");
+            return existing;
+        }
+
+        var user = new PlatformUser
+        {
+            FullName = string.IsNullOrWhiteSpace(business.OwnerName) ? business.Name : business.OwnerName.Trim(),
+            Email = string.IsNullOrWhiteSpace(business.Email) ? BusinessRegistrationInputHelper.BuildInternalEmail(phone) : business.Email.Trim().ToLowerInvariant(),
+            PhoneNumber = phone, Role = PlatformRoles.BusinessOwner, BusinessId = business.Id, IsActive = true, MustChangePassword = true, CreatedAtUtc = DateTime.UtcNow
+        };
+        user.PasswordHash = passwordHasher.HashPassword(user, temporaryPassword);
+        db.PlatformUsers.Add(user);
+        await db.SaveChangesAsync(cancellationToken);
+        return user;
+    }
+
 }

@@ -1,0 +1,389 @@
+@model UplivaAI.Models.PublicCatalogViewModel
+@{
+    ViewData["Title"] = Model.Business.Name;
+    var publicUrl = Url.Action("Catalog", "PublicBusiness", new { slug = Model.Business.Slug }, Context.Request.Scheme) ?? $"/business/{Model.Business.Slug}";
+    var callUrl = $"/business/{Model.Business.Slug}/call";
+    var enquiryUrl = $"/business/{Model.Business.Slug}/enquiry";
+    var greeting = string.IsNullOrWhiteSpace(Model.Business.Tagline)
+        ? $"Welcome to {Model.Business.Name}"
+        : Model.Business.Tagline;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#075e54" />
+    <title>@Model.Business.Name · Upliva</title>
+    <style>
+        :root {
+            --page: #e9edef;
+            --surface: #ffffff;
+            --surface-soft: #f7f9f8;
+            --ink: #17202a;
+            --muted: #66727d;
+            --line: #e3e8eb;
+            --green: #087f70;
+            --green-dark: #075e54;
+            --green-soft: #e6f4f1;
+            --blue: #2563eb;
+            --bubble: #e8f5df;
+            --shadow: 0 18px 50px rgba(20, 38, 42, .10);
+            --radius: 22px;
+        }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            margin: 0;
+            color: var(--ink);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: linear-gradient(180deg, #dfe5e7 0, #eef1f2 280px, #f7f8f8 100%);
+        }
+        button, input, textarea { font: inherit; }
+        a { color: inherit; }
+        .page { min-height: 100vh; padding-bottom: 105px; }
+        .shell { width: min(1180px, calc(100% - 28px)); margin: 0 auto; }
+
+        /* Premium WhatsApp-inspired header without pretending to be WhatsApp. */
+        .topbar {
+            position: sticky; top: 0; z-index: 30;
+            background: rgba(255,255,255,.94);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid rgba(216,224,227,.9);
+        }
+        .topbar-inner { min-height: 76px; display:flex; align-items:center; justify-content:space-between; gap:16px; }
+        .brand { display:flex; align-items:center; gap:12px; min-width:0; text-decoration:none; }
+        .brand-logo, .brand-fallback {
+            width:48px; height:48px; border-radius:15px; flex:0 0 48px;
+            object-fit:cover; background:#edf2f0;
+        }
+        .brand-fallback { display:grid; place-items:center; background:var(--green-dark); color:#fff; font-weight:800; font-size:19px; }
+        .brand-copy { min-width:0; }
+        .brand-copy strong { display:block; font-size:17px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .brand-copy span { display:block; margin-top:2px; color:var(--muted); font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .top-actions { display:flex; gap:8px; }
+        .icon-action, .primary-action {
+            border:1px solid var(--line); background:#fff; color:#1e293b;
+            border-radius:12px; min-height:42px; padding:0 14px; cursor:pointer; text-decoration:none;
+            display:inline-flex; align-items:center; justify-content:center; font-weight:700; font-size:13px;
+        }
+        .primary-action { background:var(--green-dark); border-color:var(--green-dark); color:#fff; }
+        .icon-action:hover { background:#f7faf9; }
+
+        .content { padding:24px 0 36px; }
+        .welcome {
+            display:grid; grid-template-columns:minmax(0, 1.35fr) minmax(280px, .65fr); gap:18px; align-items:stretch;
+            margin-bottom:18px;
+        }
+        .welcome-card {
+            background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden;
+        }
+        .banner { width:100%; height:230px; object-fit:cover; display:block; background:#edf1ef; }
+        .welcome-copy { padding:22px 24px 24px; }
+        .eyebrow { color:var(--green-dark); text-transform:uppercase; letter-spacing:.11em; font-size:11px; font-weight:800; }
+        .welcome-copy h1 { margin:7px 0 8px; font-size:clamp(25px, 3vw, 36px); line-height:1.12; letter-spacing:-.03em; }
+        .welcome-copy p { margin:0; color:var(--muted); line-height:1.65; max-width:760px; }
+        .welcome-actions { display:flex; gap:9px; flex-wrap:wrap; margin-top:17px; }
+        .business-note { padding:22px; background:linear-gradient(145deg,#075e54,#0a8b7b); color:#fff; display:flex; flex-direction:column; justify-content:space-between; min-height:100%; }
+        .business-note .mini { opacity:.76; font-size:11px; text-transform:uppercase; letter-spacing:.12em; font-weight:800; }
+        .business-note h2 { margin:8px 0; font-size:23px; }
+        .business-note p { margin:0; color:rgba(255,255,255,.82); line-height:1.55; font-size:13px; }
+        .status-pill { display:inline-flex; align-items:center; gap:7px; margin-top:22px; font-size:12px; font-weight:700; }
+        .status-dot { width:8px; height:8px; border-radius:50%; background:#a7f3d0; box-shadow:0 0 0 4px rgba(167,243,208,.15); }
+
+        .chat-strip {
+            display:flex; align-items:flex-start; gap:10px; margin:0 0 18px; padding:16px 18px;
+            background:var(--bubble); border:1px solid #d7ead0; border-radius:18px 18px 18px 5px; box-shadow:0 8px 25px rgba(45,65,49,.05);
+        }
+        .chat-avatar { width:34px; height:34px; border-radius:11px; background:var(--green-dark); color:#fff; display:grid; place-items:center; font-size:13px; font-weight:800; flex:0 0 34px; }
+        .chat-strip strong { display:block; font-size:13px; margin-bottom:3px; }
+        .chat-strip span { color:#51605a; font-size:13px; line-height:1.5; }
+
+        .catalog-head { display:flex; align-items:end; justify-content:space-between; gap:14px; margin:22px 0 12px; }
+        .catalog-head h2 { margin:0; font-size:22px; letter-spacing:-.02em; }
+        .catalog-head p { margin:4px 0 0; color:var(--muted); font-size:13px; }
+        .catalog-count { color:var(--muted); font-size:12px; white-space:nowrap; }
+
+        .toolbar { display:flex; gap:9px; margin-bottom:10px; }
+        .search-wrap { position:relative; flex:1; }
+        .search-wrap span { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#77838c; pointer-events:none; }
+        .search { width:100%; height:48px; padding:0 15px 0 40px; border:1px solid var(--line); border-radius:15px; background:#fff; outline:none; box-shadow:0 6px 18px rgba(25,45,50,.04); }
+        .search:focus { border-color:#9bcfc7; box-shadow:0 0 0 4px rgba(8,127,112,.08); }
+        .search-button { min-width:92px; height:48px; border:0; border-radius:15px; background:var(--green-dark); color:#fff; font-weight:800; cursor:pointer; }
+        .chips { display:flex; gap:8px; overflow:auto; padding:2px 0 6px; scrollbar-width:none; }
+        .chips::-webkit-scrollbar { display:none; }
+        .chip { white-space:nowrap; border:1px solid var(--line); border-radius:999px; padding:8px 14px; background:#fff; text-decoration:none; color:#45525b; font-size:12px; font-weight:700; }
+        .chip.active { background:var(--green-soft); border-color:#bfe2dc; color:var(--green-dark); }
+
+        .offer-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; margin:15px 0 20px; }
+        .offer { display:flex; gap:12px; align-items:center; padding:13px; border:1px solid #dcebe2; border-radius:16px; background:#fbfffc; }
+        .offer img { width:62px; height:62px; border-radius:12px; object-fit:cover; background:#eef2f0; flex:0 0 62px; }
+        .offer h3 { margin:0 0 4px; font-size:13px; }
+        .offer p { margin:0; color:var(--muted); font-size:12px; line-height:1.4; }
+        .offer strong { display:block; margin-top:5px; color:var(--green-dark); font-size:12px; }
+
+        .grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; }
+        .product {
+            background:#fff; border:1px solid var(--line); border-radius:18px; overflow:hidden; box-shadow:0 8px 26px rgba(27,46,51,.055);
+            transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+        }
+        .product:hover { transform:translateY(-3px); box-shadow:0 16px 34px rgba(27,46,51,.10); border-color:#cbdad6; }
+        .product-media { position:relative; aspect-ratio:1/0.86; background:#edf1ef; overflow:hidden; }
+        .product-media img { width:100%; height:100%; object-fit:cover; display:block; }
+        .product-badge { position:absolute; top:10px; left:10px; background:rgba(255,255,255,.94); border:1px solid rgba(255,255,255,.8); border-radius:999px; padding:5px 9px; font-size:10px; font-weight:800; color:#43505a; backdrop-filter:blur(6px); }
+        .product-body { padding:14px; }
+        .product-category { color:var(--green-dark); text-transform:uppercase; letter-spacing:.08em; font-size:9px; font-weight:800; }
+        .product h3 { margin:5px 0 5px; font-size:15px; line-height:1.3; }
+        .product-description { color:var(--muted); font-size:12px; line-height:1.55; min-height:38px; }
+        .price { margin:10px 0 12px; font-size:17px; font-weight:850; letter-spacing:-.02em; }
+        .product-actions { display:flex; gap:7px; }
+        .product-actions button { flex:1; min-height:40px; border-radius:11px; border:1px solid var(--line); background:#fff; color:#334155; cursor:pointer; font-size:12px; font-weight:800; }
+        .product-actions .ask { background:var(--green-dark); color:#fff; border-color:var(--green-dark); }
+        .product-actions button:hover { filter:brightness(.98); }
+
+        .empty { padding:60px 20px; text-align:center; color:var(--muted); background:#fff; border:1px dashed #ccd7d5; border-radius:18px; grid-column:1/-1; }
+        .footer { margin-top:34px; padding:25px 0 5px; border-top:1px solid var(--line); color:var(--muted); display:flex; justify-content:space-between; gap:15px; flex-wrap:wrap; font-size:11px; }
+
+        .bottom-bar { position:fixed; left:0; right:0; bottom:0; z-index:40; padding:10px 14px; background:rgba(255,255,255,.94); border-top:1px solid rgba(216,224,227,.95); backdrop-filter:blur(18px); }
+        .bottom-inner { width:min(760px,100%); margin:0 auto; display:flex; gap:9px; }
+        .bottom-input { flex:1; height:48px; border:1px solid var(--line); border-radius:999px; background:#f5f7f7; padding:0 17px; color:#7a858d; display:flex; align-items:center; font-size:13px; }
+        .bottom-button { height:48px; border:0; border-radius:999px; padding:0 18px; background:var(--green-dark); color:#fff; font-weight:800; cursor:pointer; }
+        .bottom-call { height:48px; width:48px; border:1px solid var(--line); border-radius:50%; background:#fff; cursor:pointer; }
+
+        .modal { position:fixed; inset:0; z-index:100; display:none; place-items:center; padding:18px; background:rgba(12,25,28,.48); backdrop-filter:blur(5px); }
+        .modal.open { display:grid; }
+        .modal-card { width:min(520px,100%); max-height:calc(100vh - 36px); overflow:auto; background:#fff; border-radius:22px; box-shadow:0 30px 80px rgba(0,0,0,.25); }
+        .modal-top { display:flex; justify-content:space-between; align-items:center; gap:10px; padding:17px 18px; border-bottom:1px solid var(--line); }
+        .modal-top h3 { margin:0; font-size:17px; }
+        .close { width:36px; height:36px; border:0; border-radius:50%; background:#f1f4f4; cursor:pointer; font-size:20px; }
+        .modal-product { display:grid; grid-template-columns:140px 1fr; gap:16px; padding:18px; }
+        .modal-product img { width:140px; height:140px; object-fit:cover; border-radius:15px; background:#edf1ef; }
+        .modal-product h4 { margin:0 0 7px; font-size:19px; }
+        .modal-product p { margin:0; color:var(--muted); line-height:1.55; font-size:13px; }
+        .modal-price { margin-top:10px; font-size:18px; font-weight:850; }
+        .enquiry-form { padding:0 18px 18px; display:grid; gap:10px; }
+        .enquiry-form input, .enquiry-form textarea { width:100%; border:1px solid var(--line); border-radius:12px; padding:12px 13px; outline:none; }
+        .enquiry-form textarea { min-height:90px; resize:vertical; }
+        .enquiry-form input:focus, .enquiry-form textarea:focus { border-color:#9bcfc7; box-shadow:0 0 0 4px rgba(8,127,112,.08); }
+        .hidden-honeypot { position:absolute; left:-9999px; width:1px; height:1px; opacity:0; }
+        .success { margin:14px 0; padding:12px 14px; border-radius:13px; background:#eaf7ed; border:1px solid #ccebd3; color:#1f6b35; font-size:13px; }
+
+        @@media (max-width: 980px) { .grid { grid-template-columns:repeat(3,minmax(0,1fr)); } .welcome { grid-template-columns:1fr; } .business-note { min-height:170px; } }
+        @@media (max-width: 700px) { .shell { width:min(100% - 18px, 620px); } .topbar-inner { min-height:68px; } .brand-logo,.brand-fallback { width:42px; height:42px; flex-basis:42px; border-radius:13px; } .top-actions .icon-action { display:none; } .content { padding-top:14px; } .banner { height:180px; } .welcome-copy { padding:18px; } .grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; } .product-body { padding:11px; } .product-description { min-height:52px; } .product-actions { flex-direction:column; } .toolbar { gap:7px; } .search-button { min-width:72px; } .modal-product { grid-template-columns:100px 1fr; } .modal-product img { width:100px; height:100px; } }
+        @@media (max-width: 430px) { .brand-copy span { max-width:190px; } .welcome-actions .primary-action { flex:1; } .welcome-actions .icon-action { flex:1; } .grid { grid-template-columns:1fr 1fr; } .product-media { aspect-ratio:1/0.92; } .bottom-button { padding:0 14px; } }
+    </style>
+</head>
+<body>
+<div class="page">
+    <header class="topbar">
+        <div class="shell topbar-inner">
+            <a class="brand" href="@publicUrl" aria-label="@Model.Business.Name">
+                @if (!string.IsNullOrWhiteSpace(Model.Business.LogoUrl))
+                {
+                    <img class="brand-logo" src="@Model.Business.LogoUrl" alt="@Model.Business.Name" />
+                }
+                else
+                {
+                    <div class="brand-fallback">@Model.Business.Name[..Math.Min(1, Model.Business.Name.Length)].ToUpperInvariant()</div>
+                }
+                <div class="brand-copy">
+                    <strong>@Model.Business.Name</strong>
+                    <span>@Model.Business.BusinessType · Powered by Upliva</span>
+                </div>
+            </a>
+            <div class="top-actions">
+                <a class="icon-action" href="#catalog">Browse</a>
+                <a class="primary-action" href="#enquiry">Message business</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="shell content">
+        <section class="welcome">
+            <article class="welcome-card">
+                @if (!string.IsNullOrWhiteSpace(Model.Business.BannerBlobName))
+                {
+                    <img class="banner" src="/media/@Model.Business.BannerBlobName" alt="@Model.Business.Name" />
+                }
+                <div class="welcome-copy">
+                    <div class="eyebrow">Business storefront</div>
+                    <h1>@greeting</h1>
+                    <p>@(string.IsNullOrWhiteSpace(Model.Business.Description) ? "Browse products, ask a question, or connect with the business directly." : Model.Business.Description)</p>
+                    <div class="welcome-actions">
+                        <a class="primary-action" href="#catalog">Explore catalog</a>
+                        <form method="post" action="@callUrl" style="margin:0">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="source" value="BusinessHeader" />
+                            <button class="icon-action" type="submit">☎ Call business</button>
+                        </form>
+                    </div>
+                </div>
+            </article>
+            <aside class="welcome-card business-note">
+                <div>
+                    <div class="mini">A simple way to shop</div>
+                    <h2>Browse → Ask → Connect</h2>
+                    <p>Everything you need is on this page. Choose a product and send an enquiry without leaving the conversation.</p>
+                </div>
+                <div class="status-pill"><span class="status-dot"></span>Business profile available</div>
+            </aside>
+        </section>
+
+        <div class="chat-strip">
+            <div class="chat-avatar">@Model.Business.Name[..Math.Min(1, Model.Business.Name.Length)].ToUpperInvariant()</div>
+            <div><strong>@Model.Business.Name</strong><span>Hi 👋 @greeting. Take a look around and message us if you'd like details, pricing, or availability.</span></div>
+        </div>
+
+        @if (TempData["PublicEnquirySuccess"] is string success)
+        {
+            <div class="success">@success</div>
+        }
+
+        <section id="catalog">
+            <div class="catalog-head">
+                <div><h2>Catalog</h2><p>Products and services shared by the business.</p></div>
+                <div class="catalog-count">@Model.Products.Count item@(Model.Products.Count == 1 ? "" : "s")</div>
+            </div>
+
+            <form class="toolbar" method="get" action="@publicUrl">
+                <div class="search-wrap"><span>⌕</span><input class="search" name="search" value="@Model.Search" placeholder="Search products or services" /></div>
+                <input type="hidden" name="category" value="@Model.Category" />
+                <button class="search-button" type="submit">Search</button>
+            </form>
+
+            <nav class="chips" aria-label="Categories">
+                <a class="chip @(string.IsNullOrWhiteSpace(Model.Category) ? "active" : "")" href="@publicUrl">All</a>
+                @foreach (var category in Model.Categories)
+                {
+                    <a class="chip @(string.Equals(category, Model.Category, StringComparison.OrdinalIgnoreCase) ? "active" : "")" href="@publicUrl?category=@Uri.EscapeDataString(category)">@category</a>
+                }
+            </nav>
+
+            @if (Model.Offers.Count > 0)
+            {
+                <div class="offer-row">
+                    @foreach (var offer in Model.Offers)
+                    {
+                        <article class="offer">
+                            @if (!string.IsNullOrWhiteSpace(offer.ImageUrl)) { <img src="@offer.ImageUrl" loading="lazy" alt="@offer.Title" /> }
+                            <div><h3>@offer.Title</h3><p>@offer.Description</p><strong>@offer.DiscountText</strong></div>
+                        </article>
+                    }
+                </div>
+            }
+
+            <div class="grid">
+                @if (!Model.Products.Any())
+                {
+                    <div class="empty">No products or services found. Try another search or category.</div>
+                }
+                @foreach (var item in Model.Products)
+                {
+                    <article class="product">
+                        <div class="product-media">
+                            @if (!string.IsNullOrWhiteSpace(item.ImageUrl))
+                            {
+                                <img src="@item.ImageUrl" loading="lazy" alt="@item.Name" />
+                            }
+                            else
+                            {
+                                <div style="height:100%;display:grid;place-items:center;color:#748087;font-size:12px">No image</div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(item.Category)) { <span class="product-badge">@item.Category</span> }
+                        </div>
+                        <div class="product-body">
+                            @if (!string.IsNullOrWhiteSpace(item.Category)) { <div class="product-category">@item.Category</div> }
+                            <h3>@item.Name</h3>
+                            <div class="product-description">@item.ShortDescription</div>
+                            <div class="price">@item.PriceText</div>
+                            <div class="product-actions">
+                                <button type="button" class="ask" data-id="@item.Id" data-name="@item.Name" data-description="@item.Description" data-price="@item.PriceText" data-image="@item.ImageUrl">Ask about it</button>
+                                <form method="post" action="@callUrl" style="margin:0;flex:1">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="catalogItemId" value="@item.Id" />
+                                    <input type="hidden" name="source" value="ProductCard" />
+                                    <button class="icon-action" style="width:100%;height:40px" type="submit">Call</button>
+                                </form>
+                            </div>
+                        </div>
+                    </article>
+                }
+            </div>
+        </section>
+
+        <footer class="footer">
+            <span>@Model.Business.Name · Business storefront</span>
+            <span>Powered by Upliva</span>
+        </footer>
+    </main>
+</div>
+
+<div class="bottom-bar" id="enquiry">
+    <div class="bottom-inner">
+        <div class="bottom-input">💬 Ask about a product or service…</div>
+        <button class="bottom-button" type="button" id="openGeneral">Message business</button>
+    </div>
+</div>
+
+<div class="modal" id="enquiryModal" aria-hidden="true">
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-top"><h3 id="modalTitle">Message @Model.Business.Name</h3><button class="close" type="button" id="closeModal" aria-label="Close">×</button></div>
+        <div class="modal-product" id="productPreview" style="display:none">
+            <img id="productImage" src="" alt="" />
+            <div><h4 id="productName"></h4><p id="productDescription"></p><div class="modal-price" id="productPrice"></div></div>
+        </div>
+        <form method="post" action="@enquiryUrl" class="enquiry-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="CatalogItemId" id="modalCatalogItemId" />
+            <input class="hidden-honeypot" type="text" name="Website" tabindex="-1" autocomplete="off" aria-hidden="true" />
+            <input name="Name" required maxlength="150" placeholder="Your name" />
+            <input name="PhoneNumber" required maxlength="30" placeholder="Mobile number" />
+            <input name="Email" type="email" maxlength="200" placeholder="Email (optional)" />
+            <textarea name="Message" required maxlength="2000" id="messageText" placeholder="What would you like to know?"></textarea>
+            <button class="primary-action" style="min-height:46px;border:0;cursor:pointer" type="submit">Send enquiry</button>
+        </form>
+    </div>
+</div>
+
+<script>
+(function () {
+    const modal = document.getElementById('enquiryModal');
+    const preview = document.getElementById('productPreview');
+    const itemId = document.getElementById('modalCatalogItemId');
+    const itemName = document.getElementById('productName');
+    const itemDescription = document.getElementById('productDescription');
+    const itemPrice = document.getElementById('productPrice');
+    const itemImage = document.getElementById('productImage');
+    const message = document.getElementById('messageText');
+
+    function openModal(data) {
+        itemId.value = data.id || '';
+        if (data.id) {
+            preview.style.display = 'grid';
+            itemName.textContent = data.name || '';
+            itemDescription.textContent = data.description || 'Tell the business what you would like to know.';
+            itemPrice.textContent = data.price || '';
+            if (data.image) { itemImage.src = data.image; itemImage.alt = data.name || ''; itemImage.style.display = 'block'; }
+            else { itemImage.removeAttribute('src'); itemImage.style.display = 'none'; }
+            message.value = 'Hi, I am interested in ' + (data.name || 'this product') + '. Please share more details.';
+        } else {
+            preview.style.display = 'none';
+            message.value = '';
+        }
+        modal.classList.add('open');
+        modal.setAttribute('aria-hidden', 'false');
+        setTimeout(() => document.querySelector('#enquiryModal input[name="Name"]')?.focus(), 80);
+    }
+    function closeModal() { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); }
+
+    document.querySelectorAll('.ask').forEach(btn => btn.addEventListener('click', () => openModal({
+        id: btn.dataset.id, name: btn.dataset.name, description: btn.dataset.description, price: btn.dataset.price, image: btn.dataset.image
+    })));
+    document.getElementById('openGeneral')?.addEventListener('click', () => openModal({}));
+    document.getElementById('closeModal')?.addEventListener('click', closeModal);
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+})();
+</script>
+</body>
+</html>

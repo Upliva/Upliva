@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace UplivaAI.Models;
 
@@ -36,8 +37,11 @@ public class BusinessCatalogItemViewModel
 
     [MaxLength(500)]
     [Url]
-    [Display(Name = "Product image URL")]
+    [Display(Name = "Product image URL (optional)")]
     public string? ImageUrl { get; set; }
+
+    [Display(Name = "Upload product image")]
+    public IFormFile? ImageFile { get; set; }
 
     [MaxLength(300)]
     [Display(Name = "Short description")]

@@ -70,7 +70,8 @@ public class BusinessRegistrationController(
                 model.WhatsAppNumber ?? string.Empty,
                 visitorId,
                 "BusinessRegistration",
-                cancellationToken);
+                cancellationToken,
+                model.Email);
 
             return RedirectToAction(nameof(Success));
         }

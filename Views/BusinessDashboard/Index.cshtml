@@ -10,7 +10,12 @@
             </div>
             <div class="admin-head-actions workspace-actions">
                 <a class="workspace-btn workspace-btn-primary" asp-controller="BusinessContent" asp-action="Index">Catalog</a>
-                <a class="workspace-btn workspace-btn-secondary" asp-controller="AdminBusinessIntegration" asp-action="Manage" asp-route-id="@Model.Id">WhatsApp setup</a>
+                <a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessManagement" asp-action="Edit" asp-route-id="@Model.Id">Business profile</a>
+                <a class="workspace-btn workspace-btn-secondary" href="/business/@Model.Slug" target="_blank">Public page</a>
+                @if (User.IsInRole(PlatformRoles.Admin))
+                {
+                    <a class="workspace-btn workspace-btn-secondary" asp-controller="AdminBusinessIntegration" asp-action="Manage" asp-route-id="@Model.Id">WhatsApp setup</a>
+                }
                 <a class="workspace-btn" asp-controller="BusinessEnquiry" asp-action="Index">Enquiries</a>
                 <a class="workspace-btn" asp-controller="BusinessFollowUp" asp-action="Index">Follow-ups</a>
             </div>

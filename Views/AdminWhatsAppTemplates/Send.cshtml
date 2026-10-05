@@ -1,0 +1,139 @@
+@model UplivaAI.Models.WhatsAppTemplateSendViewModel
+@using UplivaAI.Models
+@{
+    ViewData["Title"] = "Send WhatsApp Template";
+    Layout = "_AdminLayout";
+    var businesses = (IReadOnlyList<Business>)(ViewBag.Businesses ?? new List<Business>());
+    var template = (WhatsAppTemplateConfiguration)ViewBag.Template;
+}
+
+<section class="admin-page">
+    <div class="container admin-wide">
+        <div class="admin-head">
+            <div>
+                <span class="platform-kicker dark">WHATSAPP SEND</span>
+                <h1>Send @template.Name</h1>
+                <p>Enter the customer's WhatsApp number and the approved template values. UplivaAI sends the message server-side through Gupshup.</p>
+            </div>
+            <a class="workspace-btn workspace-btn-secondary" asp-action="Index">← Back to templates</a>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(Model.Result))
+        {
+            <div class="admin-note-card @(Model.Success ? "" : "validation")" style="margin-bottom:24px">
+                <strong>@(Model.Success ? "Message submitted" : "Message not sent")</strong>
+                <span>@Model.Result</span>
+            </div>
+        }
+
+        <div class="ws-grid-2" style="display:grid;grid-template-columns:minmax(0,1.05fr) minmax(320px,.95fr);gap:24px;align-items:start">
+            <div class="booking-form-card">
+                <form asp-action="Send" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="TemplateId" />
+                    <div asp-validation-summary="ModelOnly" class="validation"></div>
+
+                    <div class="field">
+                        <label asp-for="BusinessId"></label>
+                        <select asp-for="BusinessId">
+                            <option value="">Select business</option>
+                            @foreach (var business in businesses)
+                            {
+                                <option value="@business.Id">@business.Name</option>
+                            }
+                        </select>
+                        <span class="field-hint">The business is used for message history and isolation.</span>
+                    </div>
+
+                    <div class="field">
+                        <label asp-for="Destination"></label>
+                        <input asp-for="Destination" placeholder="919798555992" inputmode="numeric" autocomplete="tel" />
+                        <span class="field-hint">Use country code, without spaces. Example: 919798555992.</span>
+                        <span asp-validation-for="Destination"></span>
+                    </div>
+
+                    @if (Model.Parameters.Count == 0)
+                    {
+                        <div class="admin-note-card" style="margin:18px 0">
+                            <strong>No body variables</strong>
+                            <span>This template does not require parameter values.</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <h3 style="margin:24px 0 12px">Template values</h3>
+                        @for (var i = 0; i < Model.Parameters.Count; i++)
+                        {
+                            <div class="field">
+                                <label>@Model.Parameters[i].Name</label>
+                                <input asp-for="Parameters[i].Value" placeholder="Enter @Model.Parameters[i].Name" />
+                                <input type="hidden" asp-for="Parameters[i].Name" />
+                            </div>
+                        }
+                    }
+
+                    <div class="ws-form-actions">
+                        <button class="platform-btn platform-btn-primary" type="submit">📤 Send WhatsApp template</button>
+                        <a class="workspace-btn workspace-btn-secondary" asp-action="Index">Cancel</a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="booking-form-card" style="position:sticky;top:24px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                    <div>
+                        <span class="platform-kicker dark">PREVIEW</span>
+                        <h2 style="margin:4px 0 0">WhatsApp</h2>
+                    </div>
+                    <span class="status-badge">Gupshup</span>
+                </div>
+
+                <div style="background:#efe9df;border-radius:18px;padding:24px 16px;min-height:360px;background-image:radial-gradient(#ddd5c7 1px,transparent 1px);background-size:12px 12px">
+                    <div style="max-width:330px;margin:30px auto 0;background:#fff;border-radius:18px;padding:16px;box-shadow:0 5px 20px rgba(0,0,0,.08)">
+                        <strong style="display:block;margin-bottom:12px">@template.Name</strong>
+                        <div id="templatePreview" style="white-space:pre-wrap;line-height:1.45;color:#1f2937">@template.BodyText</div>
+                        @if (!string.IsNullOrWhiteSpace(template.ButtonText))
+                        {
+                            <div style="border-top:1px solid #e5e7eb;margin-top:16px;padding-top:12px;text-align:center;color:#168aad;font-weight:600">↗ @template.ButtonText</div>
+                        }
+                    </div>
+                </div>
+
+                <div style="margin-top:16px;padding:14px 16px;background:#f7f5ef;border-radius:12px;font-size:13px;color:#687872">
+                    <strong>Gupshup template ID</strong>
+                    <div style="margin-top:4px;word-break:break-all">@template.ProviderTemplateName</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            const preview = document.getElementById('templatePreview');
+            if (!preview) return;
+            const original = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TemplateBody));
+            const valueInputs = Array.from(document.querySelectorAll('input[name^="Parameters["][name$="].Value"]'));
+
+            function render() {
+                let text = original;
+                valueInputs.forEach(function (input) {
+                    const match = input.name.match(/Parameters\[(\d+)\]/);
+                    if (!match) return;
+                    const index = Number(match[1]);
+                    const nameInput = document.querySelector('input[name="Parameters[' + index + '].Name"]');
+                    const key = nameInput ? nameInput.value : '';
+                    if (!key) return;
+                    const token = '{{' + key + '}}';
+                    text = text.split(token).join(input.value || token);
+                });
+                preview.textContent = text;
+            }
+
+            valueInputs.forEach(function (input) { input.addEventListener('input', render); });
+            render();
+        })();
+    </script>
+}

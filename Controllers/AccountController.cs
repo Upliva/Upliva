@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using UplivaAI.Models;
 using UplivaAI.Services;
 
@@ -39,18 +40,19 @@ public class AccountController(IPlatformAuthService authService) : Controller
     [AllowAnonymous]
     [HttpPost("/login")]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting("login")]
     public async Task<IActionResult> LoginPost(LoginViewModel model, CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
         {
-            TempData["LoginError"] = "Please enter your email or WhatsApp number and password.";
+            TempData["LoginError"] = "Please enter your User ID / mobile number and password.";
             return RedirectToAction("Index", "Home", new { login = 1, returnUrl = model.ReturnUrl });
         }
 
         var user = await authService.ValidateCredentialsAsync(model.Email, model.Password, cancellationToken);
         if (user is null)
         {
-            TempData["LoginError"] = "Invalid email/WhatsApp number or password.";
+            TempData["LoginError"] = "Invalid User ID / mobile number or password.";
             return RedirectToAction("Index", "Home", new { login = 1, returnUrl = model.ReturnUrl });
         }
 
@@ -59,7 +61,8 @@ public class AccountController(IPlatformAuthService authService) : Controller
             new(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new(ClaimTypes.Name, user.FullName),
             new(ClaimTypes.Email, user.Email),
-            new(ClaimTypes.Role, user.Role)
+            new(ClaimTypes.Role, user.Role),
+            new("MustChangePassword", user.MustChangePassword ? "true" : "false")
         };
 
         if (user.BusinessId.HasValue)
@@ -78,12 +81,49 @@ public class AccountController(IPlatformAuthService authService) : Controller
                 ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
             });
 
+        if (user.Role == PlatformRoles.BusinessOwner && user.MustChangePassword)
+            return RedirectToAction(nameof(ChangePassword));
+
         if (!string.IsNullOrWhiteSpace(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
             return Redirect(model.ReturnUrl);
 
         return user.Role == PlatformRoles.Admin
             ? RedirectToAction("Index", "AdminDashboard")
             : RedirectToAction("Index", "BusinessDashboard");
+    }
+
+    [Authorize]
+    [HttpGet("/account/change-password")]
+    public IActionResult ChangePassword() => View(new ChangePasswordViewModel());
+
+    [Authorize]
+    [HttpPost("/account/change-password")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid) return View(model);
+        if (!int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)) return Forbid();
+
+        var user = await authService.FindByIdAsync(userId, cancellationToken);
+        if (user is null || !user.IsActive) return Forbid();
+        if (!authService.VerifyPassword(user, model.CurrentPassword))
+        {
+            ModelState.AddModelError(nameof(model.CurrentPassword), "Current password is incorrect.");
+            return View(model);
+        }
+
+        await authService.ChangePasswordAsync(user, model.NewPassword, cancellationToken);
+        var identity = User.Identity as ClaimsIdentity;
+        var passwordClaim = identity?.FindFirst("MustChangePassword");
+        if (identity is not null && passwordClaim is not null)
+        {
+            identity.RemoveClaim(passwordClaim);
+            identity.AddClaim(new Claim("MustChangePassword", "false"));
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
+        }
+        TempData["ToastType"] = "success";
+        TempData["ToastMessage"] = "Your password was changed successfully.";
+        return RedirectToAction("Index", "BusinessDashboard");
     }
 
     [HttpPost("/Account/Logout")]
