@@ -123,25 +123,30 @@ public class PublicBusinessController(
         var business = await db.Businesses.FirstOrDefaultAsync(x => x.Slug == slug && x.Status == BusinessStatuses.Approved, cancellationToken);
         if (business is null) return NotFound();
 
-        // Honeypot: legitimate browsers never fill this hidden field.
-        if (!string.IsNullOrWhiteSpace(model.Website))
-            return RedirectToAction(nameof(Catalog), new { slug });
-
         model.Name = model.Name?.Trim() ?? string.Empty;
         model.PhoneNumber = new string((model.PhoneNumber ?? string.Empty).Where(char.IsDigit).ToArray());
         model.Email = model.Email?.Trim() ?? string.Empty;
         model.Message = model.Message?.Trim() ?? string.Empty;
 
+        if (string.IsNullOrWhiteSpace(model.Name))
+            ModelState.AddModelError(nameof(model.Name), "Please enter your name.");
         if (model.PhoneNumber.Length < 10 || model.PhoneNumber.Length > 15)
             ModelState.AddModelError(nameof(model.PhoneNumber), "Enter a valid mobile number.");
         if (model.Message.Length < 3)
             ModelState.AddModelError(nameof(model.Message), "Please enter a short message.");
 
-        if (model.CatalogItemId.HasValue && !await db.BusinessCatalogItems.AnyAsync(x => x.Id == model.CatalogItemId.Value && x.BusinessId == business.Id && x.IsActive, cancellationToken))
-            model.CatalogItemId = null;
+        if (model.CatalogItemId.HasValue && !await db.BusinessCatalogItems.AnyAsync(
+                x => x.Id == model.CatalogItemId.Value && x.BusinessId == business.Id && x.IsActive,
+                cancellationToken))
+        {
+            ModelState.AddModelError(nameof(model.CatalogItemId), "The selected product is no longer available. Please select the product again.");
+        }
 
         if (!ModelState.IsValid)
-            return RedirectToAction(nameof(Catalog), new { slug, search = string.Empty, category = string.Empty, enquiryError = true });
+        {
+            TempData["PublicEnquiryError"] = "We couldn't submit your enquiry. Please check your name, phone number, email and message, then try again.";
+            return RedirectToAction(nameof(Catalog), new { slug });
+        }
 
         var enquiry = new BusinessEnquiry
         {
@@ -171,7 +176,7 @@ public class PublicBusinessController(
         stopwatch.Stop();
         await integrationLogService.WriteAsync(business.Id, "Upliva", "BusinessEnquiry", "Success", correlationId, stopwatch.ElapsedMilliseconds, cancellationToken: cancellationToken);
 
-        TempData["PublicEnquirySuccess"] = "Thanks! Your enquiry has been sent to the business.";
+        TempData["PublicEnquirySuccess"] = "Thank you! Your enquiry has been submitted successfully. The business can now review your request and contact you.";
         return RedirectToAction(nameof(Catalog), new { slug });
     }
 

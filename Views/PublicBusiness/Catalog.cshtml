@@ -77,7 +77,11 @@
 
             @if (TempData["PublicEnquirySuccess"] is string success)
             {
-                <div class="success-message" role="status">✓ @success</div>
+                <div class="success-message" role="status" aria-live="polite">✓ @success</div>
+            }
+            @if (TempData["PublicEnquiryError"] is string enquiryError)
+            {
+                <div class="enquiry-error-message" role="alert" aria-live="assertive">⚠ @enquiryError</div>
             }
 
             <nav class="category-scroller" aria-label="Product categories">
@@ -258,12 +262,12 @@
             <form method="post" action="/business/@Model.Business.Slug/enquiry" class="enquiry-form">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="CatalogItemId" id="catalogItemId" />
-                <input type="text" name="Website" tabindex="-1" autocomplete="off" class="honeypot" aria-hidden="true" />
                 <label>Your Name<input name="Name" required maxlength="150" placeholder="Enter your name" /></label>
                 <label>Your Phone Number<input name="PhoneNumber" required maxlength="30" inputmode="tel" placeholder="Enter your phone number" /></label>
                 <label>Email <span>(optional)</span><input name="Email" type="email" maxlength="200" placeholder="Enter your email" /></label>
                 <label>Your Message<textarea name="Message" required maxlength="2000" rows="4">Hi, I am interested in this product. Please share more details.</textarea></label>
-                <button class="whatsapp-button enquiry-submit" type="submit">💬 Send Enquiry</button>
+                <button class="whatsapp-button enquiry-submit" type="submit">💬 Submit Enquiry</button>
+                <p class="enquiry-privacy-note">Your details will be shared with this business only to respond to your enquiry.</p>
             </form>
         </section>
     </div>

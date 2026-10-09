@@ -171,3 +171,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
     .composer-input { font-size: 12px; }
     .modal-product-image { height: 220px; }
 }
+
+/* Public enquiry submission feedback */
+.success-message, .enquiry-error-message { margin: 14px 0; padding: 12px 14px; border-radius: 12px; font-weight: 600; line-height: 1.45; }
+.success-message { background: #e8f7ee; border: 1px solid #a8dfbd; color: #14532d; }
+.enquiry-error-message { background: #fff4e5; border: 1px solid #f1c27d; color: #7c2d12; }
+.enquiry-privacy-note { margin: 4px 0 0; font-size: .82rem; color: #64748b; }

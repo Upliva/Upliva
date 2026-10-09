@@ -22,3 +22,19 @@ public class PublicEnquiryViewModel
     public string Slug { get; set; } = string.Empty;
     [MaxLength(200)] public string? Website { get; set; }
 }
+
+public class BusinessEnquiryListItemViewModel
+{
+    public int Id { get; set; }
+    public int BusinessId { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string PhoneNumber { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+    public string Status { get; set; } = "New";
+    public string Source { get; set; } = string.Empty;
+    public int? CatalogItemId { get; set; }
+    public string ProductName { get; set; } = string.Empty;
+    public string ProductCategory { get; set; } = string.Empty;
+    public DateTime CreatedAtUtc { get; set; }
+}

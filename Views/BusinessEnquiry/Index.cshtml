@@ -1,14 +1,31 @@
-@model List<BusinessEnquiry>
-@{ var business=(Business)ViewBag.Business; var defaultWhatsAppTemplate=(WhatsAppTemplateConfiguration?)ViewBag.DefaultWhatsAppTemplate; ViewData["Title"]="Business Enquiries"; Layout="_AdminLayout"; }
-<section class="admin-page"><div class="container admin-wide">
-<div class="admin-head"><div><span class="platform-kicker dark">BUSINESS ENQUIRIES</span><h1>@business.Name</h1><p>Review customer enquiries captured through the WhatsApp workflow and create follow-up actions.</p></div><div class="workspace-actions"><a class="workspace-btn workspace-btn-primary" asp-controller="BusinessFollowUp" asp-action="Index" asp-route-id="@business.Id">Follow-ups</a><a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessContent" asp-action="Index" asp-route-id="@business.Id">Catalog</a></div></div>
-<div class="admin-note-card ws-mt-0 ws-mb-24"><strong>Call clicks: @(((IReadOnlyCollection<CallEvent>)ViewBag.CallClicks).Count)</strong><span>These are tap-to-call events recorded by Upliva. They do not prove that a call connected.</span></div><div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Customer</th><th>Phone</th><th>Message</th><th>Source</th><th>Status</th><th>Created</th><th>Action</th></tr></thead><tbody>
-@if(!Model.Any()){<tr><td colspan="7" class="admin-empty-cell">No enquiries yet. They appear here as customers message you on WhatsApp.</td></tr>}
-@foreach(var item in Model){<tr><td><strong>@item.Name</strong>@if(!string.IsNullOrWhiteSpace(item.Email)){<small>@item.Email</small>}</td><td>@item.PhoneNumber</td><td class="ws-pre">@item.Message</td><td>@item.Source</td><td><span class="status-badge">@item.Status</span></td><td>@item.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</td><td>
-@if (defaultWhatsAppTemplate is not null && User.IsInRole(PlatformRoles.Admin))
-{
-    <a class="workspace-btn workspace-btn-primary" asp-controller="AdminWhatsAppTemplates" asp-action="Send" asp-route-id="@defaultWhatsAppTemplate.Id" asp-route-businessId="@business.Id" asp-route-destination="@item.PhoneNumber">Send WhatsApp</a>
+@model List<BusinessEnquiryListItemViewModel>
+@{
+    var business = (Business)ViewBag.Business;
+    var defaultWhatsAppTemplate = (WhatsAppTemplateConfiguration?)ViewBag.DefaultWhatsAppTemplate;
+    var statuses = (string[])ViewBag.EnquiryStatuses;
+    ViewData["Title"] = "Business Enquiries";
+    Layout = "_AdminLayout";
 }
-<a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessFollowUp" asp-action="Create" asp-route-id="@business.Id" asp-route-enquiryId="@item.Id">Create follow-up</a>
-</td></tr>}
-</tbody></table></div></div></section>
+<section class="admin-page"><div class="container admin-wide">
+    <div class="admin-head"><div><span class="platform-kicker dark">BUSINESS ENQUIRIES</span><h1>@business.Name</h1><p>Customer enquiries from your public catalog and WhatsApp conversations, with product mapping and status tracking.</p></div><div class="workspace-actions"><a class="workspace-btn workspace-btn-primary" asp-controller="BusinessFollowUp" asp-action="Index" asp-route-id="@business.Id">Follow-ups</a><a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessContent" asp-action="Index" asp-route-id="@business.Id">Catalog</a></div></div>
+    @if (TempData["EnquiryStatusSuccess"] is string statusSuccess) { <div class="success-message" role="status">✓ @statusSuccess</div> }
+    @if (TempData["EnquiryStatusError"] is string statusError) { <div class="enquiry-error-message" role="alert">⚠ @statusError</div> }
+    <div class="admin-note-card ws-mt-0 ws-mb-24"><strong>Call clicks: @(((IReadOnlyCollection<CallEvent>)ViewBag.CallClicks).Count)</strong><span>These are tap-to-call events recorded by the platform. They do not prove that a call connected.</span></div>
+    <div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Customer</th><th>Phone</th><th>Product / Category</th><th>Message</th><th>Source</th><th>Status</th><th>Created</th><th>Action</th></tr></thead><tbody>
+    @if (!Model.Any()) { <tr><td colspan="8" class="admin-empty-cell">No enquiries yet. They will appear here when a customer submits the public enquiry form or messages the business.</td></tr> }
+    @foreach (var item in Model) {
+        <tr>
+            <td><strong>@item.Name</strong>@if (!string.IsNullOrWhiteSpace(item.Email)) { <small>@item.Email</small> }</td>
+            <td>@item.PhoneNumber</td>
+            <td>@if (!string.IsNullOrWhiteSpace(item.ProductName)) { <strong>@item.ProductName</strong>@if (!string.IsNullOrWhiteSpace(item.ProductCategory)) { <small>@item.ProductCategory</small> } } else { <span>General enquiry</span> }</td>
+            <td class="ws-pre">@item.Message</td><td>@item.Source</td>
+            <td><form asp-action="UpdateStatus" method="post" class="ws-row-actions">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@item.Id"/><input type="hidden" name="businessId" value="@business.Id"/><select name="status" aria-label="Status for enquiry @item.Id">@foreach (var status in statuses) { <option value="@status" selected="@(item.Status == status)">@status</option> }</select><button class="workspace-btn workspace-btn-secondary workspace-btn-sm" type="submit">Save</button></form></td>
+            <td>@item.CreatedAtUtc.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</td>
+            <td>
+                @if (defaultWhatsAppTemplate is not null && User.IsInRole(PlatformRoles.Admin)) { <a class="workspace-btn workspace-btn-primary" asp-controller="AdminWhatsAppTemplates" asp-action="Send" asp-route-id="@defaultWhatsAppTemplate.Id" asp-route-businessId="@business.Id" asp-route-destination="@item.PhoneNumber">Send WhatsApp</a> }
+                <a class="workspace-btn workspace-btn-secondary" asp-controller="BusinessFollowUp" asp-action="Create" asp-route-id="@business.Id" asp-route-enquiryId="@item.Id">Create follow-up</a>
+            </td>
+        </tr>
+    }
+    </tbody></table></div>
+</div></section>
